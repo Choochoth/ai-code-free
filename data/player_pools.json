@@ -1,0 +1,111 @@
+{
+  "free_package":{
+    "package_title":"แพ็กเกจฟรี",
+    "package_desc":"แพ็กเกจฟรี ทดลองยิงโค้ดแม่นยำ รับครั้งเดียว รอโค้ดฟรีเข้าบัญชีทุกๆวัน",
+    "package_data":[
+      {
+        "package_name": "ลูกค้าใหม่ ทดลองใช้ฟรี 3 วัน",
+        "package_desc": "สำหรับลูกค้าใหม่ ทดลองยิงโค้ดแม่นยำ ฟรี! นาน 3 วัน สุ่มยิงโค้ดให้เลย",
+        "package_price": 0,
+        "package_pool_group": "low",
+        "package_day_limit": 3,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": null
+      }
+    ]
+  },
+  "day_package":{
+    "package_title":"แพ็กเกจแบบรายวัน",
+    "package_desc":"แพ็กเกจแบบรายวัน ซื้อกี่วันก็ได้ตามระยะเวลา รอโค้ดฟรีเข้าบัญชี ตามระยะเวลา",
+    "package_data":[
+      {
+        "package_name": "แพ็กเกจประหยัดระยะสั่น",
+        "package_desc": "เหมาะสำหรับมือใหม่ เริ่มต้นยิงโค้ดด้วย Ai ดูผลกำไรระยะสั่น นาน 5 วัน มูลค่า ไม่เช็คมูลค่าราคาของโค้ด สุ่มยิงโค้ดให้เลย",
+        "package_price": 35,
+        "package_pool_group": "low,mid",
+        "package_day_limit": 5,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": null
+      },
+      {
+        "package_name": "แพ็กเกจยอดนิยม ระยะสั่น รับประกันราคาโค้ด",
+        "package_desc": "เริ่มต้นยิงโค้ดด้วย Ai ดูผลกำไรระยะสั่น นาน 10 วัน พร้อมเช็คมูลค่าราคาโค้ด การันตีราคาโค้ดแต่ละโค้ดมีมูลค่ามากกว่า 10 point แน่นอน",
+        "package_price": 69,
+        "package_pool_group": "low,mid",
+        "package_day_limit": 10,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": null
+      },
+      {
+        "package_name": "แพ็กเกจยอดนิยม รายสัปดาห์ การันตีราคาโค้ด",
+        "package_desc": "ยิงโค้ดอัตโนมัติด้วย Ai รายสัปดาห์ นาน 7 วัน พร้อมเช็คมูลค่าราคาโค้ด การันตีราคาโค้ดแต่ละโค้ดมีมูลค่ามากกว่า 10 point แน่นอน",
+        "package_price": 59,
+        "package_pool_group": "mid",
+        "package_day_limit": 7,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": null
+      },
+      {
+        "package_name": "แพ็กเกจยอดนิยม มืออาชีพ รับประกันราคาโค้ด",
+        "package_desc": "ยิงโค้ดอัตโนมัติด้วย Ai นาน 15 วัน พร้อมเช็คมูลค่าราคาโค้ด การันตีราคาโค้ดแต่ละโค้ดมีมูลค่ามากกว่า 15 point แน่นอน",
+        "package_price": 155,
+        "package_pool_group": "mid",
+        "package_day_limit": 15,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": null
+      },
+      {
+        "package_name": "แพ็กเกจมือโปร รายเดือน",
+        "package_desc": "ยิงโค้ดอัตโนมัติด้วย Ai รายเดือน นาน 30 วัน ",
+        "package_price": 199,
+        "package_pool_group": "high",
+        "package_day_limit": 30,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": null
+      }
+    ]
+  },
+  "code_package":{
+    "package_title":"แพ็กเกจแบบรายโค้ด",
+    "package_desc":"แพ็กเกจแบบรายโค้ด ซื้อกี่โค้ดก็ได้ตามนั้น ไม่จำกัดวัน",
+    "package_data":[
+        {
+          "package_name": "แพ็กมินิวัดใจ 10 บาท",
+          "package_desc": "สุ่มเครดิต เริ่มต้นเพียง 10 บาท ยิงโค้ด 1 โค้ด ไม่จำกัดวัน ไม่มีการันตีแต้ม ได้แน่นอน",
+          "package_price": 10,
+          "package_pool_group": "low",
+          "package_day_limit": 0,
+          "package_site_name": "thai_jun88k36",
+          "package_logo": null
+        },
+        {
+          "package_name": "แพ็กมินิวัดดวง 10 บาท",
+          "package_desc": "การันตีแต้ม 8.88+ ได้เครดิตคืน 10+ ยิงโค้ด 1 โค้ด ไม่จำกัดวัน ได้แน่นอน",
+          "package_price": 10,
+          "package_pool_group": "low",
+          "package_day_limit": 0,
+          "package_site_name": "thai_jun88k36",
+          "package_logo": null
+        },
+        {
+          "package_name": "แพ็กมินิยอดนิยม 15 บาท",
+          "package_desc": "การันตีแต้ม 15+ ได้เครดิตคืน 15+ ยิงโค้ด 1 โค้ด ไม่จำกัดวัน ได้แน่นอน",
+          "package_price": 15,
+          "package_pool_group": "low",
+          "package_day_limit": 0,
+          "package_site_name": "thai_jun88k36",
+          "package_logo": null
+        },
+        {
+          "package_name": "แพ็กมินิวัดใจ 20 บาท",
+          "package_desc": "การันตีแต้ม 18+ ได้เครดิตคืน 18+ ยิงโค้ด 1 โค้ด ไม่จำกัดวัน ได้แน่นอน",
+          "package_price": 20,
+          "package_pool_group": "low",
+          "package_day_limit": 0,
+          "package_site_name": "thai_jun88k36",
+          "package_logo": null
+        }
+    ]
+  }
+
+}

@@ -1,0 +1,613 @@
+:root {
+  --primary: #ff4e80;
+  --secondary: #ff7689;
+  --bg: #fff0f5;
+  --text: #333;
+  --radius: 12px;
+  --transition: 0.3s ease;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg);
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+
+.package-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 40px;
+}
+
+.package-section {
+  margin-bottom: 48px;
+}
+
+.package-group-title {
+  font-size: 1.6em;
+  margin-bottom: 4px;
+  padding-left: 10px;
+  border-left: 4px solid #0088cc;
+  color: #222;
+}
+
+.package-group-desc {
+  font-size: 1em;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+.package-card-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.package-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  border-top: 5px solid var(--primary);
+  transition: transform var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.package-card:hover {
+  transform: translateY(-6px);
+}
+
+.package-logo {
+  max-width: 80px;
+  max-height: 80px;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.package-title {
+  font-size: 1.4rem;
+  color: var(--primary);
+  margin: 0;
+  font-weight: 700;
+}
+
+.package-price {
+  font-size: 1.2rem;
+  color: var(--text);
+  font-weight: bold;
+  margin: 0;
+}
+
+.package-benefit {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0 0 10px 0;
+  flex-grow: 1; /* เพื่อดันปุ่มให้ติดล่าง */
+}
+
+.receive-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background var(--transition);
+  align-self: stretch;
+}
+
+.receive-btn:hover {
+  background: var(--secondary);
+}
+
+.badge {
+  font-size: 0.75em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 5px;
+  color: #fff;
+  font-weight: bold;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.badge.hot {
+  background: #ff4e42;
+}
+
+.badge.sale {
+  background: #f39c12;
+}
+
+.badge.free {
+  background: #27ae60;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #999;
+  margin-right: 5px;
+}
+
+.sale-price {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal.modal-open {
+  display: flex;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 30px 35px;
+  border-radius: var(--radius);
+  max-width: 540px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  font-size: 1.8rem;
+  color: var(--primary);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.close-modal:hover {
+  color: var(--secondary);
+}
+
+.highlight {
+  font-weight: bold;
+  color: var(--primary);
+}
+
+/* Form and inputs */
+
+.input-customer,
+.slip-upload-container,
+.qr-container,
+.customer-receive-notif {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.input-customer label,
+#telegramInputGroup label {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.styled-input {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  background: #fff;
+}
+
+.styled-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 5px rgba(255, 78, 128, 0.3);
+}
+
+.slip-upload-container .upload-label {
+  background-color: var(--primary);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-block;
+  transition: background var(--transition);
+}
+
+.slip-upload-container .upload-label:hover {
+  background-color: var(--secondary);
+}
+
+.upload-input {
+  display: none;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #666;
+  margin-top: 6px;
+}
+
+.slip-preview {
+  margin-top: 10px;
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  object-fit: contain;
+}
+
+/* Copy button style */
+.copy-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  margin-left: 5px;
+  color: var(--primary);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.copy-btn:hover {
+  color: var(--secondary);
+}
+
+.copy-status {
+  font-size: 0.85rem;
+  color: green;
+  margin-left: 10px;
+}
+
+/* QR Container */
+.qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.qr-container img {
+  width: 100%;
+  max-width: 280px;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  object-fit: contain;
+}
+
+.qr-description {
+  font-size: 0.95rem;
+  color: #555;
+  margin-top: 10px;
+}
+
+.qr-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.qr-btn {
+  background: var(--primary);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.qr-btn:hover {
+  background: var(--secondary);
+}
+
+/* Loading status */
+#loadingStatus {
+  display: none;
+  margin-top: 10px;
+  font-size: 0.95rem;
+  color: var(--primary);
+  text-align: center;
+}
+
+.loader {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 3px solid #fff;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .modal-content {
+    padding: 20px;
+    max-width: 95vw;
+  }
+
+  .close-modal {
+    top: 15px;
+    right: 15px;
+    font-size: 1.5rem;
+  }
+
+  .styled-input,
+  #telegramInputGroup input {
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+
+  .qr-btn,
+  .upload-label {
+    font-size: 0.9rem;
+    padding: 8px 14px;
+  }
+
+  .package-title {
+    font-size: 1.2rem;
+  }
+
+  .package-price {
+    font-size: 1rem;
+  }
+}
+
+/* Checkbox Switch */
+.telegram-checkbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 1rem;
+  color: #333;
+}
+
+.telegram-checkbox input[type="checkbox"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.switch-slider {
+  width: 40px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 20px;
+  margin-right: 8px;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.switch-slider::before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+.telegram-checkbox input:checked + .switch-slider {
+  background-color: #4CAF50;
+}
+
+.telegram-checkbox input:checked + .switch-slider::before {
+  transform: translateX(20px);
+}
+
+/* Label text */
+.label-text {
+  user-select: none;
+}
+
+/* Telegram Input */
+#telegramInputGroup input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+#telegramInputGroup input:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+/* Floating contact button */
+#contactToggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #ffffff;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 3000;
+  transition: transform 0.3s ease;
+}
+#contactToggle:hover {
+  transform: scale(1.1);
+}
+#contactToggle img {
+  width: 30px;
+  height: 30px;
+}
+
+/* Slide-out Contact Bar */
+#contactBar {
+  position: fixed;
+  top: 80px;
+  right: -230px;
+  width: 230px;
+  background: #ffffff;
+  border-radius: 10px 0 0 10px;
+  box-shadow: -2px 4px 15px rgba(0, 0, 0, 0.15);
+  transition: right 0.3s ease;
+  padding: 15px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 2999;
+}
+
+#contactBar.open {
+  right: 0px;
+}
+
+#contactBar a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+#contactBar a:hover {
+  background-color: #f5f5f5;
+}
+
+#contactBar img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+}
+
+/* Responsive contact bar */
+@media (max-width: 600px) {
+  #contactToggle {
+    top: 10px;
+    right: 10px;
+    padding: 8px;
+  }
+  #contactToggle img {
+    width: 26px;
+    height: 26px;
+  }
+  #contactBar {
+    top: 60px;
+    width: 200px;
+    padding: 12px 10px;
+  }
+  #contactBar a {
+    font-size: 14px;
+    padding: 8px;
+  }
+  #contactBar img {
+    width: 24px;
+    height: 24px;
+  }
+}
+/* Badge icon แบบกลมมุมบนขวา */
+.badge-wrapper {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* ปรับ package card ให้ position relative เพื่อให้ badge-wrapper ทำงาน */
+.package-card {
+  position: relative;
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  border-top: 5px solid var(--primary);
+  transition: transform var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ราคาปกติขีดเส้นและราคาลดสีแดง */
+.old-price {
+  text-decoration: line-through;
+  color: #888;
+  margin-right: 6px;
+  font-weight: 600;
+}
+
+.sale-price {
+  color: #e74c3c;
+  font-weight: 700;
+  font-size: 1.3rem;
+}

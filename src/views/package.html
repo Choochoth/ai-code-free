@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ซื้อแพ็กเก็จยิงโค้ด</title>
+  <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="/css/package.css" />
+  <!-- SweetAlert2 -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    /* Modal style - ปรับ z-index ให้น้อยกว่า SweetAlert2 */
+    #modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1050; /* ไม่สูงเกินไป */
+    }
+    #modal.modal-open {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      outline: none;
+      position: relative;
+      z-index: 1060;
+    }
+    /* SweetAlert2 ปรับ z-index สูงกว่า modal */
+    .swal2-container {
+      z-index: 2000 !important;
+    }
+  </style>
+</head>
+<body>
+  <h1>เลือกแพ็กเกจสุดคุ้ม</h1>
+  <div class="package-grid" id="packageGrid">
+    <!-- รายการแพ็กเกจจะถูกเพิ่มด้วย JS -->
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+    <div class="modal-content" tabindex="0">
+      <span class="close-modal" id="closeModalBtn" role="button" aria-label="ปิด">&times;</span>
+      <h2 id="modalTitle">รายละเอียดการชำระเงิน</h2>
+
+      <p id="selected-package" class="highlight"></p>
+      <p>ชื่อบัญชี: <strong>นาย มนัสชัย แสงจันทร์ดาว</strong></p>
+      <p>
+        ธนาคาร: <strong>กสิกรไทย</strong> |
+        เลขบัญชี: <strong id="bankAccount">136-2-67076-0</strong>
+        <button onclick="copyAccount()" class="copy-btn" title="คัดลอกเลขบัญชี">📋</button>
+        <span id="copyStatus" class="copy-status"></span>
+      </p>
+      <p>จำนวนเงินที่ต้องชำระ: <span id="selected-price" class="highlight"></span> บาท</p>
+
+      <div class="qr-container">
+        <img id="qrImage" src="/images/bank_qr_data.jpg" alt="QR Code ธนาคาร" />
+        <p class="qr-description">สแกน QR ด้วยแอปธนาคารของคุณ</p>
+        <div class="qr-actions">
+          <button class="qr-btn" onclick="viewFullQR()">🔍 ดูขนาดเต็ม</button>
+          <a href="/images/bank_qr_data.jpg" download class="qr-btn">⬇ ดาวน์โหลด</a>
+        </div>
+      </div>
+
+      <div class="slip-upload-container">
+        <label for="slipInput" class="upload-label">📎 แนบสลิปการโอนหรือคูปองจากจะบบ</label>
+        <input type="file" id="slipInput" accept="image/*" class="upload-input" onchange="handleSlipChange()" />
+        <span id="slipFileName" class="file-name">ยังไม่ได้เลือกไฟล์</span>
+        <img id="slipPreview" src="" alt="Preview สลิป" class="slip-preview" style="display: none;" />
+      </div>
+
+      <div class="input-customer">
+        <label for="siteSelect">ไซต์:</label>
+        <select id="siteSelect" class="styled-input" aria-label="เลือกเว็บไซต์">
+          <option value="">-เลือกเว็บไซต์-</option>
+          <option value="jun88" selected="selected">Jun88</option>
+        </select>
+        <label for="userInput">ยูสเซอร์:</label>
+        <input type="text" id="userInput" class="styled-input" placeholder="กรอกชื่อผู้ใช้" aria-label="กรอกชื่อผู้ใช้" />
+      </div>
+
+      <div class="customer-receive-notif">
+        <label class="telegram-checkbox" for="telegramNotify">
+          <input type="checkbox" id="telegramNotify" onchange="toggleTelegramInput()" />
+          <span class="switch-slider"></span>
+          <span class="label-text">ต้องการรับแจ้งเตือนผ่าน Telegram</span>
+        </label>
+
+        <div id="telegramInputGroup" style="display: none; margin-top: 10px;">
+          <label for="telegramId">Telegram Chat ID:</label>
+          <input type="text" id="telegramId" class="styled-input" placeholder="เช่น 123456789" aria-label="กรอก Telegram Chat ID" />
+          <p style="font-size: 0.9em; color: #555;">
+            💡 คุณสามารถดู Chat ID ได้จาก 
+            <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" style="color:#0088cc; text-decoration:none; font-weight:600;">
+              @userinfobot
+            </a> 
+            ใน Telegram
+          </p>
+        </div>
+      </div>
+
+      <p id="loadingStatus" style="display:none;"><span class="loader"></span> กำลังส่งข้อมูล...</p>
+      <button class="receive-btn" onclick="submitPayment()">ยืนยันการชำระเงิน</button>
+    </div>
+  </div>
+
+    <!-- Floating Contact Button -->
+    <div id="contactToggle" onclick="toggleContactBar()" title="ติดต่อเรา">
+      <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="Contact Mail" />
+    </div>
+
+    <!-- Slide-out Contact Bar -->
+    <div id="contactBar">
+      <a href="https://t.me/freeceditcode" target="_blank" rel="noopener">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
+        <span>ติดต่อแอดมิน</span>
+      </a>
+      <a href="https://t.me/AiCodeFree" target="_blank" rel="noopener">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
+        <span>แจ้งรายชื่อผู้ได้รับโค้ด</span>
+      </a>
+      <a href="https://web.facebook.com/profile.php?id=61578301000831" target="_blank" rel="noopener">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="facebook">
+        <span>Facebook</span>
+      </a>
+    </div>
+
+
+
+  <script>
+    let packages = [];
+    let selectedPackage = null;
+    const apiBaseUrls = {
+      'typescript-telegram-auto-forword-production.up.railway.app': 'https://captchaocrapi-production.up.railway.app',
+      'typescript-telegram-auto-forword.onrender.com': 'https://captcha-ocr-api.onrender.com',
+      'localhost:5100': 'http://localhost:8000',
+    };
+
+    function toggleContactBar() {
+      document.getElementById('contactBar').classList.toggle('open');
+    }
+
+    async function loadPackages() {
+      try {
+        const res = await fetch('/api/package-payment');
+        if (!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
+        const data = await res.json();
+
+        const allGroups = [
+          data.free_package,
+          data.day_package,
+          data.package,
+        ];
+
+        renderPackages(allGroups);
+      } catch (e) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: 'ไม่สามารถโหลดข้อมูลแพ็กเกจได้',
+          confirmButtonText: 'ปิด'
+        });
+        console.error(e);
+      }
+    }
+
+    function renderBadgeIcons(badges) {
+      if (!badges || !Array.isArray(badges)) return '';
+
+      const iconMap = {
+        new: 'https://img.icons8.com/ios-filled/24/ff4e80/new.png',
+        hot: 'https://img.icons8.com/fluency/24/ff4e80/fire-element.png',       // ใช้ไฟล์ "fire-element" แทน hot
+        recommend: 'https://img.icons8.com/ios-filled/24/ff4e80/star--v1.png',
+        sale: 'https://img.icons8.com/fluency/24/ff4e80/sale.png',
+      };
+
+      return badges.map(b => {
+        const src = iconMap[b];
+        if (!src) return '';
+        return `
+          <img class="badge-icon" src="${src}" alt="${b}" title="${b}" loading="lazy" />
+        `;
+      }).join('');
+    }
+
+
+    function renderPackages(groups) {
+      const grid = document.getElementById('packageGrid');
+      grid.innerHTML = '';
+      packages = [];
+
+      groups.forEach(group => {
+        if (!group || !Array.isArray(group.package_data)) return;
+
+        const section = document.createElement('section');
+        section.className = 'package-section';
+
+        const title = document.createElement('h2');
+        title.className = 'package-group-title';
+        title.textContent = group.package_title || 'แพ็กเกจ';
+
+        const desc = document.createElement('p');
+        desc.className = 'package-group-desc';
+        desc.textContent = group.package_desc || '';
+
+        section.appendChild(title);
+        section.appendChild(desc);
+
+        const cardWrapper = document.createElement('div');
+        cardWrapper.className = 'package-card-group';
+
+        group.package_data.forEach(pkg => {
+          packages.push(pkg);
+
+          const priceHtml = (pkg.package_sale && pkg.package_sale > 0)
+            ? `<span class="old-price">${pkg.package_price} บาท</span>
+              <span class="sale-price">${pkg.package_sale} บาท</span>`
+            : `<span>${pkg.package_price} บาท</span>`;
+
+          const card = document.createElement('div');
+          card.className = 'package-card';
+
+          card.innerHTML = `
+            <div class="badge-wrapper">${renderBadgeIcons(pkg.package_badge)}</div>
+            <img src="${pkg.package_logo}" alt="โลโก้ ${pkg.package_name}" class="package-logo" />
+            <div class="package-header">
+              <div class="package-title">${pkg.package_name}</div>
+            </div>
+            <div class="package-price">${priceHtml}</div>
+            <div class="package-benefit">${pkg.package_desc}</div>
+            <button class="receive-btn" onclick="openModal('${pkg.package_name}')">รับสิทธิ์</button>
+          `;
+
+          cardWrapper.appendChild(card);
+        });
+
+        section.appendChild(cardWrapper);
+        grid.appendChild(section);
+      });
+    }
+
+    function openModal(packageName) {
+        selectedPackage = packages.find(p => p.package_name === packageName);
+        if (!selectedPackage) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'แพ็กเกจไม่ถูกต้อง',
+            text: 'กรุณาเลือกแพ็กเกจที่ถูกต้อง',
+            confirmButtonText: 'ปิด'
+          });
+          return;
+        }
+
+        document.getElementById('selected-package').textContent = `แพ็กเกจที่เลือก: ${selectedPackage.package_name}`;
+
+        // ✅ ใช้ราคา sale ถ้ามี
+        const displayPrice = (selectedPackage.package_sale && selectedPackage.package_sale > 0)
+          ? selectedPackage.package_sale
+          : selectedPackage.package_price;
+        document.getElementById('selected-price').textContent = displayPrice;
+
+        const modal = document.getElementById('modal');
+        modal.style.display = 'flex';
+        document.body.classList.add('modal-open');
+
+        modal.querySelector('.modal-content').focus();
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('modal');
+      modal.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      clearForm();
+    }
+
+    function clearForm() {
+      document.getElementById('siteSelect').value = '';
+      document.getElementById('userInput').value = '';
+      document.getElementById('slipInput').value = '';
+      document.getElementById('slipFileName').textContent = 'ยังไม่ได้เลือกไฟล์';
+      document.getElementById('slipPreview').style.display = 'none';
+      document.getElementById('telegramNotify').checked = false;
+      toggleTelegramInput();
+      document.getElementById('telegramId').value = '';
+      document.getElementById('copyStatus').textContent = '';
+    }
+
+    function copyAccount() {
+      const txt = document.getElementById('bankAccount').textContent;
+      navigator.clipboard.writeText(txt).then(() => {
+        const s = document.getElementById('copyStatus');
+        s.textContent = 'คัดลอกแล้ว!';
+        setTimeout(() => (s.textContent = ''), 2000);
+      });
+    }
+
+    function viewFullQR() {
+      const src = document.getElementById('qrImage').src;
+      const win = window.open('', '_blank', 'noopener');
+      win.document.write(`
+        <title>QR Code</title>
+        <style>body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#fff}</style>
+        <img src="${src}" style="max-width:90vw;max-height:90vh" alt="QR Code ธนาคาร">
+      `);
+      win.document.close();
+    }
+
+    function handleSlipChange() {
+      const input = document.getElementById('slipInput');
+      const fileName = document.getElementById('slipFileName');
+      const preview = document.getElementById('slipPreview');
+      if (input.files.length > 0) {
+        fileName.textContent = input.files[0].name;
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+      } else {
+        fileName.textContent = 'ยังไม่ได้เลือกไฟล์';
+        preview.style.display = 'none';
+      }
+    }
+
+    function toggleTelegramInput() {
+      const check = document.getElementById('telegramNotify').checked;
+      const group = document.getElementById('telegramInputGroup');
+      group.style.display = check ? 'block' : 'none';
+    }
+
+    async function submitPayment() {
+      const site = document.getElementById('siteSelect').value.trim();
+      const user = document.getElementById('userInput').value.trim();
+      const slip = document.getElementById('slipInput');
+      const loading = document.getElementById('loadingStatus');
+
+      // ดึง apiUrl จาก host ปัจจุบัน
+      const currentHost = window.location.host;
+      const apiBaseUrls = {
+        'typescript-telegram-auto-forword-production.up.railway.app': 'https://captchaocrapi-production.up.railway.app',
+        'typescript-telegram-auto-forword.onrender.com': 'https://captcha-ocr-api.onrender.com',
+        'localhost:5100': 'http://localhost:8000',
+      };
+      const apiBase = apiBaseUrls[currentHost] || 'http://localhost:8000';
+      const apiUrl = `${apiBase}/api/submit-slip`;
+
+      if (!selectedPackage) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'ยังไม่ได้เลือกแพ็กเกจ',
+          text: 'โปรดเลือกแพ็กเกจก่อนดำเนินการ',
+          confirmButtonText: 'ปิด'
+        });
+      }
+      if (!site) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'ยังไม่ได้เลือกเว็บไซต์',
+          text: 'กรุณาเลือกเว็บไซต์ที่ต้องการใช้งาน',
+          confirmButtonText: 'ปิด'
+        });
+      }
+      if (!user) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'กรุณากรอกชื่อผู้ใช้',
+          text: 'ต้องกรอกยูสเซอร์ก่อนส่งข้อมูล',
+          confirmButtonText: 'ปิด'
+        });
+      }
+      if (slip.files.length === 0) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'ยังไม่ได้แนบสลิป',
+          text: 'กรุณาแนบสลิปการโอนเงิน',
+          confirmButtonText: 'ปิด'
+        });
+      }
+
+      const notifyTelegram = document.getElementById('telegramNotify').checked;
+      const telegramId = document.getElementById('telegramId').value.trim();
+      if (notifyTelegram && !telegramId) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'ยังไม่ได้กรอก Telegram Chat ID',
+          text: 'กรุณากรอก Chat ID หากต้องการรับแจ้งเตือนทาง Telegram',
+          confirmButtonText: 'ปิด'
+        });
+      }
+        const displayPrice = (selectedPackage.package_sale && selectedPackage.package_sale > 0)
+          ? selectedPackage.package_sale
+          : selectedPackage.package_price;
+      const form = new FormData();
+      form.append('package', selectedPackage.package_name);
+      form.append('price', displayPrice);
+      form.append('site', site);
+      form.append('user', user);
+      form.append('slip', slip.files[0]);
+      form.append('notifyTelegram', notifyTelegram);
+      if (notifyTelegram) form.append('telegramId', telegramId);
+
+      loading.style.display = 'block';
+
+      try {
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          body: form,
+        });
+        const result = await res.json();
+
+        if (res.ok && result.status === 'success') {
+          await Swal.fire({
+            icon: 'success',
+            title: 'ส่งข้อมูลสำเร็จ',
+            text: 'ระบบได้รับข้อมูลการชำระเงินของคุณแล้ว รอการตรวจสอบข้อมูลและอนุมัติสักครู่',
+            confirmButtonText: 'เพื่อความรวดเร็วแจ้งแอดมินตรวจสอบข้อมูลที่ Telegram'
+          });
+          window.open('https://t.me/freeceditcode', '_blank');
+          closeModal();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: result.message || 'ไม่สามารถส่งข้อมูลได้',
+            confirmButtonText: 'ปิด'
+          });
+        }
+      } catch (e) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เชื่อมต่อไม่สำเร็จ',
+          text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้',
+          confirmButtonText: 'ปิด'
+        });
+        console.error(e);
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('modal').addEventListener('click', e => {
+      if (e.target.id === 'modal') closeModal();
+    });
+
+    window.addEventListener('DOMContentLoaded', loadPackages);
+  </script>
+</body>
+</html>

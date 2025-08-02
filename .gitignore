@@ -1,0 +1,33 @@
+# Environment variables
+.env
+# Dependency directories
+node_modules/
+
+# Compiled output
+dist/
+!dist/.gitkeep
+dist/**/*.gitignore
+
+# Application data
+data/images/
+data/session/
+
+
+# IDE and editor files
+.vscode/
+.idea/
+*.code-workspace
+
+# Temporary files and logs
+*.log
+*.tmp
+
+# macOS-specific files
+.DS_Store
+
+# Windows-specific files
+Thumbs.db
+
+# Lock files
+yarn.lock
+package-lock.json

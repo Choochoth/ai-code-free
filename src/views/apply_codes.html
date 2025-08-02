@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>รายชื่อผู้ได้รับโค้ดวันนี้</title>
+  <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="/css/apply_codes.css">
+</head>
+<body>
+  <div class="tabs">
+    <button class="tab active" data-tab="jun88" data-color="#007bff">Jun88</button>
+    <button class="tab" data-tab="789bet" data-color="#f78f28">789BET</button>
+  </div>
+
+  <div class="content active" id="jun88">
+    <img src="/images/logo-jun88.png" alt="Jun88 Logo" class="site-logo" />
+    <div class="search-box">
+      <input type="text" placeholder="ค้นหาผู้เล่น..." onkeyup="filterPlayers(event, 'jun88')" />
+    </div>
+    <div class="player-list" id="jun88-list"></div>
+  </div>
+
+  <div class="content" id="789bet">
+    <img src="/images/logo-789bet.png" alt="789bet Logo" class="site-logo" />
+    <div class="search-box">
+      <input type="text" placeholder="ค้นหาผู้เล่น..." onkeyup="filterPlayers(event, '789bet')" />
+    </div>
+    <div class="player-list" id="789bet-list"></div>
+  </div>
+
+<script>
+const playerData = {};
+
+async function loadPlayerData() {
+  try {
+    const res = await fetch("/api/applied-codes");
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+    const data = await res.json();
+    const todayData = data.apply_code_today;
+
+    playerData["789bet"] = todayData?.thai_789bet?.players || [];
+    playerData["jun88"] = todayData?.thai_jun88k36?.players || [];
+
+    displayPlayers("789bet");
+    displayPlayers("jun88");
+  } catch (err) {
+    console.error("ไม่สามารถโหลดข้อมูลโค้ดได้:", err);
+    ["789bet", "jun88"].forEach(site => {
+      const container = document.getElementById(`${site}-list`);
+      if (container) container.innerHTML = "<p>ไม่สามารถโหลดข้อมูลโค้ดได้</p>";
+    });
+  }
+}
+
+function displayPlayers(site) {
+  const container = document.getElementById(`${site}-list`);
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const players = playerData[site];
+  if (!Array.isArray(players) || players.length === 0) {
+    container.innerHTML = "<p>ไม่มีข้อมูลผู้เล่น</p>";
+    return;
+  }
+  
+  console.log(players)
+  players.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "player-card";
+    card.innerHTML = `
+      <div><strong>โค้ด:</strong> ${p.promo_code || "-"}</div>
+      <div><strong>ผู้เล่น:</strong> ${p.player || "-"}</div>
+      <div><strong>แต้ม:</strong> ${p.point != null ? p.point : "-"}</div>
+      <div><strong>เวลา:</strong> ${p.time ? new Date(p.time).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }) : "-"}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function filterPlayers(event, site) {
+  const keyword = event.target.value.toLowerCase();
+  const filtered = (playerData[site] || []).filter(p =>
+    (p.player && p.player.toLowerCase().includes(keyword)) ||
+    (p.promo_code && p.promo_code.toLowerCase().includes(keyword))
+  );
+
+  const container = document.getElementById(`${site}-list`);
+  container.innerHTML = "";
+
+  if (!filtered.length) {
+    container.innerHTML = "<p>ไม่พบผู้เล่นที่ตรงกับการค้นหา</p>";
+    return;
+  }
+
+  filtered.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "player-card";
+    card.innerHTML = `
+      <div><strong>โค้ด:</strong> ${p.promo_code || "-"}</div>
+      <div><strong>ผู้เล่น:</strong> ${p.player || "-"}</div>
+      <div><strong>แต้ม:</strong> ${p.point != null ? p.point : "-"}</div>
+      <div><strong>เวลา:</strong> ${p.time ? new Date(p.time).toLocaleString('th-TH') : "-"}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function updateColorTheme(color) {
+  // อัปเดตสีของปุ่มแท็บ active
+  document.querySelectorAll(".tab").forEach(tab => {
+    if (tab.classList.contains("active")) {
+      tab.style.backgroundColor = color;
+    } else {
+      tab.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--tab-inactive');
+    }
+  });
+
+  // เปลี่ยนสีตัวอักษรใน player-card
+  document.querySelectorAll('.player-card strong').forEach(el => {
+    el.style.color = color;
+  });
+}
+
+// จัดการสลับแท็บ
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+
+    tab.classList.add('active');
+
+    const tabId = tab.getAttribute('data-tab');
+    const color = tab.getAttribute('data-color') || '#007bff';
+
+    const content = document.getElementById(tabId);
+    if (content) content.classList.add('active');
+
+    updateColorTheme(color);
+  });
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadPlayerData();
+
+  // ใช้สีของแท็บแรกเมื่อโหลด
+  const initialColor = document.querySelector('.tab.active')?.getAttribute('data-color') || '#007bff';
+  updateColorTheme(initialColor);
+});
+</script>
+</body>
+</html>
