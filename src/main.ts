@@ -457,8 +457,6 @@ async function initializeService() {
       key_free: matchedSite.key_free,
     };
 
-    console.log(site)
-
     if (!siteQueues[site]) {
       siteQueues[site] = {
         remainingCodes: [],
@@ -469,22 +467,19 @@ async function initializeService() {
         site,
         hostUrl,
       } as SiteQueue;
-    } else {
-      // Cancel previous processing before starting new batch
-      siteQueues[site].abortFlag.canceled = true;
-      while (siteQueues[site].isProcessing) {
-        console.log(`⏳ Waiting for previous processing to stop...`);
-        await delay(300);
-      }
-    }
 
-    siteQueues[site].abortFlag = { canceled: false };
-    siteQueues[site].remainingCodes = [...shuffledCodes];
+      // เรียกครั้งแรก ต้อง start ลูป
+      startProCodeLoop(site).catch(err => {
+        console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
+      });
 
-    startProCodeLoop(site).catch(err => {
-      console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
-    });
+    } 
 
+    // ไม่ต้องหยุดลูปเดิม
+    // แค่แทรกโค้ดใหม่เข้าไปข้างหน้า
+    const existing = new Set(siteQueues[site].remainingCodes);
+    const uniqueNewCodes = shuffledCodes.filter(code => !existing.has(code));
+    siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
   };
 
   const addEventHandlers = async (client: any) => {

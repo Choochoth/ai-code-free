@@ -3,37 +3,20 @@ import fsSync from "fs";
 import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 
-// const playerPools: Record<string, PlayerPool> = {
-//   thai_789bet: {
-//     very_high: ["kootong", "Preechar"],
-//     high: ["kootong", "Preechar"],
-//     mid: ["kootong", "Preechar"],
-//     low: ["kootong", "Preechar"],
-//     all: ["kootong", "Preechar"]
-//   },
-//   thai_jun88k36: {
-//     very_high:["nus9331", "manus9331", "tata5511", "goft22"],
-//     high: ["aroon11" ,"aroon2511", "nus9331", "manus9331", "goft22", "tong234", "tata5511"],
-//     mid: ["goft22", "tong234", "tata5511", "poiy88", "wat3366", "aroon11" ,"aroon2511"],
-//     low: ["tong234", "tata5511", "poiy88", "wat3366", "koonogk"],
-//     all: ["goft22", "tong234", "tata5511", "poiy88", "wat3366", "koonogk"]
-//   }
-// };
-
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["kootong", "Preechar"],
-    high: ["kootong", "Preechar"],
-    mid: ["kootong", "Preechar"],
-    low: ["kootong", "Preechar"],
-    all: ["kootong", "Preechar"]
+    very_high: ["kootong", "Preechar", "tong551212"],
+    high: ["kootong", "Preechar", "tong551212"],
+    mid: ["kootong", "Preechar", "tong551212"],
+    low: ["kootong", "Preechar", "tong551212"],
+    all: ["kootong", "Preechar", "tong551212"]
   },
   thai_jun88k36: {
-    very_high:["manus9331", "goft22"],
-    high: ["manus9331", "goft22"],
-    mid: ["goft22"],
-    low: ["tong234", "tata5511", "poiy88", "wat3366", "koonogk"],
-    all: ["goft22", "tong234", "tata5511", "poiy88", "wat3366", "koonogk"]
+    very_high:["nus9331", "manus9331"],
+    high: ["nus9331", "manus9331", "goft22", "tong234"],
+    mid: ["goft22", "tong234", "poiy88", "wat3366"],
+    low: ["tong234", "poiy88", "wat3366", "koonogk"],
+    all: ["goft22", "tong234", "poiy88", "wat3366", "koonogk"]
   }
 };
 
