@@ -4,7 +4,6 @@ import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 
 const playerPools: Record<string, PlayerPool> = {
-const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["kootong", "Preechar", "tong551212"],
     high: ["kootong", "Preechar", "tong551212"],
