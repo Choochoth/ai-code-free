@@ -1,6 +1,6 @@
 {
   "apply_code_today": {
-    "date": "2025-08-02",
+    "date": "2025-08-03",
     "thai_789bet": {
       "players": [],
       "playersLock": []
@@ -8,68 +8,31 @@
     "thai_jun88k36": {
       "players": [
         {
-          "promo_code": "eGOsJ9pW",
-          "time": 1754070045523,
-          "time_limit": 1754156445523,
-          "status": "success",
-          "player": "tata5511",
-          "point": 15.88
+            "promo_code": "Apej6vR6",
+            "time": 1754193127115,
+            "time_limit": 1754279527115,
+            "status": "success",
+            "player": "nus9331",
+            "point": 20.88
         },
         {
-          "promo_code": "3GmoSHEG",
-          "time": 1754101463418,
-          "time_limit": 1754187863418,
-          "status": "success",
-          "player": "tong234",
-          "point": 18.88
+            "promo_code": "PIjDaZvC",
+            "time": 1754203248081,
+            "time_limit": 1754289648081,
+            "status": "success",
+            "player": "tong234",
+            "point": 17.88
         },
         {
-          "promo_code": "CUWwSekP",
-          "time": 1754101468665,
-          "time_limit": 1754187868665,
-          "status": "success",
-          "player": "wat3366",
-          "point": 10.88
-        },
-        {
-          "promo_code": "dke26AZr",
-          "time": 1754101472407,
-          "time_limit": 1754187872407,
-          "status": "success",
-          "player": "poiy88",
-          "point": 13.88
-        },
-        {
-          "promo_code": "qXW0KOYT",
-          "time": 1754101476134,
-          "time_limit": 1754187876134,
-          "status": "success",
-          "player": "nus9331",
-          "point": 27.88
-        },
-        {
-          "promo_code": "g7inf2fD",
-          "time": 1754110368386,
-          "time_limit": 1754196768386,
-          "status": "success",
-          "player": "koonogk",
-          "point": 16.88
+            "promo_code": "ads8bhC1",
+            "time": 1754203365929,
+            "time_limit": 1754289765929,
+            "status": "success",
+            "player": "manus9331",
+            "point": 27.88
         }
-      ],
-      "playersLock": [
-        {
-          "player": "tata5511",
-          "timelock": 1754101487859,
-          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
-          "lockTime": 86400000
-        },
-        {
-          "player": "aroon11",
-          "timelock": 1754110360340,
-          "lockMessage": "รหัสโปรโมชั่นของคุณได้รับรางวัลแล้ว กรุณากลับมาในครั้งถัดไปเพื่อรับรางวัล ขอให้โชคดี!",
-          "lockTime": 180000
-        }
-      ]
+    ],
+      "playersLock": []
     }
   }
 }
