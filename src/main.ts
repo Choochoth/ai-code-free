@@ -842,7 +842,7 @@ async function applyCodeToPlayers(
         case 9002:
         case 4044:
           remainingCodes.unshift(promoCode);
-          await updatePlayersLock(site, player, codeText, lockDurations[statusCode]);
+          await updatePlayersLock(site, player, codeText, lockDurations[statusCode], statusCode);
           console.log(`✔️ Added ${player} to PlayersLock`);
           break;          
         case 429:
@@ -853,7 +853,7 @@ async function applyCodeToPlayers(
           if (lockDurations[statusCode]) {
             console.warn(`🚫 Player ${player} blocked or not eligible (${statusCode}). Locking.`);
             try {
-              await updatePlayersLock(site, player, codeText, lockDurations[statusCode]);
+              await updatePlayersLock(site, player, codeText, lockDurations[statusCode], statusCode);
               console.log(`✔️ Added ${player} to PlayersLock`);
             } catch (err) {
               console.error(`❌ Failed to lock player ${player}:`, err);
@@ -900,7 +900,6 @@ async function getChatsList(client: TelegramClient) {
 
 (async () => {
   await startClient();
-
   // // Auto-check every 5 minutes
   // setInterval(checkConnectivity, 5 * 60 * 1000); 
 
