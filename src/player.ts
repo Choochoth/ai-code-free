@@ -153,7 +153,7 @@ async function getSinglePlayer(point: number, site: string): Promise<string> {
   return fallback[Math.floor(Math.random() * fallback.length)];
 }
 
-async function updatePlayersLock(site: string, playerId: string, lockMessage: string, lockTime: number) {
+async function updatePlayersLock(site: string, playerId: string, lockMessage: string, lockTime: number , lockCode: number) {
   const applyCodeToday = await loadApplyCodeToday();
   const now = Date.now();
 
@@ -166,7 +166,8 @@ async function updatePlayersLock(site: string, playerId: string, lockMessage: st
     player: playerId,
     timelock: now,
     lockMessage,
-    lockTime
+    lockTime,
+    lockCode
   });
 
   siteData.playersLock = locks;
