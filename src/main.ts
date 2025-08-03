@@ -672,63 +672,82 @@ async function startProCodeLoop(siteName: string) {
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
 
-          if (point > 15) {
+          if (point > 10) {
 
             try {
-              const player = await getSinglePlayer(point, site);
-              console.log("getSinglePlayers: ", player);
+              if (point > 20) {
+                const player = await getSinglePlayer(point, site);
+                console.log("getSinglePlayers: ", player);
 
-              if (player && !playerLocks.has(player)) {
-                const singleResult = await sendCodeToPlayer(
-                  player, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
-                );
+                if (player && !playerLocks.has(player)) {
+                  const singleResult = await sendCodeToPlayer(
+                    player, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+                  );
 
-                console.log(`📩 Full Result in getSinglePlayers ${player}:`, singleResult);
+                  console.log(`📩 Full Result in getSinglePlayers ${player}:`, singleResult);
 
-                const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
-                const singleMessage = singleResult?.text_mess?.th || "";
+                  const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
+                  const singleMessage = singleResult?.text_mess?.th || "";
 
-                if (singleCodeStatus === 200 && singleResult?.valid) {
-                  await updateApplyCodeLog(site, player, promoCode, point);
-                  sentPlayerIds.add(player);
-                  playersSkip.add(player);
-                } else {
-                  const rawPlayers = await getPlayerPool(point, site);
-                  if (singleCodeStatus === 502) {
-                    continue;
-                  } else if ([9001, 9002].includes(singleCodeStatus)) {
-                    remainingCodes.unshift(promoCode);
-                    continue;
-                  }
-
-                  if (lockDurations[singleCodeStatus]) {
-                    playerLocks.add(player);
-                    try {
-                      await updatePlayersLock(site, player, singleMessage, lockDurations[singleCodeStatus]);
-                      console.log("✔️ Add PlayersLock complete.");
-                    } catch (err) {
-                      console.error("❌ Failed to add PlayersLock:", err);
-                    }
-
-                    if ([403, 4044, 9003, 9004, 9007].includes(singleCodeStatus)) {
+                  if (singleCodeStatus === 200 && singleResult?.valid) {
+                    await updateApplyCodeLog(site, player, promoCode, point);
+                    sentPlayerIds.add(player);
+                    playersSkip.add(player);
+                  } else {
+                    const rawPlayers = await getPlayerPool(point, site);
+                    if (singleCodeStatus === 502) {
+                      continue;
+                    } else if ([9001, 9002].includes(singleCodeStatus)) {
                       remainingCodes.unshift(promoCode);
                       continue;
                     }
-                  }
 
+                    if (lockDurations[singleCodeStatus]) {
+                      playerLocks.add(player);
+                      try {
+                        await updatePlayersLock(site, player, singleMessage, lockDurations[singleCodeStatus], singleCodeStatus);
+                        console.log("✔️ Add PlayersLock complete.");
+                      } catch (err) {
+                        console.error("❌ Failed to add PlayersLock:", err);
+                      }
+
+                      if ([403, 4044, 9003, 9004, 9007].includes(singleCodeStatus)) {
+                        remainingCodes.unshift(promoCode);
+                        continue;
+                      }
+                    }
+
+                    await applyCodeToPlayers(
+                      promoCode, key, token, apiEndPoint, site, hostUrl,
+                      rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                    );
+                  }
+                  continue;
+                } else {
+                  const rawPlayers = await getPlayerPool(point, site);
                   await applyCodeToPlayers(
                     promoCode, key, token, apiEndPoint, site, hostUrl,
                     rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
                   );
                 }
-                continue;
-              } else {
-                const rawPlayers = await getPlayerPool(point, site);
-                await applyCodeToPlayers(
-                  promoCode, key, token, apiEndPoint, site, hostUrl,
-                  rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
-                );
-              }
+              }else{
+                  const rawPlayers = await getPlayerPool(point, site);
+
+                  // สุ่มเลือก 1 คนจาก rawPlayers
+                  const randomPlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
+
+                  // ตรวจสอบว่ามีผู้เล่นหรือไม่
+                  if (randomPlayer) {
+                    await applyCodeToPlayers(
+                      promoCode, key, token, apiEndPoint, site, hostUrl,
+                      [randomPlayer], // ส่งเป็น array ที่มีแค่ 1 คน
+                      sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                    );
+                  }
+
+                  continue;
+
+              }  
             } catch (err) {
               console.error("❌ Error in getSinglePlayer:", err);
               const rawPlayers = await getPlayerPool(point, site);
