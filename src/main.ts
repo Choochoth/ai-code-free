@@ -672,26 +672,31 @@ async function startProCodeLoop(siteName: string) {
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
 
-          if (point > 12) {
-
+          if (point > 10) {
             try {
-              const player = await getSinglePlayer(point, site);
-              console.log("getSinglePlayers: ", player);
+              let singlePlayer: string | undefined;
 
-              if (player && !playerLocks.has(player)) {
+              if (point > 18) {
+                singlePlayer = await getSinglePlayer(point, site);
+              } else {
+                const rawPlayers = await getPlayerPool(point, site);
+                singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
+              }
+
+              if (singlePlayer && !playerLocks.has(singlePlayer)) {
                 const singleResult = await sendCodeToPlayer(
-                  player, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+                  singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
                 );
 
-                console.log(`📩 Full Result in getSinglePlayers ${player}:`, singleResult);
+                console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
 
                 const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
                 const singleMessage = singleResult?.text_mess?.th || "";
 
                 if (singleCodeStatus === 200 && singleResult?.valid) {
-                  await updateApplyCodeLog(site, player, promoCode, point);
-                  sentPlayerIds.add(player);
-                  playersSkip.add(player);
+                  await updateApplyCodeLog(site, singlePlayer, promoCode, point);
+                  sentPlayerIds.add(singlePlayer);
+                  playersSkip.add(singlePlayer);
                 } else {
                   const rawPlayers = await getPlayerPool(point, site);
                   if (singleCodeStatus === 502) {
@@ -702,9 +707,9 @@ async function startProCodeLoop(siteName: string) {
                   }
 
                   if (lockDurations[singleCodeStatus]) {
-                    playerLocks.add(player);
+                    playerLocks.add(singlePlayer);
                     try {
-                      await updatePlayersLock(site, player, singleMessage, lockDurations[singleCodeStatus], singleCodeStatus);
+                      await updatePlayersLock(site, singlePlayer, singleMessage, lockDurations[singleCodeStatus], singleCodeStatus);
                       console.log("✔️ Add PlayersLock complete.");
                     } catch (err) {
                       console.error("❌ Failed to add PlayersLock:", err);
@@ -739,7 +744,7 @@ async function startProCodeLoop(siteName: string) {
               continue;
             }
           } else {
-            console.log(`⚠️ Promo code: ${promoCode} is Point not target (${point})`);
+                      console.log(`⚠️ Promo code: ${promoCode} is Point not target (${point})`);
           }
 
           continue;
