@@ -1,6 +1,6 @@
 {
   "apply_code_today": {
-    "date": "2025-08-04",
+    "date": "2025-08-05",
     "thai_789bet": {
       "players": [],
       "playersLock": []
@@ -8,37 +8,23 @@
     "thai_jun88k36": {
       "players": [
         {
-          "promo_code": "sn7CoRsc4",
-          "time": 1754250223312,
-          "time_limit": 1754336623312,
+          "promo_code": "ugiJokoTt",
+          "time": 1754332403144,
+          "time_limit": 1754418803144,
           "status": "success",
-          "player": "nus9331",
-          "point": 22.88
+          "player": "koonogk",
+          "point": 13.88
+        },
+        {
+          "promo_code": "KdlAu1skO",
+          "time": 1754332412114,
+          "time_limit": 1754418812114,
+          "status": "success",
+          "player": "tata5511",
+          "point": 18.88
         }
       ],
-      "playersLock": [
-        {
-          "player": "tata5511",
-          "timelock": 1754257112630,
-          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
-          "lockTime": 86400000,
-          "lockCode": 9007
-        },
-        {
-          "player": "goft22",
-          "timelock": 1754257124743,
-          "lockMessage": "รหัสโปรโมชั่นของคุณได้รับรางวัลแล้ว กรุณากลับมาในครั้งถัดไปเพื่อรับรางวัล ขอให้โชคดี!",
-          "lockTime": 180000,
-          "lockCode": 403
-        },
-        {
-          "player": "aroon11",
-          "timelock": 1754257126987,
-          "lockMessage": "รหัสโปรโมชั่นของคุณได้รับรางวัลแล้ว กรุณากลับมาในครั้งถัดไปเพื่อรับรางวัล ขอให้โชคดี!",
-          "lockTime": 180000,
-          "lockCode": 403
-        }
-      ]
+      "playersLock": []
     }
   }
 }
