@@ -6,20 +6,21 @@ import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/p
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["kootong", "Preechar", "tong551212"],
-    high: ["kootong", "Preechar", "tong551212"],
-    mid: ["kootong", "Preechar", "tong551212"],
-    low: ["kootong", "Preechar", "tong551212"],
-    all: ["kootong", "Preechar", "tong551212"]
+    very_high: ["nus9331", "kootong", "Preechar", "tong551212"],
+    high: ["nus9331","kootong", "Preechar", "tong551212"],
+    mid: ["nus9331", "kootong", "Preechar", "tong551212"],
+    low: ["nus9331", "kootong", "Preechar", "tong551212"],
+    all: ["nus9331", "kootong", "Preechar", "tong551212"]
   },
   thai_jun88k36: {
     very_high:["nus9331", "manus9331"],
-    high: ["nus9331", "manus9331", "tong234", "tata5511", "poiy88"],
-    mid: ["tong234", "tata5511", "poiy88", "wat3366"],
-    low: ["tong234", "tata5511", "poiy88", "wat3366", "koonogk"],
-    all: ["tong234", "tata5511", "poiy88", "wat3366", "koonogk"]
+    high: ["nus9331", "manus9331",  "tata5511", "poiy88"],
+    mid: [ "tata5511", "poiy88", "wat3366"],
+    low: [ "tata5511", "poiy88", "wat3366"],
+    all: [ "tata5511", "poiy88", "wat3366"]
   }
 };
+
 
 
 
