@@ -22,6 +22,30 @@
           "status": "success",
           "player": "tata5511",
           "point": 18.88
+        },
+        {
+          "promo_code": "KqdVmGUFO",
+          "time": 1754335566358,
+          "time_limit": 1754421966358,
+          "status": "success",
+          "player": "wat3366",
+          "point": 17.88
+        },
+        {
+          "promo_code": "hHz109TMA",
+          "time": 1754335570754,
+          "time_limit": 1754421970754,
+          "status": "success",
+          "player": "CHEKKKK19",
+          "point": 21.88
+        },
+        {
+          "promo_code": "LF7xOQWG4",
+          "time": 1754351505886,
+          "time_limit": 1754437905886,
+          "status": "success",
+          "player": "nus9331",
+          "point": 27.88
         }
       ],
       "playersLock": []
