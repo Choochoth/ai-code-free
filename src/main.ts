@@ -899,6 +899,18 @@ cron.schedule('*/5 * * * *', async () => {
 });
 
 
+// Update Code: Keep-alive ping every 5 minutes 
+const apiUrl = `${process.env.OCR_API_BASE}/health`;
+
+cron.schedule('*/5 * * * *', async () => {
+  try {
+    const res = await axios.get(apiUrl);
+    console.log(`[${new Date().toISOString()}] 🔁 Self-ping api: ${res.data.status}`);
+  } catch (err: any) {
+    console.error(`[${new Date().toISOString()}] 🛑 Self-ping api failed:`, err.message);
+  }
+});
+
 // thai_789bet: reset เวลา 11:00 (GMT+7)
 // cron.schedule('0 0 11 * * *', () => {
 //   try {
