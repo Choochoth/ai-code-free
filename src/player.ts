@@ -138,6 +138,8 @@ async function resetDailySentIfNeeded(): Promise<Record<string, AppliedPlayer[]>
   const sentPlayers: Record<string, AppliedPlayer[]> = {};
   const playerPools = getPlayerPools();
 
+  console.log("playerPools : ",playerPools);
+
   for (const site of Object.keys(playerPools)) {
     const siteData = applyCodeToday[site];
     if (siteData && typeof siteData === "object") {

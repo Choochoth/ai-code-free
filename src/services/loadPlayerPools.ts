@@ -24,7 +24,7 @@ function setPlayerPools(pools: Record<string, PlayerPool>) {
  */
 export async function loadPlayerPoolsFromApi() {
   try {
-    const res = await axios.get(`${OCR_API_BASE}/api/playerPools`);
+    const res = await axios.get(`${OCR_API_BASE}/api/player-pools`);
     const data = res.data;
 
     const pools: Record<string, PlayerPool> = data;

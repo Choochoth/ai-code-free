@@ -23,6 +23,7 @@ import {
   ocr
 } from "./services/promoCodeApi";
 
+import { loadPlayerPoolsFromApi } from "./services/loadPlayerPools";
 
 
 import  { updatePlayersLock, resetDailySentIfNeeded, updateApplyCodeLog, getSinglePlayer, getPlayerPool } from "./player";
@@ -51,7 +52,7 @@ const apiId = Number(process.env.API_ID);
 const apiHash = process.env.API_HASH || "";
 const phoneNumber = process.env.APP_YOUR_PHONE || "";
 const userPassword = process.env.APP_YOUR_PWD || "";
-const port = Number(process.env.PORT) || 5100;
+const port = Number(process.env.PORT) || 5221;
 const MAX_RETRIES = 3;
 let retryInterval = 6000;
 let lastRestartTime = 0;
@@ -611,7 +612,6 @@ async function startProCodeLoop(siteName: string) {
 
   try {
     const { remainingCodes, players, apiEndPoint, site, hostUrl } = siteQueue;
-
     const rawSentPlayers = await resetDailySentIfNeeded();
 
     const siteData: SiteSentPlayers = rawSentPlayers[siteName]
@@ -904,6 +904,7 @@ const apiUrl = `${process.env.OCR_API_BASE}/health`;
 
 cron.schedule('*/5 * * * *', async () => {
   try {
+    await loadPlayerPoolsFromApi();
     const res = await axios.get(apiUrl);
     console.log(`[${new Date().toISOString()}] 🔁 Self-ping api: ${res.data.status}`);
   } catch (err: any) {
@@ -932,5 +933,9 @@ cron.schedule('*/5 * * * *', async () => {
 // }, {
 //   timezone: "Asia/Bangkok"
 // });
+    await loadPlayerPoolsFromApi();
+
+    // const rawsPlayers = await resetDailySentIfNeeded();
+    // console.log(rawsPlayers)
 
 })();
