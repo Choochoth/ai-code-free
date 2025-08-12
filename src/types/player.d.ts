@@ -10,6 +10,7 @@ export interface AppliedPlayer {
 }
 
 export interface PlayerLock {
+  lock_time_minutes: number;
   player: string;
   timelock: number;
   lockMessage: string;
@@ -71,3 +72,19 @@ export function isSiteData(data: any): data is SiteData {
     )
   );
 }
+
+type PlayerPool = {
+  very_high: string[];
+  high: string[];
+  mid: string[];
+  low: string[];
+  all: string[];
+};
+
+type APIResponse = {
+  players: {
+    site_key: string;
+    tier_name: keyof PlayerPool;
+    username: string;
+  }[];
+};

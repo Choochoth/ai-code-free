@@ -1,114 +1,94 @@
-import fs from "fs/promises";
-import fsSync from "fs";
-import path from "path";
-import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
+import axios from "axios";
+import dayjs from "dayjs";
 
-const playerPools: Record<string, PlayerPool> = {
-  thai_789bet: {
-    very_high: ["kootong", "Preechar", "tong551212"],
-    high: ["kootong", "Preechar", "tong551212"],
-    mid: ["kootong", "Preechar", "tong551212"],
-    low: ["kootong", "Preechar", "tong551212"],
-    all: ["kootong", "Preechar", "tong551212"]
-  },
-  thai_jun88k36: {
-    very_high:["nus9331", "manus9331", "CHEKKKK14", "CHEKKKK15", "CHEKKKK19"],
-    high: ["nus9331", "manus9331", "tong234" ,"tata5511", "CHEKKKK14", "CHEKKKK15", "CHEKKKK19"],
-    mid: ["goft22", "tong234", "poiy88", "wat3366", "tata5511", "tata5511"],
-    low: ["tong234", "poiy88", "wat3366", "koonogk"],
-    all: ["nus9331", "manus9331", "goft22", "tong234" ,"tata5511",  "aroon11", "aroon2511", "koonogk", "poiy88", "wat3366"]
-  }
-};
+import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock, Site } from "./types/player";
+import { getPlayerPools } from "./services/loadPlayerPools";
 
-
-export type Site = keyof typeof playerPools;
-
-const baseDir = __dirname;
-const dataDir = path.join(baseDir, "data");
-const applyCodeFile = path.join(dataDir, "apply_code.json");
-
+const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
 const APPLY_CODE_EXPIRE_MS = 24 * 60 * 60 * 1000;
 
-async function ensureDataFile() {
-  await fs.mkdir(dataDir, { recursive: true });
-  try {
-    await fs.access(applyCodeFile);
-  } catch {
-    const initData = {
-      apply_code_today: {
-        date: "",
-        thai_789bet: { players: [], playersLock: [] },
-        thai_jun88k36: { players: [], playersLock: [] }
-      }
-    };
-    await fs.writeFile(applyCodeFile, JSON.stringify(initData, null, 2), "utf-8");
-  }
-}
-
-function getTodayString(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
-}
-
+/**
+ * ดึงข้อมูล apply_code_today จาก API
+ */
 async function loadApplyCodeToday(): Promise<ApplyCodeToday> {
-  await ensureDataFile();
-  const raw = await fs.readFile(applyCodeFile, "utf-8");
-  const data = JSON.parse(raw);
-  return data.apply_code_today || {
-    date: "",
-    thai_789bet: { players: [], playersLock: [] },
-    thai_jun88k36: { players: [], playersLock: [] }
-  };
-}
-
-async function saveApplyCodeToday(applyCodeToday: ApplyCodeToday) {
-  const data = { apply_code_today: applyCodeToday };
-  await fs.writeFile(applyCodeFile, JSON.stringify(data, null, 2), "utf-8");
-}
-
-async function resetIfNeeded() {
-  const today = getTodayString();
-  const applyCodeToday = await loadApplyCodeToday();
-  if (applyCodeToday.date !== today) {
-    const newData: ApplyCodeToday = { date: today };
-    for (const site of Object.keys(playerPools)) {
-      newData[site] = { players: [], playersLock: [] };
-    }
-    await saveApplyCodeToday(newData);
+  try {
+    const res = await axios.get(`${OCR_API_BASE}/api/players-apply-code`);
+    return res.data.apply_code_today;
+  } catch (error) {
+    console.error("Failed to load apply code today from API:", error);
+    return {
+      date: dayjs().format("YYYY-MM-DD"),
+      thai_789bet: { players: [], playersLock: [] },
+      thai_jun88k36: { players: [], playersLock: [] },
+    };
   }
 }
 
-function isPlayerLocked(lock: PlayerLock): boolean {
-  return Date.now() - lock.timelock < lock.lockTime;
+/**
+ * update apply code log ผ่าน API POST
+ */
+async function updateApplyCodeLog(site: string, player: string, promoCode: string, point: number) {
+  try {
+    await axios.post(`${OCR_API_BASE}/api/players-apply-code`, {
+      site,
+      player,
+      promo_code: promoCode,
+      point,
+    });
+    console.log(`✅ Updated apply code log: site=${site}, player=${player}`);
+  } catch (error) {
+    console.error("Failed to update apply code log:", error);
+  }
 }
 
-async function getPlayerPool(point: number, site: string): Promise<string[]> {
-  await resetIfNeeded();
-  const applyCodeToday = await loadApplyCodeToday();
+/**
+ * update player lock ผ่าน API POST
+ * @param lockTime มิลลิวินาที
+ */
+async function updatePlayersLock(site: string, playerId: string, lockMessage: string, lockTime: number, lockCode: number) {
+  try {
+    const lockMinutes = Math.floor(lockTime / 60000);
+    await axios.post(`${OCR_API_BASE}/api/players-lock`, {
+      site:site,
+      username: playerId,
+      lock_minutes: lockMinutes,
+      lock_message: lockMessage,
+      lock_code: lockCode,
+    });
+    const hours = Math.floor(lockTime / 3600000);
+    const minutes = Math.floor((lockTime % 3600000) / 60000);
+    console.log(`✅ Player ${playerId} locked for ${hours}h ${minutes}m (${lockMessage})`);
+  } catch (error) {
+    console.error("Failed to update player lock:", error);
+  }
+}
 
-  const pool = playerPools[site];
-  const fallbackPool = playerPools["thai_jun88k36"].all;
+/**
+ * ดึง pool ผู้เล่นตาม point และ site โดยกรองผู้เล่นที่ล็อกหรือใช้โค้ดแล้วจาก API
+ */
+async function getPlayerPool(point: number, site: string): Promise<string[]> {
+  const pools = getPlayerPools();
+  const pool = pools[site];
+  const fallbackPool = pools["thai_jun88k36"]?.all ?? [];
+
   if (!pool) return fallbackPool;
 
-  const siteData = applyCodeToday[site];
+  const applyCodeToday = await loadApplyCodeToday();
   const now = Date.now();
 
   const usedPlayers = new Set<string>();
   const lockedPlayers = new Set<string>();
 
+  const siteData = applyCodeToday[site];
   if (siteData && typeof siteData === "object") {
     for (const p of siteData.players ?? []) {
       const expireTime = p.time_limit ?? (p.time + APPLY_CODE_EXPIRE_MS);
-      if (now < expireTime) {
-        usedPlayers.add(p.player);
-      }
+      if (now < expireTime) usedPlayers.add(p.player);
     }
-
-    const activeLocks = (siteData.playersLock ?? []).filter(isPlayerLocked);
-    for (const lock of activeLocks) {
-      lockedPlayers.add(lock.player);
+    for (const lock of siteData.playersLock ?? []) {
+      const lockEnd = lock.timelock + (lock.lock_time_minutes ?? 0) * 60000;
+      if (now < lockEnd) lockedPlayers.add(lock.player);
     }
-
-    siteData.playersLock = activeLocks;
   }
 
   const filterEligible = (list?: string[]) =>
@@ -124,138 +104,65 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
 
   if (!Number.isFinite(point) || point < 0) {
     return strictFallback(pool.low, pool.mid);
-  }
-  if (point > 25) {
+  } else if (point > 25) {
     return strictFallback(pool.very_high, pool.high);
-  }
-  if (point >= 20) {
+  } else if (point >= 20) {
     return strictFallback(pool.high, pool.very_high, pool.mid);
-  }
-  if (point >= 15) {
+  } else if (point >= 15) {
     return strictFallback(pool.mid, pool.low);
-  }
-  if (point >= 12) {
+  } else if (point >= 12) {
     return strictFallback(pool.low);
   }
 
   return strictFallback(pool.all);
 }
 
+/**
+ * ดึงผู้เล่นแบบสุ่ม 1 คน จาก pool
+ */
 async function getSinglePlayer(point: number, site: string): Promise<string> {
   const eligiblePlayers = await getPlayerPool(point, site);
-  // console.log("eligiblePlayers", eligiblePlayers)
   if (eligiblePlayers.length > 0) {
     return eligiblePlayers[Math.floor(Math.random() * eligiblePlayers.length)];
   }
-  
-  const fallback = playerPools[site]?.all ?? [];
-  // console.log("fallback", fallback)
+  const fallback = getPlayerPools()[site]?.all ?? [];
   return fallback[Math.floor(Math.random() * fallback.length)];
 }
 
-async function updatePlayersLock(site: string, playerId: string, lockMessage: string, lockTime: number , lockCode: number) {
-  const applyCodeToday = await loadApplyCodeToday();
-  const now = Date.now();
-
-  const siteData = applyCodeToday[site];
-  if (!siteData || typeof siteData === "string") return;
-
-  const locks = (siteData.playersLock ?? []).filter(lock => lock.player !== playerId);
-
-  locks.push({
-    player: playerId,
-    timelock: now,
-    lockMessage,
-    lockTime,
-    lockCode
-  });
-
-  siteData.playersLock = locks;
-  await saveApplyCodeToday(applyCodeToday);
-
-  const hours = Math.floor(lockTime / 3600000);
-  const minutes = Math.floor((lockTime % 3600000) / 60000);
-  console.log(`✅ Player ${playerId} locked for ${hours}h ${minutes}m (${lockMessage})`);
-}
-
-async function updateApplyCodeLog(site: string, player: string, promoCode: string, point: number) {
-  await resetIfNeeded();
-  const applyCodeToday = await loadApplyCodeToday();
-
-  if (!applyCodeToday[site] || typeof applyCodeToday[site] === "string") {
-    applyCodeToday[site] = { players: [], playersLock: [] };
-  }
-
-  const now = Date.now();
-  const siteData = applyCodeToday[site];
-  siteData.players = (siteData.players ?? []).filter(p => now < (p.time_limit ?? p.time + APPLY_CODE_EXPIRE_MS));
-
-  siteData.players.push({
-    promo_code: promoCode,
-    time: now,
-    time_limit: now + APPLY_CODE_EXPIRE_MS,
-    status: "success",
-    player,
-    point
-  });
-
-  await saveApplyCodeToday(applyCodeToday);
-}
-
+/**
+ * โหลดข้อมูลผู้เล่นที่ถูกใช้โค้ดวันนี้ (reset daily)
+ */
 async function resetDailySentIfNeeded(): Promise<Record<string, AppliedPlayer[]>> {
-  await resetIfNeeded();
   const applyCodeToday = await loadApplyCodeToday();
   const now = Date.now();
   const sentPlayers: Record<string, AppliedPlayer[]> = {};
+  const playerPools = getPlayerPools();
 
   for (const site of Object.keys(playerPools)) {
     const siteData = applyCodeToday[site];
     if (siteData && typeof siteData === "object") {
-      siteData.players = (siteData.players ?? []).filter(p => now < (p.time_limit ?? p.time + APPLY_CODE_EXPIRE_MS));
-      sentPlayers[site] = siteData.players;
+      sentPlayers[site] = (siteData.players ?? []).filter(
+        p => now < (p.time_limit ?? p.time + APPLY_CODE_EXPIRE_MS)
+      );
     } else {
       sentPlayers[site] = [];
     }
   }
-
-  await saveApplyCodeToday(applyCodeToday);
   return sentPlayers;
 }
 
+/**
+ * เช็คว่า player ใช้โค้ดแล้วหรือยัง
+ */
 function isPlayerAlreadyUsed(siteData: { players: AppliedPlayer[] }, playerId: string): boolean {
   return siteData.players.some(p => p.player === playerId);
 }
 
-function clearApplyCodeTemplateForSite(site: Site | null) {
-  if (!fsSync.existsSync(dataDir)) fsSync.mkdirSync(dataDir, { recursive: true });
-
-  const today = getTodayString();
-
-  const data: { apply_code_today: ApplyCodeToday } = {
-    apply_code_today: {
-      date: today,
-      thai_789bet: { players: [], playersLock: [] },
-      thai_jun88k36: { players: [], playersLock: [] }
-    }
-  };
-
-  if (site) {
-    data.apply_code_today[site] = { players: [], playersLock: [] };
-  }
-
-  fsSync.writeFileSync(applyCodeFile, JSON.stringify(data, null, 2), "utf-8");
-
-  const label = site ?? "all sites";
-  console.log(`✅ Cleared apply_code.json for ${label}`);
-}
-
 export {
-  getTodayString,
   getPlayerPool,
   getSinglePlayer,
   updatePlayersLock,
   updateApplyCodeLog,
   resetDailySentIfNeeded,
   isPlayerAlreadyUsed,
-  clearApplyCodeTemplateForSite
 };

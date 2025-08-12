@@ -25,7 +25,7 @@ import {
 
 
 
-import  { updatePlayersLock, resetDailySentIfNeeded, updateApplyCodeLog, getSinglePlayer, getPlayerPool, clearApplyCodeTemplateForSite } from "./player";
+import  { updatePlayersLock, resetDailySentIfNeeded, updateApplyCodeLog, getSinglePlayer, getPlayerPool } from "./player";
 import { SiteSentPlayers } from "./types/player";
 
 
@@ -42,6 +42,7 @@ siteConfigs
 } from "./siteConfigs";
 
 import { SiteQueue } from "./types/siteConfigs";
+import { PlayerPool } from "./types/player";
 
 dotenv.config();
 
@@ -82,7 +83,7 @@ const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
 const applyCodePath = path.join(dataDir, "apply_code.json");
 const packagePath = path.join(dataDir, "package.json");
-
+const playerPools: Record<string, PlayerPool> = {};
 try {
   if (!fs.existsSync(sessionDir)) {
     fs.mkdirSync(sessionDir, { recursive: true });
@@ -620,13 +621,6 @@ async function startProCodeLoop(siteName: string) {
         }
       : { appliedPlayers: [], playersLock: [] };
 
-    const now = Date.now();
-
-    const sentPlayerIds = new Set(
-      siteData.appliedPlayers
-        .filter(p => now < (p.time_limit ?? p.time + 24 * 60 * 60 * 1000))
-        .map(p => p.player)
-    );
 
     const playerLocks = new Set(siteData.playersLock.map(lock => lock.player));
     const playersSkip = new Set<string>();
@@ -676,27 +670,23 @@ async function startProCodeLoop(siteName: string) {
             try {
               let singlePlayer: string | undefined;
 
-              if (point > 18) {
+              if (point > 15) {
                 singlePlayer = await getSinglePlayer(point, site);
               } else {
                 const rawPlayers = await getPlayerPool(point, site);
                 singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
               }
 
-              if (singlePlayer && !playerLocks.has(singlePlayer)) {
+              if (singlePlayer) {
                 const singleResult = await sendCodeToPlayer(
                   singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
                 );
-
                 console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
-
                 const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
                 const singleMessage = singleResult?.text_mess?.th || "";
 
                 if (singleCodeStatus === 200 && singleResult?.valid) {
                   await updateApplyCodeLog(site, singlePlayer, promoCode, point);
-                  sentPlayerIds.add(singlePlayer);
-                  playersSkip.add(singlePlayer);
                 } else {
                   const rawPlayers = await getPlayerPool(point, site);
                   if (singleCodeStatus === 502) {
@@ -723,7 +713,7 @@ async function startProCodeLoop(siteName: string) {
 
                   await applyCodeToPlayers(
                     promoCode, key, token, apiEndPoint, site, hostUrl,
-                    rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                    rawPlayers, playersSkip, playerLocks, remainingCodes
                   );
                 }
                 continue;
@@ -731,7 +721,7 @@ async function startProCodeLoop(siteName: string) {
                 const rawPlayers = await getPlayerPool(point, site);
                 await applyCodeToPlayers(
                   promoCode, key, token, apiEndPoint, site, hostUrl,
-                  rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                  rawPlayers, playersSkip, playerLocks, remainingCodes
                 );
               }
             } catch (err) {
@@ -739,12 +729,12 @@ async function startProCodeLoop(siteName: string) {
               const rawPlayers = await getPlayerPool(point, site);
               await applyCodeToPlayers(
                 promoCode, key, token, apiEndPoint, site, hostUrl,
-                rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                rawPlayers,  playersSkip, playerLocks, remainingCodes
               );
               continue;
             }
           } else {
-                      console.log(`⚠️ Promo code: ${promoCode} is Point not target (${point})`);
+             console.log(`⚠️ Promo code: ${promoCode} is Point not target (${point})`);
           }
 
           continue;
@@ -770,13 +760,12 @@ async function applyCodeToPlayers(
   site: string,
   hostUrl: string,
   players: string[],
-  sentPlayersToday: Set<string>,
   playersSkip: Set<string>,
   playerLocks: Set<string>,
   remainingCodes: string[]
 ): Promise<boolean> {
   const availablePlayers = players.filter(
-    (p) => !sentPlayersToday.has(p) && !playersSkip.has(p)
+    (p) => !playersSkip.has(p)
   );
 
   for (const player of availablePlayers) {
@@ -814,7 +803,6 @@ async function applyCodeToPlayers(
             const point = res?.point ?? 0;
             updateApplyCodeLog(site, player, promoCode, point);
             console.log(`✅ Code applied successfully to player ${player} (${point} points)`);
-            sentPlayersToday.add(player);
             return true;
           } else {
             console.warn(`⚠️ Response 200 but code is not valid for ${player}`);
@@ -911,16 +899,6 @@ cron.schedule('*/5 * * * *', async () => {
 });
 
 
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const response = await axios.get(`${OCR_API_BASE}/health`);
-    console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
-  } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
-  }
-});
-
-
 // thai_789bet: reset เวลา 11:00 (GMT+7)
 // cron.schedule('0 0 11 * * *', () => {
 //   try {
@@ -932,15 +910,15 @@ cron.schedule('*/5 * * * *', async () => {
 //   timezone: "Asia/Bangkok"
 // });
 
-// thai_jun88k36: reset เวลา 24:00 (GMT+7)
-cron.schedule('0 0 0 * * *', () => {
-  try {
-    clearApplyCodeTemplateForSite("thai_jun88k36");
-  } catch (err) {
-    console.error("❌ Failed to reset thai_jun88k36:", err);
-  }
-}, {
-  timezone: "Asia/Bangkok"
-});
+// // thai_jun88k36: reset เวลา 24:00 (GMT+7)
+// cron.schedule('0 0 0 * * *', () => {
+//   try {
+//     clearApplyCodeTemplateForSite("thai_jun88k36");
+//   } catch (err) {
+//     console.error("❌ Failed to reset thai_jun88k36:", err);
+//   }
+// }, {
+//   timezone: "Asia/Bangkok"
+// });
 
 })();

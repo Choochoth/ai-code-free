@@ -12,11 +12,15 @@ function escapeMarkdown(text: string): string {
 }
 
 function maskUsername(username: string): string {
-  if (username.length <= 4) {
-    return escapeMarkdown(username);
+  if (username.length <= 5) {
+    return escapeMarkdown(username); // ถ้าสั้นเกินไป ไม่ต้อง mask
   }
-  const masked = username.slice(0, 4) + '*'.repeat(username.length - 4);
-  return escapeMarkdown(masked);
+
+  const start = username.slice(0, 3);
+  const end = username.slice(-2);
+  const maskedMiddle = '*'.repeat(username.length - 5);
+
+  return escapeMarkdown(start + maskedMiddle + end);
 }
 
 export async function checkNetworkConnectivity(): Promise<boolean> {

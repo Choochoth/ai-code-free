@@ -128,11 +128,15 @@
       </a>
       <a href="https://t.me/AiCodeFree" target="_blank" rel="noopener">
         <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
-        <span>แจ้งรายชื่อผู้ได้รับโค้ด</span>
+        <span>แจ้งรายชื่อผู้ได้รับโค้ดฟรี</span>
       </a>
       <a href="https://web.facebook.com/profile.php?id=61578301000831" target="_blank" rel="noopener">
         <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="facebook">
         <span>Facebook</span>
+      </a>
+      <a href="https://x.com/AiCodeFree" target="_blank" rel="noopener">
+        <img src="https://cdn-icons-png.flaticon.com/512/6422/6422200.png" alt="X">
+        <span>Twitter X</span>
       </a>
     </div>
 
@@ -141,38 +145,40 @@
   <script>
     let packages = [];
     let selectedPackage = null;
-    const apiBaseUrls = {
-      'typescript-telegram-auto-forword-production.up.railway.app': 'https://captchaocrapi-production.up.railway.app',
-      'typescript-telegram-auto-forword.onrender.com': 'https://captcha-ocr-api.onrender.com',
-      'localhost:5100': 'http://localhost:8000',
-    };
 
     function toggleContactBar() {
       document.getElementById('contactBar').classList.toggle('open');
     }
 
     async function loadPackages() {
-      try {
-        const res = await fetch('/api/package-payment');
-        if (!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
-        const data = await res.json();
+    try {
+      const currentHost = window.location.host;
+      const apiBaseUrls = {
+        'typescript-telegram-auto-forword-production.up.railway.app': 'https://captchaocrapi-production.up.railway.app',
+        'typescript-telegram-auto-forword.onrender.com': 'https://captcha-ocr-api.onrender.com',
+        'ai-code-free.onrender.com': 'https://ai-code-api.onrender.com',
+        'localhost:5100': 'http://localhost:8000',
+      };
+      const apiBase = apiBaseUrls[currentHost] || 'http://localhost:8000';
+      const apiUrl = `${apiBase}/api/packages`;
 
-        const allGroups = [
-          data.free_package,
-          data.day_package,
-          data.package,
-        ];
+      const res = await fetch(apiUrl);
+      if (!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
+      const data = await res.json();
 
-        renderPackages(allGroups);
-      } catch (e) {
-        Swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: 'ไม่สามารถโหลดข้อมูลแพ็กเกจได้',
-          confirmButtonText: 'ปิด'
-        });
-        console.error(e);
-      }
+      // ใช้ packages ตรง ๆ จาก response
+      const packages = data.packages || [];
+
+      renderPackagesFromAPI({ packages });
+    } catch (e) {
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่สามารถโหลดข้อมูลแพ็กเกจได้',
+        confirmButtonText: 'ปิด'
+      });
+      console.error(e);
+    }
     }
 
     function renderBadgeIcons(badges) {
@@ -194,64 +200,54 @@
       }).join('');
     }
 
-
-    function renderPackages(groups) {
+    function renderPackagesFromAPI(response) {
+      const data = response.packages || [];
       const grid = document.getElementById('packageGrid');
       grid.innerHTML = '';
       packages = [];
 
-      groups.forEach(group => {
-        if (!group || !Array.isArray(group.package_data)) return;
+      const section = document.createElement('section');
+      section.className = 'package-section';
 
-        const section = document.createElement('section');
-        section.className = 'package-section';
+      const title = document.createElement('h2');
+      title.className = 'package-group-title';
+      title.textContent = 'แพ็กเกจทั้งหมด';
 
-        const title = document.createElement('h2');
-        title.className = 'package-group-title';
-        title.textContent = group.package_title || 'แพ็กเกจ';
+      section.appendChild(title);
 
-        const desc = document.createElement('p');
-        desc.className = 'package-group-desc';
-        desc.textContent = group.package_desc || '';
+      const cardWrapper = document.createElement('div');
+      cardWrapper.className = 'package-card-group';
 
-        section.appendChild(title);
-        section.appendChild(desc);
+      data.forEach(pkg => {
+        packages.push(pkg);
 
-        const cardWrapper = document.createElement('div');
-        cardWrapper.className = 'package-card-group';
+        const priceHtml = (pkg.sale_price && pkg.sale_price > 0)
+          ? `<span class="old-price">${pkg.price} บาท</span>
+            <span class="sale-price">${pkg.sale_price} บาท</span>`
+          : `<span>${pkg.price} บาท</span>`;
 
-        group.package_data.forEach(pkg => {
-          packages.push(pkg);
+        const card = document.createElement('div');
+        card.className = 'package-card';
 
-          const priceHtml = (pkg.package_sale && pkg.package_sale > 0)
-            ? `<span class="old-price">${pkg.package_price} บาท</span>
-              <span class="sale-price">${pkg.package_sale} บาท</span>`
-            : `<span>${pkg.package_price} บาท</span>`;
+        card.innerHTML = `
+          <img src="${pkg.logo_url}" alt="โลโก้ ${pkg.name}" class="package-logo" />
+          <div class="package-header">
+            <div class="package-title">${pkg.name}</div>
+          </div>
+          <div class="package-price">${priceHtml}</div>
+          <div class="package-benefit">${pkg.description}</div>
+          <button class="receive-btn" onclick="openModal('${pkg.name}')">รับสิทธิ์</button>
+        `;
 
-          const card = document.createElement('div');
-          card.className = 'package-card';
-
-          card.innerHTML = `
-            <div class="badge-wrapper">${renderBadgeIcons(pkg.package_badge)}</div>
-            <img src="${pkg.package_logo}" alt="โลโก้ ${pkg.package_name}" class="package-logo" />
-            <div class="package-header">
-              <div class="package-title">${pkg.package_name}</div>
-            </div>
-            <div class="package-price">${priceHtml}</div>
-            <div class="package-benefit">${pkg.package_desc}</div>
-            <button class="receive-btn" onclick="openModal('${pkg.package_name}')">รับสิทธิ์</button>
-          `;
-
-          cardWrapper.appendChild(card);
-        });
-
-        section.appendChild(cardWrapper);
-        grid.appendChild(section);
+        cardWrapper.appendChild(card);
       });
+
+      section.appendChild(cardWrapper);
+      grid.appendChild(section);
     }
 
     function openModal(packageName) {
-        selectedPackage = packages.find(p => p.package_name === packageName);
+        selectedPackage = packages.find(p => p.name === packageName);
         if (!selectedPackage) {
           Swal.fire({
             icon: 'warning',
@@ -262,12 +258,11 @@
           return;
         }
 
-        document.getElementById('selected-package').textContent = `แพ็กเกจที่เลือก: ${selectedPackage.package_name}`;
+        document.getElementById('selected-package').textContent = `แพ็กเกจที่เลือก: ${selectedPackage.name}`;
 
-        // ✅ ใช้ราคา sale ถ้ามี
-        const displayPrice = (selectedPackage.package_sale && selectedPackage.package_sale > 0)
-          ? selectedPackage.package_sale
-          : selectedPackage.package_price;
+        const displayPrice = (selectedPackage.sale_price && selectedPackage.sale_price > 0)
+          ? selectedPackage.sale_price
+          : selectedPackage.price;
         document.getElementById('selected-price').textContent = displayPrice;
 
         const modal = document.getElementById('modal');
@@ -276,6 +271,7 @@
 
         modal.querySelector('.modal-content').focus();
     }
+
 
     function closeModal() {
       const modal = document.getElementById('modal');
@@ -344,66 +340,43 @@
       const site = document.getElementById('siteSelect').value.trim();
       const user = document.getElementById('userInput').value.trim();
       const slip = document.getElementById('slipInput');
-      const loading = document.getElementById('loadingStatus');
+          const loading = document.getElementById('loadingStatus');
 
-      // ดึง apiUrl จาก host ปัจจุบัน
       const currentHost = window.location.host;
       const apiBaseUrls = {
         'typescript-telegram-auto-forword-production.up.railway.app': 'https://captchaocrapi-production.up.railway.app',
         'typescript-telegram-auto-forword.onrender.com': 'https://captcha-ocr-api.onrender.com',
+        'ai-code-free.onrender.com': 'https://ai-code-api.onrender.com',
         'localhost:5100': 'http://localhost:8000',
       };
       const apiBase = apiBaseUrls[currentHost] || 'http://localhost:8000';
-      const apiUrl = `${apiBase}/api/submit-slip`;
 
       if (!selectedPackage) {
-        return Swal.fire({
-          icon: 'warning',
-          title: 'ยังไม่ได้เลือกแพ็กเกจ',
-          text: 'โปรดเลือกแพ็กเกจก่อนดำเนินการ',
-          confirmButtonText: 'ปิด'
-        });
+        return Swal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกแพ็กเกจ', text: 'โปรดเลือกแพ็กเกจก่อน', confirmButtonText: 'ปิด' });
       }
       if (!site) {
-        return Swal.fire({
-          icon: 'warning',
-          title: 'ยังไม่ได้เลือกเว็บไซต์',
-          text: 'กรุณาเลือกเว็บไซต์ที่ต้องการใช้งาน',
-          confirmButtonText: 'ปิด'
-        });
+        return Swal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกเว็บไซต์', text: 'กรุณาเลือกเว็บไซต์', confirmButtonText: 'ปิด' });
       }
       if (!user) {
-        return Swal.fire({
-          icon: 'warning',
-          title: 'กรุณากรอกชื่อผู้ใช้',
-          text: 'ต้องกรอกยูสเซอร์ก่อนส่งข้อมูล',
-          confirmButtonText: 'ปิด'
-        });
+        return Swal.fire({ icon: 'warning', title: 'กรุณากรอกชื่อผู้ใช้', text: 'ต้องกรอกยูสเซอร์', confirmButtonText: 'ปิด' });
       }
       if (slip.files.length === 0) {
-        return Swal.fire({
-          icon: 'warning',
-          title: 'ยังไม่ได้แนบสลิป',
-          text: 'กรุณาแนบสลิปการโอนเงิน',
-          confirmButtonText: 'ปิด'
-        });
+        return Swal.fire({ icon: 'warning', title: 'ยังไม่ได้แนบสลิป', text: 'กรุณาแนบสลิป', confirmButtonText: 'ปิด' });
       }
 
       const notifyTelegram = document.getElementById('telegramNotify').checked;
       const telegramId = document.getElementById('telegramId').value.trim();
       if (notifyTelegram && !telegramId) {
-        return Swal.fire({
-          icon: 'warning',
-          title: 'ยังไม่ได้กรอก Telegram Chat ID',
-          text: 'กรุณากรอก Chat ID หากต้องการรับแจ้งเตือนทาง Telegram',
-          confirmButtonText: 'ปิด'
-        });
+        return Swal.fire({ icon: 'warning', title: 'ยังไม่ได้กรอก Telegram Chat ID', text: 'กรุณากรอก Chat ID', confirmButtonText: 'ปิด' });
       }
-        const displayPrice = (selectedPackage.package_sale && selectedPackage.package_sale > 0)
-          ? selectedPackage.package_sale
-          : selectedPackage.package_price;
+
+      const displayPrice = (selectedPackage.sale_price && selectedPackage.sale_price > 0)
+        ? selectedPackage.sale_price
+        : selectedPackage.price;
+
       const form = new FormData();
-      form.append('package', selectedPackage.package_name);
+      form.append('package_id', selectedPackage.id);  // ✅ ตรงกับ backend
+      form.append('package', selectedPackage.name);  // ✅ ตรงกับ backend
       form.append('price', displayPrice);
       form.append('site', site);
       form.append('user', user);
@@ -414,41 +387,29 @@
       loading.style.display = 'block';
 
       try {
-        const res = await fetch(apiUrl, {
-          method: 'POST',
-          body: form,
-        });
+        const res = await fetch(`${apiBase}/api/submit-slip`, { method: 'POST', body: form });
         const result = await res.json();
 
         if (res.ok && result.status === 'success') {
           await Swal.fire({
             icon: 'success',
             title: 'ส่งข้อมูลสำเร็จ',
-            text: 'ระบบได้รับข้อมูลการชำระเงินของคุณแล้ว รอการตรวจสอบข้อมูลและอนุมัติสักครู่',
-            confirmButtonText: 'เพื่อความรวดเร็วแจ้งแอดมินตรวจสอบข้อมูลที่ Telegram'
+            text: 'ระบบได้รับข้อมูลแล้ว รอการตรวจสอบ',
+            confirmButtonText: 'เพื่อความรวดเร็วแจ้งแอดมินที่ Telegram'
           });
           window.open('https://t.me/freeceditcode', '_blank');
           closeModal();
         } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'เกิดข้อผิดพลาด',
-            text: result.message || 'ไม่สามารถส่งข้อมูลได้',
-            confirmButtonText: 'ปิด'
-          });
+          Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: result.message || 'ไม่สามารถส่งข้อมูลได้', confirmButtonText: 'ปิด' });
         }
       } catch (e) {
-        Swal.fire({
-          icon: 'error',
-          title: 'เชื่อมต่อไม่สำเร็จ',
-          text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้',
-          confirmButtonText: 'ปิด'
-        });
+        Swal.fire({ icon: 'error', title: 'เชื่อมต่อไม่สำเร็จ', text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', confirmButtonText: 'ปิด' });
         console.error(e);
       } finally {
         loading.style.display = 'none';
       }
     }
+
 
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     document.getElementById('modal').addEventListener('click', e => {
@@ -459,3 +420,4 @@
   </script>
 </body>
 </html>
+

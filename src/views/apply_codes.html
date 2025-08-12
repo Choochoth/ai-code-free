@@ -34,39 +34,42 @@ const playerData = {};
 
 async function loadPlayerData() {
   try {
-    const res = await fetch("/api/applied-codes");
+    const apiBaseUrls = {
+      'typescript-telegram-auto-forword-production.up.railway.app': 'https://captchaocrapi-production.up.railway.app',
+      'typescript-telegram-auto-forword.onrender.com': 'https://captcha-ocr-api.onrender.com',
+      'ai-code-free.onrender.com': 'https://ai-code-api.onrender.com',
+      'localhost:5100': 'http://localhost:8000',
+    };
+    const apiBase = apiBaseUrls[currentHost] || 'http://localhost:8000';
+    const apiUrl = `${apiBase}/api/players-apply-code`;
+    const res = await fetch(apiUrl);
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-    const data = await res.json();
-    const todayData = data.apply_code_today;
+    const { apply_code_today } = await res.json();
+    const { date, ...sites } = apply_code_today;
 
-    playerData["789bet"] = todayData?.thai_789bet?.players || [];
-    playerData["jun88"] = todayData?.thai_jun88k36?.players || [];
-
-    displayPlayers("789bet");
-    displayPlayers("jun88");
+    Object.entries(sites).forEach(([siteKey, siteData]) => {
+      playerData[siteKey] = siteData.players || [];
+      displayPlayers(siteKey, siteData.players || []);
+    });
   } catch (err) {
     console.error("ไม่สามารถโหลดข้อมูลโค้ดได้:", err);
-    ["789bet", "jun88"].forEach(site => {
-      const container = document.getElementById(`${site}-list`);
-      if (container) container.innerHTML = "<p>ไม่สามารถโหลดข้อมูลโค้ดได้</p>";
+    document.querySelectorAll(".player-list").forEach(container => {
+      container.innerHTML = "<p>ไม่สามารถโหลดข้อมูลโค้ดได้</p>";
     });
   }
 }
 
-function displayPlayers(site) {
-  const container = document.getElementById(`${site}-list`);
+function displayPlayers(siteKey, players) {
+  const container = document.getElementById(`${siteKey}-list`);
   if (!container) return;
-
   container.innerHTML = "";
 
-  const players = playerData[site];
-  if (!Array.isArray(players) || players.length === 0) {
+  if (!players.length) {
     container.innerHTML = "<p>ไม่มีข้อมูลผู้เล่น</p>";
     return;
   }
-  
-  console.log(players)
+
   players.forEach(p => {
     const card = document.createElement("div");
     card.className = "player-card";
