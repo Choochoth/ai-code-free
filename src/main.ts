@@ -22,8 +22,8 @@ import {
   addTemplate,
   ocr
 } from "./services/promoCodeApi";
-
 import { loadPlayerPoolsFromApi } from "./services/loadPlayerPools";
+
 
 
 import  { updatePlayersLock, resetDailySentIfNeeded, updateApplyCodeLog, getSinglePlayer, getPlayerPool } from "./player";
@@ -43,7 +43,6 @@ siteConfigs
 } from "./siteConfigs";
 
 import { SiteQueue } from "./types/siteConfigs";
-import { PlayerPool } from "./types/player";
 
 dotenv.config();
 
@@ -52,7 +51,7 @@ const apiId = Number(process.env.API_ID);
 const apiHash = process.env.API_HASH || "";
 const phoneNumber = process.env.APP_YOUR_PHONE || "";
 const userPassword = process.env.APP_YOUR_PWD || "";
-const port = Number(process.env.PORT) || 5221;
+const port = Number(process.env.PORT) || 5100;
 const MAX_RETRIES = 3;
 let retryInterval = 6000;
 let lastRestartTime = 0;
@@ -70,7 +69,7 @@ const captchaLimiter = new Bottleneck({
 
 // 🔧 กำหนดระยะเวลา Lock ตามสถานะ
 const lockDurations: Record<number, number> = {
-  403: 3 * 60 * 1000,
+  403: 24 * 60 * 60 * 1000,
   9002: 30 * 24 * 60 * 60 * 1000,
   9003: 24 * 60 * 60 * 1000,
   9004: 3 * 60 * 1000,
@@ -84,7 +83,7 @@ const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
 const applyCodePath = path.join(dataDir, "apply_code.json");
 const packagePath = path.join(dataDir, "package.json");
-const playerPools: Record<string, PlayerPool> = {};
+
 try {
   if (!fs.existsSync(sessionDir)) {
     fs.mkdirSync(sessionDir, { recursive: true });
@@ -469,19 +468,21 @@ async function initializeService() {
         site,
         hostUrl,
       } as SiteQueue;
+    }
 
-      // เรียกครั้งแรก ต้อง start ลูป
-      startProCodeLoop(site).catch(err => {
-        console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
-      });
-
-    } 
-
-    // ไม่ต้องหยุดลูปเดิม
-    // แค่แทรกโค้ดใหม่เข้าไปข้างหน้า
+    // แทรกโค้ดใหม่เข้าไปข้างหน้า
     const existing = new Set(siteQueues[site].remainingCodes);
     const uniqueNewCodes = shuffledCodes.filter(code => !existing.has(code));
     siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
+
+    // ถ้าลูปไม่ทำงาน ให้สตาร์ทใหม่
+    if (!siteQueues[site].isProcessing && siteQueues[site].remainingCodes.length > 0) {
+      startProCodeLoop(site).catch(err => {
+        console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
+      });
+    }
+
+
   };
 
   const addEventHandlers = async (client: any) => {
@@ -606,33 +607,55 @@ async function initializeService() {
 
 async function startProCodeLoop(siteName: string) {
   const siteQueue = siteQueues[siteName];
-  if (!siteQueue || siteQueue.isProcessing) return;
+  if (!siteQueue) return;
+
+  // ถ้ากำลังรันอยู่ ให้ปล่อยให้ลูปเดิมจัดการต่อ
+  if (siteQueue.isProcessing) return;
+
   siteQueue.isProcessing = true;
+
   const abortFlag = siteQueue.abortFlag;
 
   try {
     const { remainingCodes, players, apiEndPoint, site, hostUrl } = siteQueue;
+
     const rawSentPlayers = await resetDailySentIfNeeded();
 
     const siteData: SiteSentPlayers = rawSentPlayers[siteName]
       ? {
           appliedPlayers: rawSentPlayers[siteName],
-          playersLock: [], // หากต้องการ โหลดจาก disk ให้เพิ่มภายหลัง
+          playersLock: [],
         }
       : { appliedPlayers: [], playersLock: [] };
 
+    const now = Date.now();
+
+    const sentPlayerIds = new Set(
+      siteData.appliedPlayers
+        .filter(p => now < (p.time_limit ?? p.time + 24 * 60 * 60 * 1000))
+        .map(p => p.player)
+    );
 
     const playerLocks = new Set(siteData.playersLock.map(lock => lock.player));
     const playersSkip = new Set<string>();
 
-    while (remainingCodes.length > 0) {
+    while (true) {
+      // ถ้าถูกสั่งหยุด
       if (abortFlag?.canceled) {
         console.log(`⏹️ Processing for ${site} aborted.`);
         break;
       }
 
+      // ถ้าไม่มีโค้ดให้รอเล็กน้อยเผื่อมีโค้ดใหม่เข้ามา
+      if (remainingCodes.length === 0) {
+        // รอ 1 วินาที ถ้ายังไม่มีโค้ดใหม่ให้หยุด
+        await new Promise(res => setTimeout(res, 1000));
+        if (remainingCodes.length === 0) break;
+        else continue; // ถ้ามีโค้ดใหม่ให้ทำต่อ
+      }
+
       const promoCode = remainingCodes.shift();
-      if (!promoCode) break;
+      if (!promoCode) continue;
 
       try {
         const key = await encryptText(promoCode, informationSet.key_free);
@@ -652,7 +675,7 @@ async function startProCodeLoop(siteName: string) {
           continue;
         }
 
-        if (statusCode === 429 || statusCode === 400 ) {
+        if (statusCode === 429 || statusCode === 400) {
           console.warn("⏳ Rate limited. Resetting IP and retrying...");
           remainingCodes.unshift(promoCode);
           continue;
@@ -669,24 +692,27 @@ async function startProCodeLoop(siteName: string) {
           if (point > 10) {
             try {
               let singlePlayer: string | undefined;
-
-              if (point > 15) {
+              if (point > 18) {
                 singlePlayer = await getSinglePlayer(point, site);
               } else {
                 const rawPlayers = await getPlayerPool(point, site);
                 singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
               }
 
-              if (singlePlayer) {
+              if (singlePlayer && !playerLocks.has(singlePlayer)) {
                 const singleResult = await sendCodeToPlayer(
                   singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
                 );
+
                 console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
+
                 const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
                 const singleMessage = singleResult?.text_mess?.th || "";
 
                 if (singleCodeStatus === 200 && singleResult?.valid) {
                   await updateApplyCodeLog(site, singlePlayer, promoCode, point);
+                  sentPlayerIds.add(singlePlayer);
+                  playersSkip.add(singlePlayer);
                 } else {
                   const rawPlayers = await getPlayerPool(point, site);
                   if (singleCodeStatus === 502) {
@@ -713,7 +739,7 @@ async function startProCodeLoop(siteName: string) {
 
                   await applyCodeToPlayers(
                     promoCode, key, token, apiEndPoint, site, hostUrl,
-                    rawPlayers, playersSkip, playerLocks, remainingCodes
+                    rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
                   );
                 }
                 continue;
@@ -721,7 +747,7 @@ async function startProCodeLoop(siteName: string) {
                 const rawPlayers = await getPlayerPool(point, site);
                 await applyCodeToPlayers(
                   promoCode, key, token, apiEndPoint, site, hostUrl,
-                  rawPlayers, playersSkip, playerLocks, remainingCodes
+                  rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
                 );
               }
             } catch (err) {
@@ -729,18 +755,16 @@ async function startProCodeLoop(siteName: string) {
               const rawPlayers = await getPlayerPool(point, site);
               await applyCodeToPlayers(
                 promoCode, key, token, apiEndPoint, site, hostUrl,
-                rawPlayers,  playersSkip, playerLocks, remainingCodes
+                rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
               );
               continue;
             }
           } else {
-             console.log(`⚠️ Promo code: ${promoCode} is Point not target (${point})`);
+            console.log(`⚠️ Promo code: ${promoCode} is Point not target (${point})`);
           }
 
           continue;
         }
-
-        // await removeImage(captchaPath); // อาจลบไฟล์หากต้องการ
 
       } catch (err) {
         console.error("❌ Unexpected error:", err);
@@ -749,6 +773,14 @@ async function startProCodeLoop(siteName: string) {
   } finally {
     console.log(`⏹️ Processing remainingCodes End.`);
     siteQueue.isProcessing = false;
+
+    // ถ้าหลังหยุดยังมีโค้ดใหม่ → เริ่มใหม่ทันที
+    if (siteQueue.remainingCodes.length > 0 && !siteQueue.isProcessing) {
+      console.log(`🔄 New codes detected after end, restarting loop for ${siteName}...`);
+      startProCodeLoop(siteName).catch(err => {
+        console.error(`❌ Error restarting loop for site ${siteName}:`, err);
+      });
+    }
   }
 }
 
@@ -760,12 +792,13 @@ async function applyCodeToPlayers(
   site: string,
   hostUrl: string,
   players: string[],
+  sentPlayersToday: Set<string>,
   playersSkip: Set<string>,
   playerLocks: Set<string>,
   remainingCodes: string[]
 ): Promise<boolean> {
   const availablePlayers = players.filter(
-    (p) => !playersSkip.has(p)
+    (p) => !sentPlayersToday.has(p) && !playersSkip.has(p)
   );
 
   for (const player of availablePlayers) {
@@ -803,6 +836,7 @@ async function applyCodeToPlayers(
             const point = res?.point ?? 0;
             updateApplyCodeLog(site, player, promoCode, point);
             console.log(`✅ Code applied successfully to player ${player} (${point} points)`);
+            sentPlayersToday.add(player);
             return true;
           } else {
             console.warn(`⚠️ Response 200 but code is not valid for ${player}`);
@@ -899,18 +933,18 @@ cron.schedule('*/5 * * * *', async () => {
 });
 
 
-// Update Code: Keep-alive ping every 5 minutes 
-const apiUrl = `${process.env.OCR_API_BASE}/health`;
-
 cron.schedule('*/5 * * * *', async () => {
+  const start = Date.now();
   try {
     await loadPlayerPoolsFromApi();
-    const res = await axios.get(apiUrl);
-    console.log(`[${new Date().toISOString()}] 🔁 Self-ping api: ${res.data.status}`);
+    const duration = Date.now() - start;
+    console.log(`[${new Date().toISOString()}] ✅ OCR API OK (${duration}ms) - Status loadPlayerPoolsFromApi`);
   } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 Self-ping api failed:`, err.message);
+    console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed: ${err.message}`);
   }
 });
+
+
 
 // thai_789bet: reset เวลา 11:00 (GMT+7)
 // cron.schedule('0 0 11 * * *', () => {
@@ -923,7 +957,7 @@ cron.schedule('*/5 * * * *', async () => {
 //   timezone: "Asia/Bangkok"
 // });
 
-// // thai_jun88k36: reset เวลา 24:00 (GMT+7)
+// thai_jun88k36: reset เวลา 24:00 (GMT+7)
 // cron.schedule('0 0 0 * * *', () => {
 //   try {
 //     clearApplyCodeTemplateForSite("thai_jun88k36");
@@ -933,9 +967,5 @@ cron.schedule('*/5 * * * *', async () => {
 // }, {
 //   timezone: "Asia/Bangkok"
 // });
-    await loadPlayerPoolsFromApi();
-
-    // const rawsPlayers = await resetDailySentIfNeeded();
-    // console.log(rawsPlayers)
-
+  await loadPlayerPoolsFromApi()
 })();
