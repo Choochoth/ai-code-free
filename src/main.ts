@@ -609,6 +609,7 @@ async function startProCodeLoop(siteName: string) {
   const siteQueue = siteQueues[siteName];
   if (!siteQueue) return;
 
+  await loadPlayerPoolsFromApi();
   // ถ้ากำลังรันอยู่ ให้ปล่อยให้ลูปเดิมจัดการต่อ
   if (siteQueue.isProcessing) return;
 
@@ -936,7 +937,6 @@ cron.schedule('*/5 * * * *', async () => {
 cron.schedule('*/5 * * * *', async () => {
   const start = Date.now();
   try {
-    await loadPlayerPoolsFromApi();
     const duration = Date.now() - start;
     console.log(`[${new Date().toISOString()}] ✅ OCR API OK (${duration}ms) - Status loadPlayerPoolsFromApi`);
   } catch (err: any) {
