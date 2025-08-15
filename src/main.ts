@@ -477,6 +477,7 @@ async function initializeService() {
 
     // ถ้าลูปไม่ทำงาน ให้สตาร์ทใหม่
     if (!siteQueues[site].isProcessing && siteQueues[site].remainingCodes.length > 0) {
+      await loadPlayerPoolsFromApi();
       startProCodeLoop(site).catch(err => {
         console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
       });
@@ -609,7 +610,6 @@ async function startProCodeLoop(siteName: string) {
   const siteQueue = siteQueues[siteName];
   if (!siteQueue) return;
 
-  await loadPlayerPoolsFromApi();
   // ถ้ากำลังรันอยู่ ให้ปล่อยให้ลูปเดิมจัดการต่อ
   if (siteQueue.isProcessing) return;
 
