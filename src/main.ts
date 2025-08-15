@@ -689,10 +689,10 @@ async function startProCodeLoop(siteName: string) {
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
 
-          if (point > 10) {
+          if (point > 15) {
             try {
               let singlePlayer: string | undefined;
-              if (point > 18) {
+              if (point > 20) {
                 singlePlayer = await getSinglePlayer(point, site);
               } else {
                 const rawPlayers = await getPlayerPool(point, site);
