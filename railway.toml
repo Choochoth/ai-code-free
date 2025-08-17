@@ -1,0 +1,15 @@
+[build]
+builder = "DOCKERFILE"
+buildCommand = "npm install && npm run build"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+runtime = "V2"
+numReplicas = 1
+startCommand = "npm run start"
+healthcheckPath = "/health"
+sleepApplication = true
+multiRegionConfig = {"us-west2":{"numReplicas":1}}
+restartPolicyType = "ON_FAILURE"
+healthcheckTimeout = 300
+restartPolicyMaxRetries = 10
