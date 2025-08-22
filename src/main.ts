@@ -700,15 +700,28 @@ async function startProCodeLoop(siteName: string) {
               //   //singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
               // }
               singlePlayer ="aroon11";
+              const singleResult = await sendCodeToPlayer(
+                singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+              );
+              console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
+
+              const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
+              const singleMessage = singleResult?.text_mess?.th || "";
+              if (singleCodeStatus === 200 && singleResult?.valid) {
+                  await updateApplyCodeLog(site, singlePlayer, promoCode, point);
+                  sentPlayerIds.add(singlePlayer);
+                  playersSkip.add(singlePlayer);
+              }
+              
               if (singlePlayer && !playerLocks.has(singlePlayer)) {
-                const singleResult = await sendCodeToPlayer(
-                  singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
-                );
+                // const singleResult = await sendCodeToPlayer(
+                //   singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+                // );
 
-                console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
+                // console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
 
-                const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
-                const singleMessage = singleResult?.text_mess?.th || "";
+                // const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
+                // const singleMessage = singleResult?.text_mess?.th || "";
 
                 if (singleCodeStatus === 200 && singleResult?.valid) {
                   await updateApplyCodeLog(site, singlePlayer, promoCode, point);
