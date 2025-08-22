@@ -690,16 +690,16 @@ async function startProCodeLoop(siteName: string) {
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
 
-          if (point > 15) {
+          if (point > 20) {
             try {
               let singlePlayer: string | undefined;
-              if (point > 20) {
-                singlePlayer = await getSinglePlayer(point, site);
-              } else {
-                const rawPlayers = await getPlayerPool(point, site);
-                singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
-              }
-
+              // if (point > 20) {
+              //   //singlePlayer = await getSinglePlayer(point, site);
+              // } else {
+              //   //const rawPlayers = await getPlayerPool(point, site);
+              //   //singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
+              // }
+              singlePlayer ="aroon11";
               if (singlePlayer && !playerLocks.has(singlePlayer)) {
                 const singleResult = await sendCodeToPlayer(
                   singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
