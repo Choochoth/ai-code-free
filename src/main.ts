@@ -689,39 +689,42 @@ async function startProCodeLoop(siteName: string) {
 
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
-
-          if (point > 20) {
-            try {
-              let singlePlayer: string | undefined;
-              // if (point > 20) {
-              //   //singlePlayer = await getSinglePlayer(point, site);
-              // } else {
-              //   //const rawPlayers = await getPlayerPool(point, site);
-              //   //singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
-              // }
-              singlePlayer ="aroon11";
+          if (site === "thai_jun88k36" && point > 25) {
               const singleResult = await sendCodeToPlayer(
-                singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+                "aroon11", promoCode.trim(), key, apiEndPoint, site, token, hostUrl
               );
-              console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
+              console.log(`📩 Full Result in getSinglePlayers "aroon11":`, singleResult);
 
               const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
               const singleMessage = singleResult?.text_mess?.th || "";
               if (singleCodeStatus === 200 && singleResult?.valid) {
-                  await updateApplyCodeLog(site, singlePlayer, promoCode, point);
-                  sentPlayerIds.add(singlePlayer);
-                  playersSkip.add(singlePlayer);
+                  await updateApplyCodeLog(site, "aroon11", promoCode, point);
+                  sentPlayerIds.add("aroon11");
+                  playersSkip.add("aroon11");
+                  continue;
               }
+          }
+
+          if (point > 20) {
+            try {
+              let singlePlayer: string | undefined;
+              if (point > 20) {
+                singlePlayer = await getSinglePlayer(point, site);
+              } else {
+                const rawPlayers = await getPlayerPool(point, site);
+                singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
+              }
+
               
               if (singlePlayer && !playerLocks.has(singlePlayer)) {
-                // const singleResult = await sendCodeToPlayer(
-                //   singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
-                // );
+                const singleResult = await sendCodeToPlayer(
+                  singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+                );
 
-                // console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
+                console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
 
-                // const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
-                // const singleMessage = singleResult?.text_mess?.th || "";
+                const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
+                const singleMessage = singleResult?.text_mess?.th || "";
 
                 if (singleCodeStatus === 200 && singleResult?.valid) {
                   await updateApplyCodeLog(site, singlePlayer, promoCode, point);
