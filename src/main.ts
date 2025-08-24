@@ -705,7 +705,7 @@ async function startProCodeLoop(siteName: string) {
               }
           }
 
-          if (point > 20) {
+          if (point > 10) {
             try {
               let singlePlayer: string | undefined;
               if (point > 20) {
