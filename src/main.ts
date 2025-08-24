@@ -689,23 +689,8 @@ async function startProCodeLoop(siteName: string) {
 
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
-          if (site === "thai_jun88k36" && point > 25) {
-              const singleResult = await sendCodeToPlayer(
-                "aroon11", promoCode.trim(), key, apiEndPoint, site, token, hostUrl
-              );
-              console.log(`📩 Full Result in getSinglePlayers "aroon11":`, singleResult);
 
-              const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
-              const singleMessage = singleResult?.text_mess?.th || "";
-              if (singleCodeStatus === 200 && singleResult?.valid) {
-                  await updateApplyCodeLog(site, "aroon11", promoCode, point);
-                  sentPlayerIds.add("aroon11");
-                  playersSkip.add("aroon11");
-                  continue;
-              }
-          }
-
-          if (point > 10) {
+          if (point > 15) {
             try {
               let singlePlayer: string | undefined;
               if (point > 20) {
