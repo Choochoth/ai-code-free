@@ -2,8 +2,8 @@ export type Site = "thai_789bet" | "thai_jun88k36"; // extend as needed
 
 export interface AppliedPlayer {
   promo_code: string;
-  time: number; // timestamp (ms since epoch)
-  time_limit?: number; // ✅ Optional field for expiration timestamp
+  time: number; // timestamp in ms
+  time_limit?: number; // optional expiration
   status: "success" | "failed" | string;
   player: string;
   point: number;
@@ -14,7 +14,7 @@ export interface PlayerLock {
   player: string;
   timelock: number;
   lockMessage: string;
-  lockTime: number; // หน่วยเป็นมิลลิวินาที หรือจะใช้เป็นชั่วโมงก็ได้
+  lockTime: number; // milliseconds
   lockCode: number;
 }
 
@@ -23,6 +23,10 @@ export interface SiteData {
   playersLock: PlayerLock[];
 }
 
+/**
+ * date is always string
+ * site keys are SiteData
+ */
 export interface ApplyCodeToday {
   date: string;
   [site: string]: SiteData | string;
@@ -44,7 +48,7 @@ export function isValidSite(site: string): site is Site {
   return ["thai_789bet", "thai_jun88k36"].includes(site);
 }
 
-// ✅ อัปเดต isSiteData ให้รองรับ time_limit (optional)
+// Type guard for SiteData
 export function isSiteData(data: any): data is SiteData {
   return (
     typeof data === "object" &&
@@ -67,21 +71,13 @@ export function isSiteData(data: any): data is SiteData {
         typeof lock.player === "string" &&
         typeof lock.timelock === "number" &&
         typeof lock.lockMessage === "string" &&
-        typeof lock.lockTime === "number"  &&
+        typeof lock.lockTime === "number" &&
         typeof lock.lockCode === "number"
     )
   );
 }
 
-type PlayerPool = {
-  very_high: string[];
-  high: string[];
-  mid: string[];
-  low: string[];
-  all: string[];
-};
-
-type APIResponse = {
+export type APIResponse = {
   players: {
     site_key: string;
     tier_name: keyof PlayerPool;
