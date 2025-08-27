@@ -69,27 +69,18 @@ async function updatePlayersLock(site: string, playerId: string, lockMessage: st
 async function getPlayerPool(point: number, site: string): Promise<string[]> {
   const pools = getPlayerPools();
   const pool = pools[site];
-  const fallbackPool = pools["thai_jun88k36"]?.all ?? [];
-
-  if (!pool) return fallbackPool;
+  if (!pool) return pools["thai_jun88k36"]?.all ?? [];
 
   const applyCodeToday = await loadApplyCodeToday();
   const now = Date.now();
-
-  const usedPlayers = new Set<string>();
-  const lockedPlayers = new Set<string>();
-
   const siteData = applyCodeToday[site];
-  if (siteData && typeof siteData === "object") {
-    for (const p of siteData.players ?? []) {
-      const expireTime = p.time_limit ?? (p.time + APPLY_CODE_EXPIRE_MS);
-      if (now < expireTime) usedPlayers.add(p.player);
-    }
-    for (const lock of siteData.playersLock ?? []) {
-      const lockEnd = lock.timelock + (lock.lock_time_minutes ?? 0) * 60000;
-      if (now < lockEnd) lockedPlayers.add(lock.player);
-    }
-  }
+
+  const usedPlayers = new Set(
+    siteData?.players?.filter(p => isUsedPlayer(p, now)).map(p => p.player)
+  );
+  const lockedPlayers = new Set(
+    siteData?.playersLock?.filter(l => isLockedPlayer(l, now)).map(l => l.player)
+  );
 
   const filterEligible = (list?: string[]) =>
     (list ?? []).filter(p => !usedPlayers.has(p) && !lockedPlayers.has(p));
@@ -99,7 +90,7 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
       const eligible = filterEligible(list);
       if (eligible.length > 0) return eligible;
     }
-    return [];
+    return filterEligible(pool.all);
   };
 
   if (!Number.isFinite(point) || point < 0) {
