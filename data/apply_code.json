@@ -1,12 +1,21 @@
 {
   "apply_code_today": {
-    "date": "2025-08-12",
+    "date": "2025-08-29",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
+      "players": [
+        {
+          "promo_code": "YLAt6hnf6",
+          "time": 1756485810155,
+          "time_limit": 1756572210155,
+          "status": "success",
+          "player": "koomoo",
+          "point": 16.88
+        }
+      ],
       "playersLock": []
     }
   }

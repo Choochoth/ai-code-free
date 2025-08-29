@@ -8,7 +8,7 @@ const playersj88 = ["nus9331", "koonogk", "manus9331", "aroon11", "kaimook11", "
 const siteConfigs = [
     {
         name: "thai_789bet",
-        keywords: ["789bet", "789bet-th", "789bethai", "06789bet", "789BETTH", "789BETTHAILAND", "789BET"],
+        keywords: ["789bet", "789bet-th", "789bethai", "06789bet", "789BETTH", "789BETTHAILAND", "789BET", "เฮฮา 789BET", "สาวสวย 789BET"],
         endpoint: "https://api-code-thai789bet.freecodevip.org",
         players:shuffleArray(players789bet),
         cskh_url: "https://333789.vip",
@@ -29,3 +29,4 @@ const siteConfigs = [
 ];
 
 export{siteConfigs}
+
