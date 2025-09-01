@@ -107,6 +107,7 @@ try {
 let client: TelegramClient | null = null;
 let expressServer: any;
 let lastHandledMessage: string | null = null;
+let currentRunningSite: string | null = null;
 
 
 async function initializeClient() {
@@ -425,7 +426,7 @@ async function initializeService() {
     if (!receivedMessage) return;
     const messageText = receivedMessage.toLowerCase();
     if (messageText === lastHandledMessage) {
-      console.log("\u23e9 Duplicate message. Skipping.");
+      console.log("⏩ Duplicate message. Skipping.");
       return;
     }
 
@@ -434,14 +435,14 @@ async function initializeService() {
     if (parsedCodes.length < 10) return;
 
     const shuffledCodes = shuffleArray(parsedCodes);
-    console.log("\ud83c\udfaf Valid Bonus Codes:", parsedCodes);
+    console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
     const matchedSite = siteConfigs.find(cfg =>
       cfg.keywords.some(keyword => messageText.includes(keyword))
     );
 
     if (!matchedSite) {
-      console.log("\u26a0\ufe0f Unrecognized message source.");
+      console.log("⚠️ Unrecognized message source.");
       return;
     }
 
@@ -470,20 +471,24 @@ async function initializeService() {
       } as SiteQueue;
     }
 
-    // แทรกโค้ดใหม่เข้าไปข้างหน้า
     const existing = new Set(siteQueues[site].remainingCodes);
     const uniqueNewCodes = shuffledCodes.filter(code => !existing.has(code));
-    siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
+
+    if (currentRunningSite === site) {
+      // ✅ ถ้าเป็น site เดียวกับที่กำลังรัน → แทรกข้างหน้า
+      siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
+    } else {
+      // ✅ ถ้าเป็น site ใหม่ → ต่อท้าย
+      siteQueues[site].remainingCodes.push(...uniqueNewCodes);
+    }
 
     // ถ้าลูปไม่ทำงาน ให้สตาร์ทใหม่
     if (!siteQueues[site].isProcessing && siteQueues[site].remainingCodes.length > 0) {
-      await loadPlayerPoolsFromApi();
+      currentRunningSite = site;
       startProCodeLoop(site).catch(err => {
         console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
       });
     }
-
-
   };
 
   const addEventHandlers = async (client: any) => {
