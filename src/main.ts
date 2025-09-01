@@ -426,7 +426,7 @@ async function initializeService() {
     if (!receivedMessage) return;
     const messageText = receivedMessage.toLowerCase();
     if (messageText === lastHandledMessage) {
-      console.log("⏩ Duplicate message. Skipping.");
+      console.log("\u23e9 Duplicate message. Skipping.");
       return;
     }
 
@@ -435,14 +435,14 @@ async function initializeService() {
     if (parsedCodes.length < 10) return;
 
     const shuffledCodes = shuffleArray(parsedCodes);
-    console.log("🎯 Valid Bonus Codes:", parsedCodes);
+    console.log("\ud83c\udfaf Valid Bonus Codes:", parsedCodes);
 
     const matchedSite = siteConfigs.find(cfg =>
       cfg.keywords.some(keyword => messageText.includes(keyword))
     );
 
     if (!matchedSite) {
-      console.log("⚠️ Unrecognized message source.");
+      console.log("\u26a0\ufe0f Unrecognized message source.");
       return;
     }
 
@@ -471,24 +471,19 @@ async function initializeService() {
       } as SiteQueue;
     }
 
+    // แทรกโค้ดใหม่เข้าไปข้างหน้า
     const existing = new Set(siteQueues[site].remainingCodes);
     const uniqueNewCodes = shuffledCodes.filter(code => !existing.has(code));
-
-    if (currentRunningSite === site) {
-      // ✅ ถ้าเป็น site เดียวกับที่กำลังรัน → แทรกข้างหน้า
-      siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
-    } else {
-      // ✅ ถ้าเป็น site ใหม่ → ต่อท้าย
-      siteQueues[site].remainingCodes.push(...uniqueNewCodes);
-    }
+    siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
 
     // ถ้าลูปไม่ทำงาน ให้สตาร์ทใหม่
     if (!siteQueues[site].isProcessing && siteQueues[site].remainingCodes.length > 0) {
-      currentRunningSite = site;
       startProCodeLoop(site).catch(err => {
         console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
       });
     }
+
+
   };
 
   const addEventHandlers = async (client: any) => {
