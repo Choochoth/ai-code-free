@@ -8,12 +8,26 @@ services:
       NODE_ENV: production
     healthCheckPath: /health
     healthCheckTimeoutSeconds: 300
-    plan: free   # หรือเปลี่ยนเป็น standard ตามที่ต้องการ
+    plan: free
     autoDeploy: true
-    region: oregon # ใกล้เคียงกับ us-west2
+    region: oregon
     startCommand: "npm run start"
     deploy:
       strategy: rolling
       restartPolicy:
         type: ON_FAILURE
         maxRetries: 10
+
+  - type: background
+    name: keep-alive
+    env: node
+    plan: free
+    region: oregon
+    startCommand: |
+      bash -c '
+      while true; do
+        curl -s https://my-app.onrender.com/health > /dev/null
+        echo "[`date`] 🔁 keep-alive ping sent"
+        sleep 300
+      done
+      '
