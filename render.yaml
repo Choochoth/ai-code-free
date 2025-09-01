@@ -18,9 +18,10 @@ services:
         type: ON_FAILURE
         maxRetries: 10
 
-  - type: background
+  - type: worker
     name: keep-alive
-    env: node
+    env: docker
+    dockerfilePath: ./Dockerfile
     plan: free
     region: oregon
     startCommand: |
