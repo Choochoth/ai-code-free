@@ -1,41 +1,19 @@
-# Exported from Render on 2025-07-15T00:17:25Z
 services:
-- type: web
-  name: typescript-telegram-auto-forword
-  runtime: node
-  repo: https://github.com/75r11bot/typescript-telegram-auto-forword
-  branch: okvip
-  plan: free
-  envVars:
-  - key: ADMIN_IDS
-    sync: false
-  - key: BASE_URL
-    sync: false
-  - key: OCR_API_BASE
-    sync: false
-  - key: TELEGRAM_BOT_TOKEN
-    sync: false
-  - key: NODE_ENV
-    sync: false
-  - key: API_ENDPOINT_J88
-    sync: false
-  - key: API_ENDPOINT_789
-    sync: false
-  - key: API_CODE_J88
-    sync: false
-  - key: API_CODE_789
-    sync: false
-  - key: PORT
-    sync: false
-  - key: APP_YOUR_PHONE
-    sync: false
-  - key: API_HASH
-    sync: false
-  - key: API_ID
-    sync: false
-  region: oregon
-  buildCommand: npm install && npm run build
-  startCommand: npm run start
-  healthCheckPath: /health
-  autoDeployTrigger: checksPass
-version: "1"
+  - type: web
+    name: my-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    numInstances: 1
+    envVars:
+      NODE_ENV: production
+    healthCheckPath: /health
+    healthCheckTimeoutSeconds: 300
+    plan: free   # หรือเปลี่ยนเป็น standard ตามที่ต้องการ
+    autoDeploy: true
+    region: oregon # ใกล้เคียงกับ us-west2
+    startCommand: "npm run start"
+    deploy:
+      strategy: rolling
+      restartPolicy:
+        type: ON_FAILURE
+        maxRetries: 10
