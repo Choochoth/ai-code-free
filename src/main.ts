@@ -878,7 +878,6 @@ async function getChatsList(client: TelegramClient) {
   await startClient();
   // // Auto-check every 5 minutes
   // setInterval(checkConnectivity, 5 * 60 * 1000); 
-  const siteService = `${process.env.SITES_SERVICE}`;
 
   try {
     const me = (await client!.getEntity("me")) as Api.User;
@@ -911,6 +910,7 @@ async function getChatsList(client: TelegramClient) {
       }
     });
 
+  // const siteService = `${process.env.SITES_SERVICE}`;
   // if(siteService === "render"){
   //   const baseUrl = `${process.env.BASE_URL}/health`;
   //   const apiUrl = `${process.env.OCR_API_BASE}`;
