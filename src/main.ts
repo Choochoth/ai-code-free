@@ -878,6 +878,7 @@ async function getChatsList(client: TelegramClient) {
   await startClient();
   // // Auto-check every 5 minutes
   // setInterval(checkConnectivity, 5 * 60 * 1000); 
+  const siteService = `${process.env.SITES_SERVICE}`;
 
   try {
     const me = (await client!.getEntity("me")) as Api.User;
@@ -888,27 +889,62 @@ async function getChatsList(client: TelegramClient) {
     console.error("❌ Failed to fetch Telegram user info:", err);
   }
 
-// Update Code: Keep-alive ping every 5 minutes 
-const baseUrl = `${process.env.BASE_URL}/health`;
+    const baseUrl = `${process.env.BASE_URL}/health`;
+    const apiUrl = `${process.env.OCR_API_BASE}`;
+      
+    cron.schedule("*/5 * * * *", async () => {
+      try {
+        const [resBase, resApi] = await Promise.all([
+          axios.get(baseUrl),
+          axios.get(apiUrl),
+        ]);
 
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const res = await axios.get(baseUrl);
-    console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
-  } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
-  }
-});
+        console.log(
+          `[${new Date().toISOString()}] 🔁 Keep-alive: BASE=${resBase.data?.status || resBase.status
+          }, API=${resApi.data?.status || resApi.status}`
+        );
+      } catch (err: any) {
+        console.error(
+          `[${new Date().toISOString()}] 🛑 Keep-alive failed:`,
+          err.message
+        );
+      }
+    });
+
+  // if(siteService === "render"){
+  //   const baseUrl = `${process.env.BASE_URL}/health`;
+  //   const apiUrl = `${process.env.OCR_API_BASE}`;
+      
+  //   cron.schedule("*/5 * * * *", async () => {
+  //     try {
+  //       const [resBase, resApi] = await Promise.all([
+  //         axios.get(baseUrl),
+  //         axios.get(apiUrl),
+  //       ]);
+
+  //       console.log(
+  //         `[${new Date().toISOString()}] 🔁 Keep-alive: BASE=${resBase.data?.status || resBase.status
+  //         }, API=${resApi.data?.status || resApi.status}`
+  //       );
+  //     } catch (err: any) {
+  //       console.error(
+  //         `[${new Date().toISOString()}] 🛑 Keep-alive failed:`,
+  //         err.message
+  //       );
+  //     }
+  //   });
+  // }
 
 
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const response = await axios.get(`${OCR_API_BASE}/health`);
-    console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
-  } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
-  }
-});
+  // cron.schedule('*/5 * * * *', async () => {
+  //   const start = Date.now();
+  //   try {
+  //     const duration = Date.now() - start;
+  //     console.log(`[${new Date().toISOString()}] ✅ OCR API OK (${duration}ms) - Status loadPlayerPoolsFromApi`);
+  //   } catch (err: any) {
+  //     console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed: ${err.message}`);
+  //   }
+  // });
 
 
 // thai_789bet: reset เวลา 11:00 (GMT+7)
@@ -923,14 +959,14 @@ cron.schedule('*/5 * * * *', async () => {
 // });
 
 // thai_jun88k36: reset เวลา 24:00 (GMT+7)
-cron.schedule('0 0 0 * * *', () => {
-  try {
-    clearApplyCodeTemplateForSite("thai_jun88k36");
-  } catch (err) {
-    console.error("❌ Failed to reset thai_jun88k36:", err);
-  }
-}, {
-  timezone: "Asia/Bangkok"
-});
+  cron.schedule('0 0 0 * * *', () => {
+    try {
+      clearApplyCodeTemplateForSite("thai_jun88k36");
+    } catch (err) {
+      console.error("❌ Failed to reset thai_jun88k36:", err);
+    }
+  }, {
+    timezone: "Asia/Bangkok"
+  });
 
 })();
