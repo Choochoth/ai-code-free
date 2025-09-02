@@ -7,7 +7,7 @@ export let playerPools: Record<string, PlayerPool> = {};
 
 export async function loadPlayerPools() {
   try {
-    const res = await axios.get(`${OCR_API_BASE}/api/playerPools`);
+    const res = await axios.get(`${OCR_API_BASE}/api/player-pools`);
     if (res.status !== 200) throw new Error(`Failed to fetch playerPools: ${res.statusText}`);
 
     const data = res.data;

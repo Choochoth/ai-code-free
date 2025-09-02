@@ -22,8 +22,9 @@ WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/data ./data
 COPY --from=build /app/package*.json ./
+COPY .env ./
 
 RUN npm install --only=production
 
 EXPOSE 3000
-CMD ["sh", "-c", "node dist/main.js --port ${PORT:-3000}"]
+CMD ["node", "dist/main.js"]

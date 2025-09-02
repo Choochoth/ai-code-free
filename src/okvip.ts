@@ -322,15 +322,30 @@ function parserCodeMessage(message: string): string[] {
   return cleanedCodes;
 }
 
-function openImage(path: string) {
-  const platform = process.platform;
-  if (platform === "win32") {
-    return execAsync(`start "" "${path}"`);
-  } else if (platform === "darwin") {
-    return execAsync(`open "${path}"`);
-  } else {
-    return execAsync(`xdg-open "${path}"`);
+async function openImage(captchaPath: string, ocrResult: string): Promise<string> {
+  let captchaCode: string = ocrResult; // default fallback จาก OCR
+
+  // เปิดรูป (Windows)
+  await execAsync(`start "" "${captchaPath.replace(/\\/g, '\\\\')}"`).catch(() => {
+    console.warn("⚠️ ไม่สามารถเปิดรูปอัตโนมัติได้ กรุณาเปิดเอง:", captchaPath);
+  });
+
+  try {
+    captchaCode = await Promise.race([
+      promptInput("🔤 Enter CAPTCHA code from image (within 30s): "), // user input
+      new Promise<string>((resolve) =>
+        setTimeout(() => {
+          console.warn("⏰ Timeout - ใช้ค่า OCR แทน");
+          resolve(ocrResult); // fallback
+        }, 30000)
+      ),
+    ]);
+  } catch (error) {
+    console.warn("⚠️ Error หรือ exception, ใช้ค่า OCR แทน");
+    captchaCode = ocrResult;
   }
+
+  return captchaCode || ocrResult;
 }
 
 export { encryptText, decryptText, sendImageForTraining, resetAndRenewIP_Windows, sendImageRecognizeText, getInputCaptcha, parserCodeMessage, getCaptchaMessage, openImage};

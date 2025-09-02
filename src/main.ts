@@ -12,7 +12,8 @@ import { Raw } from "telegram/events/Raw";
 import Bottleneck from "bottleneck";
 import cron from 'node-cron';
 import axios from "axios";
-
+import viewRoutes from "./routes/viewRoutes";
+import apiRoutes from "./routes/apiRoutes";
 
 import { encryptText, getInputCaptcha, parserCodeMessage} from "./okvip";
 import {
@@ -22,11 +23,10 @@ import {
   addTemplate,
   ocr
 } from "./services/promoCodeApi";
-import { loadPlayerPoolsFromApi } from "./services/loadPlayerPools";
 
 
 
-import  { updatePlayersLock, resetDailySentIfNeeded, updateApplyCodeLog, getSinglePlayer, getPlayerPool } from "./player";
+import  { updatePlayersLock, resetDailySentIfNeeded, updateApplyCodeLog, getSinglePlayer, getPlayerPool, clearApplyCodeTemplateForSite } from "./player";
 import { SiteSentPlayers } from "./types/player";
 
 
@@ -107,8 +107,6 @@ try {
 let client: TelegramClient | null = null;
 let expressServer: any;
 let lastHandledMessage: string | null = null;
-let currentRunningSite: string | null = null;
-
 
 async function initializeClient() {
   if (!client) {
@@ -331,50 +329,11 @@ async function initializeService() {
   app.use(express.json());
   // ✅ เสิร์ฟไฟล์จาก public แบบครอบคลุมทั้งหมด
   app.use(express.static(path.join(__dirname, 'public')));
-   // Serve view
-  app.get("/",async (_req, res) => {
-    await ensureConnectedAndAddHandlers();
-    res.sendFile(path.join(__dirname, "views", "apply_codes.html"));
-  });
+  // views
+  app.use("/", viewRoutes);
 
-  app.get("/package", (_req, res) => {
-    res.sendFile(path.join(__dirname, "views", "package.html"));
-  });
-
-
-  // API: serve data
-  app.get("/api/applied-codes", (_req, res) => {
-    fs.readFile(applyCodePath, "utf8", (err, data) => {
-      if (err) {
-        console.error("❌ Read error:", err);
-        return res.status(500).json({ error: "อ่านข้อมูลไม่สำเร็จ" });
-      }
-
-      try {
-        const parsed = JSON.parse(data);
-        res.json(parsed);
-      } catch (e) {
-        res.status(500).json({ error: "JSON ผิดพลาด" });
-      }
-    });
-  });
-
-  app.get("/api/package-payment", (_req, res) => {
-    fs.readFile(packagePath, "utf8", (err, data) => {
-      if (err) {
-        console.error("❌ Read error:", err);
-        return res.status(500).json({ error: "อ่านข้อมูลไม่สำเร็จ" });
-      }
-
-      try {
-        const parsed = JSON.parse(data);
-        res.json(parsed);
-      } catch (e) {
-        res.status(500).json({ error: "JSON ผิดพลาด" });
-      }
-    });
-  });
-
+  // APIs
+  app.use("/api", apiRoutes);
   
   app.get("/health", async (req, res) => {
     try {
@@ -671,6 +630,14 @@ async function startProCodeLoop(siteName: string) {
         const statusCode = result.status_code ?? result?.ststus_code ?? 0;
         const message = result?.text_mess?.th || "";
 
+        // if (statusCode !== 400) {
+        //   addTemplate(captchaPath,captchaCode)
+        // }else{
+        //   let captchaCodeTmp = await openImage(captchaPath,captchaCode);
+        //   addTemplate(captchaPath,captchaCodeTmp)
+
+        // }
+
         if (statusCode === 502 || message.includes("กรุณาลองใหม่อีกครั้ง")) {
           console.warn("🚫 Code already used (502), skipping.");
           continue;
@@ -692,7 +659,6 @@ async function startProCodeLoop(siteName: string) {
 
           if (point > 15) {
             try {
-              
               let singlePlayer: string | undefined;
               if (point > 20) {
                 singlePlayer = await getSinglePlayer(point, site);
@@ -701,7 +667,6 @@ async function startProCodeLoop(siteName: string) {
                 singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
               }
 
-              
               if (singlePlayer && !playerLocks.has(singlePlayer)) {
                 const singleResult = await sendCodeToPlayer(
                   singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
@@ -923,40 +888,27 @@ async function getChatsList(client: TelegramClient) {
     console.error("❌ Failed to fetch Telegram user info:", err);
   }
 
+// Update Code: Keep-alive ping every 5 minutes 
+const baseUrl = `${process.env.BASE_URL}/health`;
 
-  const baseUrl = `${process.env.BASE_URL}/health`;
-  const apiUrl = `${process.env.OCR_API_BASE}`;
-    
-  cron.schedule("*/5 * * * *", async () => {
-    try {
-      const [resBase, resApi] = await Promise.all([
-        axios.get(baseUrl),
-        axios.get(apiUrl),
-      ]);
-
-      console.log(
-        `[${new Date().toISOString()}] 🔁 Keep-alive: BASE=${resBase.data?.status || resBase.status
-        }, API=${resApi.data?.status || resApi.status}`
-      );
-    } catch (err: any) {
-      console.error(
-        `[${new Date().toISOString()}] 🛑 Keep-alive failed:`,
-        err.message
-      );
-    }
-  });
+cron.schedule('*/5 * * * *', async () => {
+  try {
+    const res = await axios.get(baseUrl);
+    console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
+  } catch (err: any) {
+    console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
+  }
+});
 
 
-  cron.schedule('*/5 * * * *', async () => {
-    const start = Date.now();
-    try {
-      const duration = Date.now() - start;
-      console.log(`[${new Date().toISOString()}] ✅ OCR API OK (${duration}ms) - Status loadPlayerPoolsFromApi`);
-    } catch (err: any) {
-      console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed: ${err.message}`);
-    }
-  });
-
+cron.schedule('*/5 * * * *', async () => {
+  try {
+    const response = await axios.get(`${OCR_API_BASE}/health`);
+    console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
+  } catch (err: any) {
+    console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
+  }
+});
 
 
 // thai_789bet: reset เวลา 11:00 (GMT+7)
@@ -971,14 +923,14 @@ async function getChatsList(client: TelegramClient) {
 // });
 
 // thai_jun88k36: reset เวลา 24:00 (GMT+7)
-// cron.schedule('0 0 0 * * *', () => {
-//   try {
-//     clearApplyCodeTemplateForSite("thai_jun88k36");
-//   } catch (err) {
-//     console.error("❌ Failed to reset thai_jun88k36:", err);
-//   }
-// }, {
-//   timezone: "Asia/Bangkok"
-// });
-  await loadPlayerPoolsFromApi()
+cron.schedule('0 0 0 * * *', () => {
+  try {
+    clearApplyCodeTemplateForSite("thai_jun88k36");
+  } catch (err) {
+    console.error("❌ Failed to reset thai_jun88k36:", err);
+  }
+}, {
+  timezone: "Asia/Bangkok"
+});
+
 })();
