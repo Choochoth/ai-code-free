@@ -1,19 +1,49 @@
-import axios from "axios";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
 import https from "https";
 import fs from "fs";
 import FormData from "form-data";
-import 'dotenv/config';
+import "dotenv/config";
+import Bottleneck from "bottleneck";
 import { generateMockSiteHeaders } from "../device";
 import { sendResultToTelegram } from "../telegramBot";
 import { formatTelegramMessage } from "../utils";
 
 const agent = new https.Agent({
-  keepAlive: false,
-  secureProtocol: 'TLS_method',
+  keepAlive: true,
+  secureProtocol: "TLS_method",
 });
 
 const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
 
+// ---------------- Axios + Bottleneck ----------------
+const api: AxiosInstance = axios.create({
+  httpsAgent: agent,
+  validateStatus: () => true,
+});
+
+const limiter = new Bottleneck({
+  minTime: 50,
+  maxConcurrent: 5,
+});
+
+// ฟังก์ชัน axios ปกติ
+async function axiosGet<T = any>(url: string, config?: any): Promise<AxiosResponse<T>> {
+  return api.get<T>(url, config);
+}
+
+async function axiosPost<T = any>(
+  url: string,
+  data?: any,
+  config?: any
+): Promise<AxiosResponse<T>> {
+  return api.post<T>(url, data, config);
+}
+
+// wrap ด้วย limiter แล้ว cast type กลับ
+const limitedGet = limiter.wrap(axiosGet) as typeof axiosGet;
+const limitedPost = limiter.wrap(axiosPost) as typeof axiosPost;
+
+// ---------------- Helpers ----------------
 function getAxiosConfig(headers: any) {
   return {
     headers,
@@ -21,6 +51,8 @@ function getAxiosConfig(headers: any) {
     httpsAgent: agent,
   };
 }
+
+// ---------------- API Functions ----------------
 
 export async function sendCodeToPlayer(
   playerId: string,
@@ -41,22 +73,20 @@ export async function sendCodeToPlayer(
   }
 
   try {
-    const res = await axios.post(url, payload, getAxiosConfig(headers));
+    const res = await limitedPost(url, payload, getAxiosConfig(headers));
 
     if (res.data.status_code === 200 && res.data.valid) {
       res.data.site = site;
       res.data.link = "https://shorturl.at/tdFu4";
-      await sendResultToTelegram(formatTelegramMessage(res.data)); // ปรับข้อความให้สวยงาม
+      await sendResultToTelegram(formatTelegramMessage(res.data));
     }
 
     return res.data;
-
   } catch (err: any) {
     console.error(`❌ Error sending code to player ${playerId}:`, err.message || err);
     throw new Error(`Failed to send code to player: ${err.message || "Unknown error"}`);
   }
 }
-
 
 export async function postCaptchaCode(
   promoCode: string,
@@ -71,11 +101,11 @@ export async function postCaptchaCode(
 ) {
   const url = `${apiEndPoint}/client/get-code?promo_code=${promoCode}&site=${site}`;
   const payload = { key, captchaCode, token };
-    const headers = generateMockSiteHeaders(hostUrl, site);
+  const headers = generateMockSiteHeaders(hostUrl, site);
   headers.Authorization = token;
 
   try {
-    const res = await axios.post(url, payload, getAxiosConfig(headers));
+    const res = await limitedPost(url, payload, getAxiosConfig(headers));
     console.log(res.data);
 
     if (res.data?.status_code && res.data?.status_code !== 200) {
@@ -92,13 +122,10 @@ export async function postCaptchaCode(
 export async function getVerificationCode(apiEndPoint: string, site: string, hostUrl: string) {
   const cleanApiEndpoint = apiEndPoint.replace(/\/+$/, "");
   const url = `${cleanApiEndpoint}/api/get-verification-code`;
-    const headers = generateMockSiteHeaders(hostUrl, site);
+  const headers = generateMockSiteHeaders(hostUrl, site);
 
   try {
-    const res = await axios.get(url, {
-      params: { site },
-      headers,
-    });
+    const res = await limitedGet(url, { params: { site }, headers });
 
     if (res.data?.captchaUrl && res.data?.token) {
       return { captchaUrl: res.data.captchaUrl, token: res.data.token };
@@ -117,7 +144,7 @@ export async function addTemplate(filePath: string, label: string) {
     form.append("file", fs.createReadStream(filePath));
 
     const url = `${OCR_API_BASE}/api/add-template?label=${encodeURIComponent(label)}`;
-    const response = await axios.post(url, form, {
+    const response = await limitedPost(url, form, {
       headers: { ...form.getHeaders() },
       httpsAgent: agent,
     });
@@ -136,7 +163,7 @@ export async function ocr(filePath: string) {
     form.append("file", fs.createReadStream(filePath));
 
     const url = `${OCR_API_BASE}/api/ocr`;
-    const response = await axios.post(url, form, {
+    const response = await limitedPost(url, form, {
       headers: { ...form.getHeaders() },
       httpsAgent: agent,
     });
@@ -148,6 +175,3 @@ export async function ocr(filePath: string) {
     throw error;
   }
 }
-
-
-
