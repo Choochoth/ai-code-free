@@ -888,27 +888,27 @@ async function getChatsList(client: TelegramClient) {
     console.error("❌ Failed to fetch Telegram user info:", err);
   }
 
-    const baseUrl = `${process.env.BASE_URL}/health`;
-    const apiUrl = `${process.env.OCR_API_BASE}`;
-      
-    cron.schedule("*/5 * * * *", async () => {
-      try {
-        const [resBase, resApi] = await Promise.all([
-          axios.get(baseUrl),
-          axios.get(apiUrl),
-        ]);
+  const baseUrl = `${process.env.BASE_URL}/health`;
+  const apiUrl = `${process.env.OCR_API_BASE}/health`;
+    
+  cron.schedule("*/5 * * * *", async () => {
+    try {
+      const [resBase, resApi] = await Promise.all([
+        axios.get(baseUrl,{ timeout: 5000 }),
+        axios.get(apiUrl, { timeout: 5000 }),
+      ]);
 
-        console.log(
-          `[${new Date().toISOString()}] 🔁 Keep-alive: BASE=${resBase.data?.status || resBase.status
-          }, API=${resApi.data?.status || resApi.status}`
-        );
-      } catch (err: any) {
-        console.error(
-          `[${new Date().toISOString()}] 🛑 Keep-alive failed:`,
-          err.message
-        );
-      }
-    });
+      console.log(
+        `[${new Date().toISOString()}] 🔁 Keep-alive: BASE=${resBase.data?.status || resBase.status
+        }, API=${resApi.data?.status || resApi.status}`
+      );
+    } catch (err: any) {
+      console.error(
+        `[${new Date().toISOString()}] 🛑 Keep-alive failed:`,
+        err.message
+      );
+    }
+  });
 
   // const siteService = `${process.env.SITES_SERVICE}`;
   // if(siteService === "render"){
