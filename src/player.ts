@@ -3,39 +3,23 @@ import fsSync from "fs";
 import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 
-// const playerPools: Record<string, PlayerPool> = {
-//   thai_789bet: {
-//     very_high: ["nus9331", "manus9331", "areeroon"],
-//     high:  ["nus9331", "manus9331","areeroon"],
-//     mid: ["nus9331", "manus9331", "areeroon", "Preechar", "kootong", "VIP0955171905"],
-//     low: ["Preechar", "kootong", "VIP0955171905"],
-//     all: ["nus9331", "manus9331", "Preechar", "kootong", "areeroon", "VIP0955171905"]
-//   },
-//   thai_jun88k36: {
-//     very_high:["nus9331", "manus9331"],
-//     high: ["manus9331", "nus9331"],
-//     mid: ["areeroon", "koomoo", "noonj88", "nrd1988", "boynirun"],
-//     low: ["koomoo", "boynirun", "noonj88", "nrd1988"],
-//     all: ["manus9331", "nus9331","areeroon", "koomoo", "nrd1988", "boynirun", "noonj88"],
-//   }
-// };
-
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["nus9331", "manus9331", "areeroon"],
     high:  ["nus9331", "manus9331","areeroon"],
-    mid: ["nus9331", "manus9331", "areeroon"],
-    low: [],
-    all: ["nus9331", "manus9331", "areeroon", "Preechar", "kootong", "VIP0955171905"]
+    mid: ["nus9331", "manus9331", "areeroon", "Preechar", "kootong", "VIP0955171905"],
+    low: ["Preechar", "kootong", "VIP0955171905"],
+    all: ["nus9331", "manus9331", "Preechar", "kootong", "areeroon", "VIP0955171905"]
   },
   thai_jun88k36: {
-    very_high:["nus9331", "manus9331","areeroon", "koomoo", "noonj88", "nrd1988", "boynirun"],
-    high: ["manus9331", "nus9331","areeroon", "koomoo", "noonj88", "nrd1988", "boynirun"],
-    mid: ["areeroon", "koomoo", "noonj88", "nrd1988", "boynirun"],
+    very_high:["aroon11", "nus9331", "manus9331"],
+    high: ["aroon11", "manus9331", "nus9331"],
+    mid: ["aroon11", "areeroon", "koomoo", "noonj88", "nrd1988", "boynirun"],
     low: ["koomoo", "boynirun", "noonj88", "nrd1988"],
-    all: ["manus9331", "nus9331","areeroon", "koomoo", "nrd1988", "boynirun", "noonj88", "aroon11"],
+    all: ["aroon11", "manus9331", "nus9331","areeroon", "koomoo", "nrd1988", "boynirun", "noonj88"],
   }
 };
+
 
 
 export type Site = keyof typeof playerPools;
