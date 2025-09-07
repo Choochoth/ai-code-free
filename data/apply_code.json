@@ -6,7 +6,16 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
+      "players": [
+        {
+          "promo_code": "Q610HMNI",
+          "time": 1757271866170,
+          "time_limit": 1757358266170,
+          "status": "success",
+          "player": "aroon11",
+          "point": 21.88
+        }
+      ],
       "playersLock": []
     }
   }
