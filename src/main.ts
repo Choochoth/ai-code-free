@@ -889,7 +889,7 @@ async function getChatsList(client: TelegramClient) {
   }
 
   const baseUrl = `${process.env.BASE_URL}/health`;
-  const apiUrl = `${process.env.OCR_API_BASE}/health`;
+  const apiUrl = `${process.env.OCR_API_BASE}/`;
     
   cron.schedule("*/5 * * * *", async () => {
     try {
