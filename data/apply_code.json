@@ -1,21 +1,12 @@
 {
   "apply_code_today": {
-    "date": "2025-09-08",
+    "date": "2025-09-09",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "Q610HMNI",
-          "time": 1757271866170,
-          "time_limit": 1757358266170,
-          "status": "success",
-          "player": "aroon11",
-          "point": 21.88
-        }
-      ],
+      "players": [],
       "playersLock": []
     }
   }
