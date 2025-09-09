@@ -1,52 +1,13 @@
 {
   "apply_code_today": {
-    "date": "2025-09-09",
+    "date": "2025-09-10",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "Q610HMNI",
-          "time": 1757271866170,
-          "time_limit": 1757358266170,
-          "status": "success",
-          "player": "aroon11",
-          "point": 21.88
-        },
-        {
-          "promo_code": "WQKM3YD",
-          "time": 1757271866170,
-          "time_limit": 1757358266170,
-          "status": "success",
-          "player": "manus9331",
-          "point": 27.88
-        }        
-      ],
-      "playersLock": [
-        {
-          "player": "boynirun",
-          "timelock": 1757400914365,
-          "lockMessage": "รหัสโปรโมชั่นของคุณได้รับรางวัลแล้ว กรุณากลับมาในครั้งถัดไปเพื่อรับรางวัล ขอให้โชคดี!",
-          "lockTime": 86400000,
-          "lockCode": 403
-        },
-        {
-          "player": "noonj88",
-          "timelock": 1757400916238,
-          "lockMessage": "รหัสโปรโมชั่นของคุณได้รับรางวัลแล้ว กรุณากลับมาในครั้งถัดไปเพื่อรับรางวัล ขอให้โชคดี!",
-          "lockTime": 86400000,
-          "lockCode": 403
-        },
-        {
-          "player": "koomoo",
-          "timelock": 1757400918091,
-          "lockMessage": "รหัสโปรโมชั่นของคุณได้รับรางวัลแล้ว กรุณากลับมาในครั้งถัดไปเพื่อรับรางวัล ขอให้โชคดี!",
-          "lockTime": 86400000,
-          "lockCode": 403
-        }
-      ]
+      "players": [],
+      "playersLock": []
     }
   }
 }
