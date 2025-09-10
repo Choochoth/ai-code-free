@@ -660,12 +660,16 @@ async function startProCodeLoop(siteName: string) {
           if (point > 15) {
             try {
               let singlePlayer: string | undefined;
-              if (point > 20) {
-                singlePlayer = await getSinglePlayer(point, site);
-              } else {
-                const rawPlayers = await getPlayerPool(point, site);
-                singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
-              }
+
+              // if (point > 20) {
+              //   singlePlayer = await getSinglePlayer(point, site);
+              // } else {
+              //   const rawPlayers = await getPlayerPool(point, site);
+              //   singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
+              // }
+
+              singlePlayer = await getSinglePlayer(point, site);
+
 
               if (singlePlayer && !playerLocks.has(singlePlayer)) {
                 const singleResult = await sendCodeToPlayer(
