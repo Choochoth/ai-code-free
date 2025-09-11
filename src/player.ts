@@ -20,6 +20,7 @@ const playerPools: Record<string, PlayerPool> = {
   }
 };
 
+
 export type Site = keyof typeof playerPools;
 
 const baseDir = __dirname;
@@ -97,15 +98,11 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
   if (siteData && typeof siteData === "object") {
     for (const p of siteData.players ?? []) {
       const expireTime = p.time_limit ?? (p.time + APPLY_CODE_EXPIRE_MS);
-      if (now < expireTime) {
-        usedPlayers.add(p.player);
-      }
+      if (now < expireTime) usedPlayers.add(p.player);
     }
 
     const activeLocks = (siteData.playersLock ?? []).filter(isPlayerLocked);
-    for (const lock of activeLocks) {
-      lockedPlayers.add(lock.player);
-    }
+    for (const lock of activeLocks) lockedPlayers.add(lock.player);
 
     siteData.playersLock = activeLocks;
   }
@@ -118,18 +115,20 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
       const eligible = filterEligible(list);
       if (eligible.length > 0) return eligible;
     }
-    return [];
-
+    return filterEligible(pool.all); // ✅ กรอง pool.all ด้วย
   };
 
   if (!Number.isFinite(point) || point < 0) {
     return strictFallback(pool.low, pool.mid);
   }
   if (point > 25) {
-    return strictFallback(pool.very_high, pool.high, pool.mid);
+    return strictFallback(pool.very_high, pool.high);
   }
   if (point >= 20) {
     return strictFallback(pool.high, pool.very_high, pool.mid);
+  }
+  if (point >= 18) {
+    return strictFallback(pool.mid, pool.high);
   }
   if (point >= 15) {
     return strictFallback(pool.mid, pool.low);
