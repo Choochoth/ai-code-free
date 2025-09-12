@@ -2,7 +2,15 @@
   "apply_code_today": {
     "date": "2025-09-12",
     "thai_789bet": {
-      "players": [],
+      "players": [        {
+          "promo_code": "RbDHWeFnm",
+          "time": 1757677884460,
+          "time_limit": 1757764284460,
+          "status": "success",
+          "player": "areeroon",
+          "point": 25.88
+        }
+      ],
       "playersLock": []
     },
     "thai_jun88k36": {
@@ -14,6 +22,14 @@
           "status": "success",
           "player": "aroon11",
           "point": 27.88
+        },
+        {
+          "promo_code": "RbDHWeFnm",
+          "time": 1757677884460,
+          "time_limit": 1757764284460,
+          "status": "success",
+          "player": "nus9331",
+          "point": 25.88
         }
       ],
       "playersLock": []
