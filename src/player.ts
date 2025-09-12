@@ -127,7 +127,7 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
     return strictFallback(pool.high, pool.very_high, pool.mid);
   }
   if (point >= 18) {
-    return strictFallback(pool.mid, pool.high);
+    return strictFallback(pool.mid, pool.high, pool.very_high);
   }
   if (point >= 15) {
     return strictFallback(pool.mid, pool.low);
