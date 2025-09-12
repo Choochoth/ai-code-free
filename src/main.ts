@@ -107,6 +107,8 @@ try {
 let client: TelegramClient | null = null;
 let expressServer: any;
 let lastHandledMessage: string | null = null;
+let minPoint: number = 0;
+
 
 async function initializeClient() {
   if (!client) {
@@ -566,6 +568,12 @@ async function initializeService() {
 }
 
 async function startProCodeLoop(siteName: string) {
+  if(siteName =="thai_jun88k36"){
+    minPoint = 20
+  }else{
+    minPoint = 12
+  }
+
   const siteQueue = siteQueues[siteName];
   if (!siteQueue) return;
 
@@ -657,7 +665,7 @@ async function startProCodeLoop(siteName: string) {
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
 
-          if (point > 20) {
+          if (point > minPoint) {
             try {
               let singlePlayer: string | undefined;
 
