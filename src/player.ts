@@ -5,16 +5,16 @@ import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/p
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["nus9331", "manus9331", "areeroon"],
-    high:  ["nus9331", "manus9331","areeroon", "Preechar", "VIP0955171905"],
-    mid: ["nus9331", "manus9331", "areeroon", "Preechar", "VIP0955171905"],
+    very_high: ["nus9331", "manus9331", "areeroon", "poypy789"],
+    high:  ["nus9331", "manus9331","areeroon", "poypy789"],
+    mid: ["nus9331", "manus9331", "areeroon", "Preechar", "VIP0955171905", "poypy789"],
     low: ["Preechar", "kootong", "VIP0955171905"],
-    all: ["nus9331", "manus9331", "Preechar", "kootong", "areeroon", "VIP0955171905"]
+    all: ["nus9331", "manus9331", "Preechar", "kootong", "areeroon", "VIP0955171905", "poypy789"]
   },
   thai_jun88k36: {
-    very_high:["nus9331", "manus9331", "aroon11", "manoon9331"],
+    very_high:["nus9331", "manus9331", "aroon11"],
     high: ["aroon11", "manus9331", "nus9331", "manoon9331"],
-    mid: ["aroon11",  "nus9331", "manoon9331"],
+    mid: ["aroon11", "nus9331", "manoon9331"],
     low: [],
     all: ["aroon11", "manus9331", "nus9331", "manoon9331"],
   }
