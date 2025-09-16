@@ -323,12 +323,449 @@ async function sendCaptchaProCode(
   });
 }
 
+// async function initializeService() {
+//   if (!client) {
+//     await initializeSession();
+//   }
+//   const app = express();
+//   app.use(express.json());
+//   // ✅ เสิร์ฟไฟล์จาก public แบบครอบคลุมทั้งหมด
+//   app.use(express.static(path.join(__dirname, 'public')));
+//   // views
+//   app.use("/", viewRoutes);
+
+//   // APIs
+//   app.use("/api", apiRoutes);
+  
+//   app.get("/health", async (req, res) => {
+//     try {
+//       // 1. Ensure client is initialized and connected
+//       if (!client || !client.connected) {
+//         await initializeSession();
+//       }
+
+//       // 2. Add handlers or ensure active connection
+//       // await ensureConnectedAndAddHandlers();
+
+//       // 3. Respond with healthy status
+//       res.status(200).json({ status: "Healthy" });
+
+//     } catch (err: any) {
+//       console.error("❌ Health check failed:", err);
+
+//       res.status(500).json({ status: "Unhealthy", error: err.message });
+
+//       // 4. Only restart the service if enough time has passed
+//       const now = Date.now();
+//       const RESTART_COOLDOWN = 3 * 60 * 1000; // 3 minutes
+
+//       if (now - lastRestartTime > RESTART_COOLDOWN) {
+//         lastRestartTime = now;
+
+//         try {
+//           console.log("🔄 Restarting service...");
+//           await restartService();
+//           console.log("✅ Restart complete.");
+//         } catch (restartErr) {
+//           console.error("🚨 Restart failed:", restartErr);
+//         }
+
+//       } else {
+//         console.warn("⚠️ Restart skipped to avoid rapid restart loop.");
+//       }
+//     }
+//   });
+
+//   if (!client) {
+//     await initializeSession();
+//   } else {
+//     await initializeClient();
+//     await getChatsList(client);
+//   }
+
+//   const handleIncomingMessage = async (receivedMessage: any) => {
+//     if (!receivedMessage) return;
+//     const messageText = receivedMessage.toLowerCase();
+//     if (messageText === lastHandledMessage) {
+//       console.log("\u23e9 Duplicate message. Skipping.");
+//       return;
+//     }
+
+//     lastHandledMessage = messageText;
+//     const parsedCodes = parserCodeMessage(receivedMessage);
+//     if (parsedCodes.length < 10) return;
+
+//     const shuffledCodes = shuffleArray(parsedCodes);
+//     console.log("\ud83c\udfaf Valid Bonus Codes:", parsedCodes);
+
+//     const matchedSite = siteConfigs.find(cfg =>
+//       cfg.keywords.some(keyword => messageText.includes(keyword))
+//     );
+
+//     if (!matchedSite) {
+//       console.log("\u26a0\ufe0f Unrecognized message source.");
+//       return;
+//     }
+
+//     const site = matchedSite.name;
+//     const apiEndPoint = matchedSite.endpoint;
+//     const players = matchedSite.players;
+//     const hostUrl = process.env[matchedSite.envVar] || "";
+
+//     informationSet = {
+//       site,
+//       cskh_url: matchedSite.cskh_url,
+//       cskh_home: matchedSite.cskh_url,
+//       endpoint: apiEndPoint,
+//       key_free: matchedSite.key_free,
+//     };
+
+//     if (!siteQueues[site]) {
+//       siteQueues[site] = {
+//         remainingCodes: [],
+//         isProcessing: false,
+//         abortFlag: { canceled: false },
+//         players,
+//         apiEndPoint,
+//         site,
+//         hostUrl,
+//       } as SiteQueue;
+//     }
+
+//     // แทรกโค้ดใหม่เข้าไปข้างหน้า
+//     const existing = new Set(siteQueues[site].remainingCodes);
+//     const uniqueNewCodes = shuffledCodes.filter(code => !existing.has(code));
+//     siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
+
+//     // ถ้าลูปไม่ทำงาน ให้สตาร์ทใหม่
+//     if (!siteQueues[site].isProcessing && siteQueues[site].remainingCodes.length > 0) {
+//       startProCodeLoop(site).catch(err => {
+//         console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
+//       });
+//     }
+
+
+//   };
+
+//   const addEventHandlers = async (client: any) => {
+//     // if (handlersAdded) return;  // Prevent adding multiple times
+//     //     handlersAdded = true;
+   
+//     client.addEventHandler(
+//       (event: NewMessageEvent) => {
+//         const message = event.message;
+//         if (!message || !message.text || !message.peerId) return;
+
+//         const messageId = `${message.peerId.toString()}_${message.id}`;
+//         if (processedMessageIds.has(messageId)) return;
+
+//         processedMessageIds.add(messageId);
+//         handleIncomingMessage(message.text);
+
+//         // ล้าง messageId หลังผ่านไป 5 นาที (หรือระยะเวลาที่เหมาะสม)
+//         setTimeout(() => processedMessageIds.delete(messageId), 300000);
+//       },
+//       new NewMessage({})
+//     );
+
+//     client.addEventHandler(
+//       async (update: any) => {
+//         const updateType = update.className || update?.constructor?.name;
+//         if (updateType === "UpdateConnectionState") return;
+
+//         if (
+//           updateType === "UpdateEditMessage" ||
+//           updateType === "UpdateEditChannelMessage"
+//         ) {
+//           const editedMessage = update.message;
+//           if (
+//             !editedMessage ||
+//             typeof editedMessage.message !== "string" ||
+//             !editedMessage.peerId
+//           ) {
+//             console.warn("⚠️ Skipping invalid edited message:", editedMessage);
+//             return;
+//           }
+
+//           const messageId = `${editedMessage.peerId.toString()}_${editedMessage.id}`;
+//           if (processedMessageIds.has(messageId)) return;
+
+//           processedMessageIds.add(messageId);
+//           await handleIncomingMessage(editedMessage.message);
+
+//           setTimeout(() => processedMessageIds.delete(messageId), 10000);
+//         }
+//       },
+//       new Raw({})
+//     );
+//   };
+
+//   const ensureConnectedAndAddHandlers = async () => {
+//     console.log("Client is Check connect:", client && client.connected);
+//     if (client && client.connected) {
+//       console.log("\u2705 Client is connected.");
+//       await addEventHandlers(client);
+//     } else {
+//       console.log("\ud83d\udd01 Client is not connected. Reconnecting...");
+//       await initializeClient();
+//       console.log("Client reconnected:", client && client.connected);
+
+//       if (client && client.connected) {
+//         console.log("\u2705 Reconnected and ready.");
+//         await addEventHandlers(client);
+//       } else {
+//         console.log("\u274c Failed to reconnect client.");
+//         await restartService();
+//       }
+//     }
+//   };
+
+//   await ensureConnectedAndAddHandlers();
+
+
+//   const startServer = (port: number): Promise<void> => {
+//     return new Promise((resolve, reject) => {
+//       expressServer = app
+//         .listen(port, () => {
+//           console.log(`\ud83d\ude80 Server is running on port ${port}`);
+//           resolve();
+//         })
+//         .on("error", (err: any) => {
+//           if (err.code === "EADDRINUSE") {
+//             console.warn(`\u26a0\ufe0f Port ${port} is in use. Trying port ${port + 1}...`);
+//             resolve(startServer(port + 1));
+//           } else {
+//             reject(err);
+//           }
+//         });
+//     });
+//   };
+
+//   try {
+//     await startServer(port);
+//   } catch (err) {
+//     console.error("\u274c Failed to start server:", err);
+//   }
+
+//   const gracefulShutdown = () => {
+//     console.log("\ud83d\uded1 Shutting down gracefully...");
+//     expressServer?.close(() => {
+//       console.log("\ud83e\uddf9 Express server closed.");
+//     });
+
+//     if (client) {
+//       client.disconnect().then(() => {
+//         console.log("\ud83d\udcf4 Telegram client disconnected.");
+//         process.exit(0);
+//       });
+//     } else {
+//       process.exit(0);
+//     }
+//   };
+
+//   process.on("SIGTERM", gracefulShutdown);
+//   process.on("SIGINT", gracefulShutdown);
+// }
+
+// async function startProCodeLoop(siteName: string) {
+
+//   if(siteName =="thai_jun88k36"){
+//     minPoint = 18
+//   }else{
+//     minPoint = 15
+//   }
+
+//   const siteQueue = siteQueues[siteName];
+//   if (!siteQueue) return;
+
+//   // ถ้ากำลังรันอยู่ ให้ปล่อยให้ลูปเดิมจัดการต่อ
+//   if (siteQueue.isProcessing) return;
+
+//   siteQueue.isProcessing = true;
+
+//   const abortFlag = siteQueue.abortFlag;
+
+//   try {
+//     const { remainingCodes, players, apiEndPoint, site, hostUrl } = siteQueue;
+
+//     const rawSentPlayers = await resetDailySentIfNeeded();
+
+//     const siteData: SiteSentPlayers = rawSentPlayers[siteName]
+//       ? {
+//           appliedPlayers: rawSentPlayers[siteName],
+//           playersLock: [],
+//         }
+//       : { appliedPlayers: [], playersLock: [] };
+
+//     const now = Date.now();
+
+//     const sentPlayerIds = new Set(
+//       siteData.appliedPlayers
+//         .filter(p => now < (p.time_limit ?? p.time + 24 * 60 * 60 * 1000))
+//         .map(p => p.player)
+//     );
+
+//     const playerLocks = new Set(siteData.playersLock.map(lock => lock.player));
+//     const playersSkip = new Set<string>();
+
+//     while (true) {
+//       // ถ้าถูกสั่งหยุด
+//       if (abortFlag?.canceled) {
+//         console.log(`⏹️ Processing for ${site} aborted.`);
+//         break;
+//       }
+
+//       // ถ้าไม่มีโค้ดให้รอเล็กน้อยเผื่อมีโค้ดใหม่เข้ามา
+//       if (remainingCodes.length === 0) {
+//         // รอ 1 วินาที ถ้ายังไม่มีโค้ดใหม่ให้หยุด
+//         await new Promise(res => setTimeout(res, 1000));
+//         if (remainingCodes.length === 0) break;
+//         else continue; // ถ้ามีโค้ดใหม่ให้ทำต่อ
+//       }
+
+//       const promoCode = remainingCodes.shift();
+//       if (!promoCode) continue;
+
+//       try {
+//         const key = await encryptText(promoCode, informationSet.key_free);
+//         const { captchaUrl, token } = await getVerificationCode(apiEndPoint, site, hostUrl);
+//         const { captchaCode, captchaPath } = await getInputCaptcha(captchaUrl);
+
+//         const result = await sendCaptchaProCode(
+//           promoCode, key, captchaCode, token, apiEndPoint, site, hostUrl
+//         );
+//         if (!result) continue;
+
+//         const statusCode = result.status_code ?? result?.ststus_code ?? 0;
+//         const message = result?.text_mess?.th || "";
+
+//         // if (statusCode !== 400) {
+//         //   addTemplate(captchaPath,captchaCode)
+//         // }
+
+//         if (statusCode === 502 || message.includes("กรุณาลองใหม่อีกครั้ง")) {
+//           console.warn("🚫 Code already used (502), skipping.");
+//           continue;
+//         }
+
+//         if (statusCode === 429 || statusCode === 400) {
+//           console.warn("⏳ Rate limited. Resetting IP and retrying...");
+//           remainingCodes.unshift(promoCode);
+//           continue;
+//         }
+
+//         if (statusCode === 9001) {
+//           console.log(`⚠️ Invalid promo code: ${promoCode}`);
+//           continue;
+//         }
+
+//         if (statusCode === 200 && result.valid) {
+//           const point = result?.detail?.point ?? 0;
+
+//           if (point > minPoint) {
+//             try {
+//               let singlePlayer: string | undefined;
+//               // if (point > 15) {
+//               //   singlePlayer = await getSinglePlayer(point, site);
+//               // } else {
+//               //   const rawPlayers = await getPlayerPool(point, site);
+//               //   singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
+//               // }
+//               singlePlayer = await getSinglePlayer(point, site);
+
+//               if (singlePlayer && !playerLocks.has(singlePlayer)) {
+//                 const singleResult = await sendCodeToPlayer(
+//                   singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+//                 );
+
+//                 console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
+
+//                 const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
+//                 const singleMessage = singleResult?.text_mess?.th || "";
+
+//                 if (singleCodeStatus === 200 && singleResult?.valid) {
+//                   await updateApplyCodeLog(site, singlePlayer, promoCode, point);
+//                   sentPlayerIds.add(singlePlayer);
+//                   playersSkip.add(singlePlayer);
+//                 } else {
+//                   const rawPlayers = await getPlayerPool(point, site);
+//                   if (singleCodeStatus === 502) {
+//                     continue;
+//                   } else if ([9001, 9002].includes(singleCodeStatus)) {
+//                     remainingCodes.unshift(promoCode);
+//                     continue;
+//                   }
+
+//                   if (lockDurations[singleCodeStatus]) {
+//                     playerLocks.add(singlePlayer);
+//                     try {
+//                       await updatePlayersLock(site, singlePlayer, singleMessage, lockDurations[singleCodeStatus], singleCodeStatus);
+//                       console.log("✔️ Add PlayersLock complete.");
+//                     } catch (err) {
+//                       console.error("❌ Failed to add PlayersLock:", err);
+//                     }
+
+//                     if ([403, 4044, 9003, 9004, 9007].includes(singleCodeStatus)) {
+//                       remainingCodes.unshift(promoCode);
+//                       continue;
+//                     }
+//                   }
+
+//                   await applyCodeToPlayers(
+//                     promoCode, key, token, apiEndPoint, site, hostUrl,
+//                     rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+//                   );
+//                 }
+//                 continue;
+//               } else {
+//                 const rawPlayers = await getPlayerPool(point, site);
+//                 await applyCodeToPlayers(
+//                   promoCode, key, token, apiEndPoint, site, hostUrl,
+//                   rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+//                 );
+//               }
+//             } catch (err) {
+//               console.error("❌ Error in getSinglePlayer:", err);
+//               const rawPlayers = await getPlayerPool(point, site);
+//               await applyCodeToPlayers(
+//                 promoCode, key, token, apiEndPoint, site, hostUrl,
+//                 rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+//               );
+//               continue;
+//             }
+//           } else {
+//             console.log(`⚠️ Promo code: ${promoCode} is Point not target (${point})`);
+//           }
+
+//           continue;
+//         }
+
+//       } catch (err) {
+//         console.error("❌ Unexpected error:", err);
+//       }
+//     }
+//   } finally {
+//     console.log(`⏹️ Processing remainingCodes End.`);
+//     siteQueue.isProcessing = false;
+
+//     // ถ้าหลังหยุดยังมีโค้ดใหม่ → เริ่มใหม่ทันที
+//     if (siteQueue.remainingCodes.length > 0 && !siteQueue.isProcessing) {
+//       console.log(`🔄 New codes detected after end, restarting loop for ${siteName}...`);
+//       startProCodeLoop(siteName).catch(err => {
+//         console.error(`❌ Error restarting loop for site ${siteName}:`, err);
+//       });
+//     }
+//   }
+// }
+
+
 // 🛑 ฟังก์ชันหยุด site ที่กำลังทำงานอยู่
 function abortCurrentSite(siteName: string) {
-  const queue = siteQueues[siteName];
-  if (queue && queue.isProcessing && queue.abortFlag) {
+  const siteQueue = siteQueues[siteName];
+  if (siteQueue) {
+    siteQueue.abortFlag.canceled = true;
+    siteQueue.remainingCodes.length = 0; // ล้างคิวถ้าไม่อยากให้ค้าง
     console.log(`🛑 Aborting current processing for ${siteName}...`);
-    queue.abortFlag.canceled = true;
   }
 }
 
@@ -795,15 +1232,18 @@ async function startProCodeLoop(siteName: string) {
     console.log(`⏹️ Processing remainingCodes End.`);
     siteQueue.isProcessing = false;
 
-    if (siteQueue.remainingCodes.length > 0 && !siteQueue.isProcessing) {
-      console.log(
-        `🔄 New codes detected after end, restarting loop for ${siteName}...`
-      );
+    // ❌ ป้องกันไม่ให้ site ที่ถูก abort รีสตาร์ทตัวเอง
+    if (!siteQueue.abortFlag?.canceled &&
+        siteQueue.remainingCodes.length > 0 &&
+        !siteQueue.isProcessing) {
+
+      console.log(`🔄 New codes detected after end, restarting loop for ${siteName}...`);
       startProCodeLoop(siteName).catch(err => {
         console.error(`❌ Error restarting loop for site ${siteName}:`, err);
       });
     }
   }
+
 }
 
 async function applyCodeToPlayers(
