@@ -323,45 +323,39 @@ async function sendCaptchaProCode(
   });
 }
 
+// 🛑 ฟังก์ชันหยุด site ที่กำลังทำงานอยู่
+function abortCurrentSite(siteName: string) {
+  const queue = siteQueues[siteName];
+  if (queue && queue.isProcessing && queue.abortFlag) {
+    console.log(`🛑 Aborting current processing for ${siteName}...`);
+    queue.abortFlag.canceled = true;
+  }
+}
+
 async function initializeService() {
   if (!client) {
     await initializeSession();
   }
   const app = express();
   app.use(express.json());
-  // ✅ เสิร์ฟไฟล์จาก public แบบครอบคลุมทั้งหมด
-  app.use(express.static(path.join(__dirname, 'public')));
-  // views
+  app.use(express.static(path.join(__dirname, "public"))); // ✅ serve static
   app.use("/", viewRoutes);
-
-  // APIs
   app.use("/api", apiRoutes);
-  
+
   app.get("/health", async (req, res) => {
     try {
-      // 1. Ensure client is initialized and connected
       if (!client || !client.connected) {
         await initializeSession();
       }
-
-      // 2. Add handlers or ensure active connection
-      // await ensureConnectedAndAddHandlers();
-
-      // 3. Respond with healthy status
       res.status(200).json({ status: "Healthy" });
-
     } catch (err: any) {
       console.error("❌ Health check failed:", err);
-
       res.status(500).json({ status: "Unhealthy", error: err.message });
 
-      // 4. Only restart the service if enough time has passed
       const now = Date.now();
-      const RESTART_COOLDOWN = 3 * 60 * 1000; // 3 minutes
-
+      const RESTART_COOLDOWN = 3 * 60 * 1000; // 3 นาที
       if (now - lastRestartTime > RESTART_COOLDOWN) {
         lastRestartTime = now;
-
         try {
           console.log("🔄 Restarting service...");
           await restartService();
@@ -369,7 +363,6 @@ async function initializeService() {
         } catch (restartErr) {
           console.error("🚨 Restart failed:", restartErr);
         }
-
       } else {
         console.warn("⚠️ Restart skipped to avoid rapid restart loop.");
       }
@@ -383,27 +376,29 @@ async function initializeService() {
     await getChatsList(client);
   }
 
+  // 🎯 handleIncomingMessage (แก้ใหม่)
   const handleIncomingMessage = async (receivedMessage: any) => {
     if (!receivedMessage) return;
     const messageText = receivedMessage.toLowerCase();
+
     if (messageText === lastHandledMessage) {
-      console.log("\u23e9 Duplicate message. Skipping.");
+      console.log("⏩ Duplicate message. Skipping.");
       return;
     }
-
     lastHandledMessage = messageText;
+
     const parsedCodes = parserCodeMessage(receivedMessage);
     if (parsedCodes.length < 10) return;
 
     const shuffledCodes = shuffleArray(parsedCodes);
-    console.log("\ud83c\udfaf Valid Bonus Codes:", parsedCodes);
+    console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
     const matchedSite = siteConfigs.find(cfg =>
       cfg.keywords.some(keyword => messageText.includes(keyword))
     );
 
     if (!matchedSite) {
-      console.log("\u26a0\ufe0f Unrecognized message source.");
+      console.log("⚠️ Unrecognized message source.");
       return;
     }
 
@@ -420,6 +415,7 @@ async function initializeService() {
       key_free: matchedSite.key_free,
     };
 
+    // ถ้ายังไม่มี queue → สร้างใหม่
     if (!siteQueues[site]) {
       siteQueues[site] = {
         remainingCodes: [],
@@ -432,25 +428,34 @@ async function initializeService() {
       } as SiteQueue;
     }
 
-    // แทรกโค้ดใหม่เข้าไปข้างหน้า
+    // 🔄 เพิ่มโค้ดใหม่ (unique)
     const existing = new Set(siteQueues[site].remainingCodes);
     const uniqueNewCodes = shuffledCodes.filter(code => !existing.has(code));
     siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
 
-    // ถ้าลูปไม่ทำงาน ให้สตาร์ทใหม่
-    if (!siteQueues[site].isProcessing && siteQueues[site].remainingCodes.length > 0) {
-      startProCodeLoop(site).catch(err => {
-        console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
-      });
+    // 🔍 ตรวจว่า site ไหนกำลังทำงาน
+    const activeSite = Object.values(siteQueues).find(q => q.isProcessing);
+
+    if (activeSite) {
+      if (activeSite.site !== site) {
+        // ถ้า site ไม่ตรง → abort site เดิม แล้ว start site ใหม่
+        abortCurrentSite(activeSite.site);
+        startProCodeLoop(site).catch(err =>
+          console.error(`❌ Error in startProCodeLoop for site ${site}:`, err)
+        );
+      } else {
+        console.log(`♻️ Added new codes to ${site} queue.`);
+      }
+    } else {
+      // ไม่มี site ไหนทำงานอยู่ → start site นี้ได้เลย
+      startProCodeLoop(site).catch(err =>
+        console.error(`❌ Error in startProCodeLoop for site ${site}:`, err)
+      );
     }
-
-
   };
 
+  // 📩 Add Telegram Event Handlers
   const addEventHandlers = async (client: any) => {
-    // if (handlersAdded) return;  // Prevent adding multiple times
-    //     handlersAdded = true;
-   
     client.addEventHandler(
       (event: NewMessageEvent) => {
         const message = event.message;
@@ -462,7 +467,6 @@ async function initializeService() {
         processedMessageIds.add(messageId);
         handleIncomingMessage(message.text);
 
-        // ล้าง messageId หลังผ่านไป 5 นาที (หรือระยะเวลาที่เหมาะสม)
         setTimeout(() => processedMessageIds.delete(messageId), 300000);
       },
       new NewMessage({})
@@ -503,18 +507,18 @@ async function initializeService() {
   const ensureConnectedAndAddHandlers = async () => {
     console.log("Client is Check connect:", client && client.connected);
     if (client && client.connected) {
-      console.log("\u2705 Client is connected.");
+      console.log("✅ Client is connected.");
       await addEventHandlers(client);
     } else {
-      console.log("\ud83d\udd01 Client is not connected. Reconnecting...");
+      console.log("🔁 Client is not connected. Reconnecting...");
       await initializeClient();
       console.log("Client reconnected:", client && client.connected);
 
       if (client && client.connected) {
-        console.log("\u2705 Reconnected and ready.");
+        console.log("✅ Reconnected and ready.");
         await addEventHandlers(client);
       } else {
-        console.log("\u274c Failed to reconnect client.");
+        console.log("❌ Failed to reconnect client.");
         await restartService();
       }
     }
@@ -522,17 +526,16 @@ async function initializeService() {
 
   await ensureConnectedAndAddHandlers();
 
-
   const startServer = (port: number): Promise<void> => {
     return new Promise((resolve, reject) => {
       expressServer = app
         .listen(port, () => {
-          console.log(`\ud83d\ude80 Server is running on port ${port}`);
+          console.log(`🚀 Server is running on port ${port}`);
           resolve();
         })
         .on("error", (err: any) => {
           if (err.code === "EADDRINUSE") {
-            console.warn(`\u26a0\ufe0f Port ${port} is in use. Trying port ${port + 1}...`);
+            console.warn(`⚠️ Port ${port} is in use. Trying port ${port + 1}...`);
             resolve(startServer(port + 1));
           } else {
             reject(err);
@@ -544,18 +547,18 @@ async function initializeService() {
   try {
     await startServer(port);
   } catch (err) {
-    console.error("\u274c Failed to start server:", err);
+    console.error("❌ Failed to start server:", err);
   }
 
   const gracefulShutdown = () => {
-    console.log("\ud83d\uded1 Shutting down gracefully...");
+    console.log("🛑 Shutting down gracefully...");
     expressServer?.close(() => {
-      console.log("\ud83e\uddf9 Express server closed.");
+      console.log("🪣 Express server closed.");
     });
 
     if (client) {
       client.disconnect().then(() => {
-        console.log("\ud83d\udcf4 Telegram client disconnected.");
+        console.log("📴 Telegram client disconnected.");
         process.exit(0);
       });
     } else {
@@ -567,27 +570,25 @@ async function initializeService() {
   process.on("SIGINT", gracefulShutdown);
 }
 
+// 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
-
-  if(siteName =="thai_jun88k36"){
-    minPoint = 15
-  }else{
-    minPoint = 12
+  if (siteName == "thai_jun88k36") {
+    minPoint = 18;
+  } else {
+    minPoint = 15;
   }
 
   const siteQueue = siteQueues[siteName];
   if (!siteQueue) return;
 
-  // ถ้ากำลังรันอยู่ ให้ปล่อยให้ลูปเดิมจัดการต่อ
   if (siteQueue.isProcessing) return;
 
   siteQueue.isProcessing = true;
-
+  siteQueue.abortFlag.canceled = false; // reset flag
   const abortFlag = siteQueue.abortFlag;
 
   try {
     const { remainingCodes, players, apiEndPoint, site, hostUrl } = siteQueue;
-
     const rawSentPlayers = await resetDailySentIfNeeded();
 
     const siteData: SiteSentPlayers = rawSentPlayers[siteName]
@@ -609,18 +610,15 @@ async function startProCodeLoop(siteName: string) {
     const playersSkip = new Set<string>();
 
     while (true) {
-      // ถ้าถูกสั่งหยุด
       if (abortFlag?.canceled) {
         console.log(`⏹️ Processing for ${site} aborted.`);
         break;
       }
 
-      // ถ้าไม่มีโค้ดให้รอเล็กน้อยเผื่อมีโค้ดใหม่เข้ามา
       if (remainingCodes.length === 0) {
-        // รอ 1 วินาที ถ้ายังไม่มีโค้ดใหม่ให้หยุด
         await new Promise(res => setTimeout(res, 1000));
         if (remainingCodes.length === 0) break;
-        else continue; // ถ้ามีโค้ดใหม่ให้ทำต่อ
+        else continue;
       }
 
       const promoCode = remainingCodes.shift();
@@ -628,24 +626,26 @@ async function startProCodeLoop(siteName: string) {
 
       try {
         const key = await encryptText(promoCode, informationSet.key_free);
-        const { captchaUrl, token } = await getVerificationCode(apiEndPoint, site, hostUrl);
+        const { captchaUrl, token } = await getVerificationCode(
+          apiEndPoint,
+          site,
+          hostUrl
+        );
         const { captchaCode, captchaPath } = await getInputCaptcha(captchaUrl);
 
         const result = await sendCaptchaProCode(
-          promoCode, key, captchaCode, token, apiEndPoint, site, hostUrl
+          promoCode,
+          key,
+          captchaCode,
+          token,
+          apiEndPoint,
+          site,
+          hostUrl
         );
         if (!result) continue;
 
         const statusCode = result.status_code ?? result?.ststus_code ?? 0;
         const message = result?.text_mess?.th || "";
-
-        // if (statusCode !== 400) {
-        //   addTemplate(captchaPath,captchaCode)
-        // }else{
-        //   let captchaCodeTmp = await openImage(captchaPath,captchaCode);
-        //   addTemplate(captchaPath,captchaCodeTmp)
-
-        // }
 
         if (statusCode === 502 || message.includes("กรุณาลองใหม่อีกครั้ง")) {
           console.warn("🚫 Code already used (502), skipping.");
@@ -669,29 +669,35 @@ async function startProCodeLoop(siteName: string) {
           if (point > minPoint) {
             try {
               let singlePlayer: string | undefined;
-
-              // if (point > 20) {
-              //   singlePlayer = await getSinglePlayer(point, site);
-              // } else {
-              //   const rawPlayers = await getPlayerPool(point, site);
-              //   singlePlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
-              // }
-
               singlePlayer = await getSinglePlayer(point, site);
-
 
               if (singlePlayer && !playerLocks.has(singlePlayer)) {
                 const singleResult = await sendCodeToPlayer(
-                  singlePlayer, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+                  singlePlayer,
+                  promoCode.trim(),
+                  key,
+                  apiEndPoint,
+                  site,
+                  token,
+                  hostUrl
                 );
 
-                console.log(`📩 Full Result in getSinglePlayers ${singlePlayer}:`, singleResult);
+                console.log(
+                  `📩 Full Result in getSinglePlayers ${singlePlayer}:`,
+                  singleResult
+                );
 
-                const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
+                const singleCodeStatus =
+                  singleResult.status_code ?? singleResult?.ststus_code ?? 0;
                 const singleMessage = singleResult?.text_mess?.th || "";
 
                 if (singleCodeStatus === 200 && singleResult?.valid) {
-                  await updateApplyCodeLog(site, singlePlayer, promoCode, point);
+                  await updateApplyCodeLog(
+                    site,
+                    singlePlayer,
+                    promoCode,
+                    point
+                  );
                   sentPlayerIds.add(singlePlayer);
                   playersSkip.add(singlePlayer);
                 } else {
@@ -706,7 +712,13 @@ async function startProCodeLoop(siteName: string) {
                   if (lockDurations[singleCodeStatus]) {
                     playerLocks.add(singlePlayer);
                     try {
-                      await updatePlayersLock(site, singlePlayer, singleMessage, lockDurations[singleCodeStatus], singleCodeStatus);
+                      await updatePlayersLock(
+                        site,
+                        singlePlayer,
+                        singleMessage,
+                        lockDurations[singleCodeStatus],
+                        singleCodeStatus
+                      );
                       console.log("✔️ Add PlayersLock complete.");
                     } catch (err) {
                       console.error("❌ Failed to add PlayersLock:", err);
@@ -719,34 +731,62 @@ async function startProCodeLoop(siteName: string) {
                   }
 
                   await applyCodeToPlayers(
-                    promoCode, key, token, apiEndPoint, site, hostUrl,
-                    rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                    promoCode,
+                    key,
+                    token,
+                    apiEndPoint,
+                    site,
+                    hostUrl,
+                    rawPlayers,
+                    sentPlayerIds,
+                    playersSkip,
+                    playerLocks,
+                    remainingCodes
                   );
                 }
                 continue;
               } else {
                 const rawPlayers = await getPlayerPool(point, site);
                 await applyCodeToPlayers(
-                  promoCode, key, token, apiEndPoint, site, hostUrl,
-                  rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                  promoCode,
+                  key,
+                  token,
+                  apiEndPoint,
+                  site,
+                  hostUrl,
+                  rawPlayers,
+                  sentPlayerIds,
+                  playersSkip,
+                  playerLocks,
+                  remainingCodes
                 );
               }
             } catch (err) {
               console.error("❌ Error in getSinglePlayer:", err);
               const rawPlayers = await getPlayerPool(point, site);
               await applyCodeToPlayers(
-                promoCode, key, token, apiEndPoint, site, hostUrl,
-                rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                promoCode,
+                key,
+                token,
+                apiEndPoint,
+                site,
+                hostUrl,
+                rawPlayers,
+                sentPlayerIds,
+                playersSkip,
+                playerLocks,
+                remainingCodes
               );
               continue;
             }
           } else {
-            console.log(`⚠️ Promo code: ${promoCode} is Point not target (${point})`);
+            console.log(
+              `⚠️ Promo code: ${promoCode} is Point not target (${point})`
+            );
           }
 
           continue;
         }
-
       } catch (err) {
         console.error("❌ Unexpected error:", err);
       }
@@ -755,9 +795,10 @@ async function startProCodeLoop(siteName: string) {
     console.log(`⏹️ Processing remainingCodes End.`);
     siteQueue.isProcessing = false;
 
-    // ถ้าหลังหยุดยังมีโค้ดใหม่ → เริ่มใหม่ทันที
     if (siteQueue.remainingCodes.length > 0 && !siteQueue.isProcessing) {
-      console.log(`🔄 New codes detected after end, restarting loop for ${siteName}...`);
+      console.log(
+        `🔄 New codes detected after end, restarting loop for ${siteName}...`
+      );
       startProCodeLoop(siteName).catch(err => {
         console.error(`❌ Error restarting loop for site ${siteName}:`, err);
       });

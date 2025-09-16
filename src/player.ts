@@ -3,19 +3,18 @@ import fsSync from "fs";
 import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 
-
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["nus9331", "manus9331", "areeroon"],
     high:  ["nus9331", "manus9331", "areeroon"],
     mid: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"],
     low: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"],
-    all: ["nus9331", "manus9331", "kootong", "areeroon", "VIP0955171905", "poypy789"]
+    all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"]
   },
   thai_jun88k36: {
     very_high:["nus9331", "manus9331", "aroon11"],
     high: ["aroon11", "manus9331", "nus9331"],
-    mid: ["aroon11", "manus9331", "nus9331", "manoon9331"],
+    mid: ["manoon9331", "aroon11"],
     low: [],
     all: ["nus9331", "manoon9331", "manus9331", "aroon11"],
   }
