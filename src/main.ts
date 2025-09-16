@@ -69,12 +69,12 @@ const captchaLimiter = new Bottleneck({
 
 // 🔧 กำหนดระยะเวลา Lock ตามสถานะ
 const lockDurations: Record<number, number> = {
-  403: 1 * 60 * 60 * 1000,
-  9002: 30 * 24 * 60 * 60 * 1000,
-  9003: 1 * 60 * 60 * 1000,
+  403: 30 * 60 * 1000,
+  9002: 30 * 60 * 1000,
+  9003: 30 * 60 * 1000,
   9004: 3 * 60 * 1000,
-  9007: 1 * 60 * 60 * 1000,
-  0: 24 * 60 * 60 * 1000,
+  9007: 30 * 60 * 1000,
+  0: 30 * 60 * 1000,
   4044: 30 * 24 * 60 * 60 * 1000,
 };
 
@@ -566,6 +566,8 @@ async function sendCaptchaProCode(
 //   process.on("SIGTERM", gracefulShutdown);
 //   process.on("SIGINT", gracefulShutdown);
 // }
+
+
 
 // async function startProCodeLoop(siteName: string) {
 
