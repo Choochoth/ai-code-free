@@ -4,13 +4,31 @@ import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 
 
+// const playerPools: Record<string, PlayerPool> = {
+//   thai_789bet: {
+//     very_high: ["nus9331", "manus9331", "areeroon"],
+//     high:  ["nus9331", "manus9331", "areeroon"],
+//     mid: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789", "tuta3206"],
+//     low: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"],
+//     all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789", "tuta3206"]
+//   },
+//   thai_jun88k36: {
+//     very_high:["nus9331", "manus9331", "aroon11"],
+//     high: ["aroon11", "manus9331", "nus9331"],
+//     mid: ["aroon11", "tuta3206", "bank0760"],
+//     low: [],
+//     all: ["nus9331", "manus9331", "aroon11", "tuta3206", "bank0760"],
+//   }
+// };
+
+
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["nus9331", "manus9331", "areeroon"],
     high:  ["nus9331", "manus9331", "areeroon"],
-    mid: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789", "tuta3206"],
+    mid: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"],
     low: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"],
-    all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789", "tuta3206"]
+    all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"]
   },
   thai_jun88k36: {
     very_high:["nus9331", "manus9331", "aroon11"],
