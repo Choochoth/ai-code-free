@@ -1,29 +1,13 @@
 {
   "apply_code_today": {
-    "date": "2025-09-27",
+    "date": "2025-09-28",
     "thai_789bet": {
       "players": [],
-      "playersLock": [
-        {
-          "player": "manus9331",
-          "timelock": 1758983782042,
-          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
-          "lockTime": 1800000,
-          "lockCode": 9007
-        }        
-      ]
+      "playersLock": []
     },
     "thai_jun88k36": {
       "players": [],
-      "playersLock": [
-        {
-          "player": "nus9331",
-          "timelock": 1758983782042,
-          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
-          "lockTime": 1800000,
-          "lockCode": 9007
-        }
-      ]
+      "playersLock": []
     }
   }
 }
