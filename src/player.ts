@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
-import { isPlayerBlocked } from "./playerTracker";
+import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 
 // const playerPools: Record<string, PlayerPool> = {
@@ -26,8 +26,8 @@ import { isPlayerBlocked } from "./playerTracker";
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["nus9331", "manus9331", "areeroon"],
-    high:  ["nus9331", "manus9331",  "VIP0955171905", "poypy789", "areeroon"],
+    very_high: ["nus9331", "manus9331", "areeroon", "poypy789"],
+    high:  ["nus9331", "manus9331", "VIP0955171905", "poypy789", "areeroon"],
     mid: ["nus9331", "manus9331",  "VIP0955171905", "poypy789", "areeroon", "tuta3206"],
     low: ["areeroon", "VIP0955171905", "poypy789", "tuta3206"],
     all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789", "tuta3206"]
@@ -103,10 +103,12 @@ function isPlayerLocked(lock: PlayerLock): boolean {
 
 async function getPlayerPool(point: number, site: string): Promise<string[]> {
   await resetIfNeeded();
+  cleanupExpiredBlocks();
+
   const applyCodeToday = await loadApplyCodeToday();
 
   const pool = playerPools[site];
-  const fallbackPool = playerPools["thai_jun88k36"].all;
+  const fallbackPool = playerPools["thai_jun88k36"]?.all ?? [];
   if (!pool) return fallbackPool;
 
   const siteData = applyCodeToday[site];
@@ -129,7 +131,7 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
 
   const filterEligible = (list?: string[]) =>
     (list ?? []).filter(
-      p => !usedPlayers.has(p) && !lockedPlayers.has(p) && !isPlayerBlocked(p)
+      p => !usedPlayers.has(p) && !lockedPlayers.has(p) && !isPlayerBlocked(site, p)
     );
 
   const strictFallback = (...lists: (string[] | undefined)[]): string[] => {
@@ -161,6 +163,7 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
 
   return strictFallback(pool.all);
 }
+
 
 async function getSinglePlayer(point: number, site: string): Promise<string> {
   const eligiblePlayers = await getPlayerPool(point, site);

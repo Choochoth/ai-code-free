@@ -24,7 +24,7 @@ import {
   ocr
 } from "./services/promoCodeApi";
 
-import { markPlayerTried } from "./playerTracker";
+import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
 
 
 import  { updatePlayersLock, resetDailySentIfNeeded, updateApplyCodeLog, getSinglePlayer, getPlayerPool, clearApplyCodeTemplateForSite } from "./player";
@@ -1048,6 +1048,7 @@ async function startProCodeLoop(siteName: string) {
 
     const playerLocks = new Set(siteData.playersLock.map(lock => lock.player));
     const playersSkip = new Set<string>();
+    cleanupExpiredBlocks();
 
     while (true) {
       if (abortFlag?.canceled) {
@@ -1114,7 +1115,7 @@ async function startProCodeLoop(siteName: string) {
               if (singlePlayer && !playerLocks.has(singlePlayer)) {
                 
                 // ✅ บันทึกว่า player นี้ถูกยิงไปแล้ว
-                markPlayerTried(singlePlayer);
+                markPlayerTried(site, singlePlayer);
 
                 const singleResult = await sendCodeToPlayer(
                   singlePlayer,
