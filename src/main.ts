@@ -24,6 +24,7 @@ import {
   ocr
 } from "./services/promoCodeApi";
 
+import { markPlayerTried } from "./playerTracker";
 
 
 import  { updatePlayersLock, resetDailySentIfNeeded, updateApplyCodeLog, getSinglePlayer, getPlayerPool, clearApplyCodeTemplateForSite } from "./player";
@@ -1111,6 +1112,10 @@ async function startProCodeLoop(siteName: string) {
               singlePlayer = await getSinglePlayer(point, site);
 
               if (singlePlayer && !playerLocks.has(singlePlayer)) {
+                
+                // ✅ บันทึกว่า player นี้ถูกยิงไปแล้ว
+                markPlayerTried(singlePlayer);
+
                 const singleResult = await sendCodeToPlayer(
                   singlePlayer,
                   promoCode.trim(),

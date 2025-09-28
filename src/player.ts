@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
+import { isPlayerBlocked } from "./playerTracker";
 
 
 // const playerPools: Record<string, PlayerPool> = {
@@ -127,14 +128,16 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
   }
 
   const filterEligible = (list?: string[]) =>
-    (list ?? []).filter(p => !usedPlayers.has(p) && !lockedPlayers.has(p));
+    (list ?? []).filter(
+      p => !usedPlayers.has(p) && !lockedPlayers.has(p) && !isPlayerBlocked(p)
+    );
 
   const strictFallback = (...lists: (string[] | undefined)[]): string[] => {
     for (const list of lists) {
       const eligible = filterEligible(list);
       if (eligible.length > 0) return eligible;
     }
-    return filterEligible(pool.all); // ✅ กรอง pool.all ด้วย
+    return filterEligible(pool.all);
   };
 
   if (!Number.isFinite(point) || point < 0) {
