@@ -26,17 +26,17 @@ import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/p
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["nus9331", "manus9331", "areeroon"],
-    high:  ["nus9331", "manus9331", "areeroon"],
-    mid: ["nus9331", "manus9331", "VIP0955171905", "poypy789", "areeroon", "tuta3206"],
-    low: ["areeroon", "VIP0955171905", "poypy789", "tuta3206"],
+    high:  ["nus9331", "manus9331",  "VIP0955171905", "poypy789", "areeroon"],
+    mid: ["nus9331", "manus9331",  "VIP0955171905", "poypy789", "areeroon"],
+    low: ["nus9331", "manus9331", "VIP0955171905", "poypy789", "tuta3206"],
     all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789", "tuta3206"]
   },
   thai_jun88k36: {
     very_high:["nus9331", "aroon11", "manus9331"],
     high: ["aroon11", "nus9331", "manus9331"],
-    mid: ["tuta3206", "bank0760", "tuta3206", "baitong228"],
-    low: [],
-    all: ["nus9331", "manus9331", "aroon11", "tuta3206", "bank0760", "baitong228"],
+    mid: ["aroon11", "tuta3206", "bank0760", "tuta3206", "Foomoo9", "frankk2709", "tennter0", "tour2540"],
+    low: ["tuta3206", "bank0760", "baitong228", "Foomoo9", "frankk2709", "tennter0", "tour2540"],
+    all: ["nus9331", "manus9331", "aroon11", "tuta3206", "bank0760", "baitong228", "Foomoo9", "frankk2709", "tennter0", "tour2540"],
   }
 };
 
