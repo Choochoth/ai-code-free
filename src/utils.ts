@@ -3,7 +3,6 @@ import readline from 'readline';
 import fs from 'fs/promises';
 import path from 'path';
 import 'dotenv/config';
-import { w } from "@faker-js/faker/dist/airline-BUL6NtOJ";
 
 const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
 

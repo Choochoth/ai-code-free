@@ -14,6 +14,22 @@
           "status": "success",
           "player": "manus9331",
           "point": 21.88
+        },
+        {
+          "promo_code": "0fiObk257",
+          "time": 1759032686696,
+          "time_limit": 1759119086696,
+          "status": "success",
+          "player": "aroon11",
+          "point": 25.88
+        },
+        {
+          "promo_code": "WMt9scCEt",
+          "time": 1759032702403,
+          "time_limit": 1759119102403,
+          "status": "success",
+          "player": "frankk2709",
+          "point": 27.88
         }
       ],
       "playersLock": []
