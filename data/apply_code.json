@@ -38,6 +38,14 @@
           "status": "success",
           "player": "frankk2709",
           "point": 27.88
+        },
+        {
+          "promo_code": "wSyDO9QGM",
+          "time": 1759039186425,
+          "time_limit": 1759125586425,
+          "status": "success",
+          "player": "tour2540",
+          "point": 20.88
         }
       ],
       "playersLock": []
