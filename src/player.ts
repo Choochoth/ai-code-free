@@ -9,16 +9,16 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 //   thai_789bet: {
 //     very_high: ["nus9331", "manus9331", "areeroon"],
 //     high:  ["nus9331", "manus9331", "areeroon"],
-//     mid: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789", "tuta3206"],
+//     mid: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"],
 //     low: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"],
-//     all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789", "tuta3206"]
+//     all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"]
 //   },
 //   thai_jun88k36: {
 //     very_high:["nus9331", "manus9331", "aroon11"],
 //     high: ["aroon11", "manus9331", "nus9331"],
-//     mid: ["aroon11", "tuta3206", "bank0760"],
+//     mid: ["aroon11", "bank0760"],
 //     low: [],
-//     all: ["nus9331", "manus9331", "aroon11", "tuta3206", "bank0760"],
+//     all: ["nus9331", "manus9331", "aroon11", "bank0760"],
 //   }
 // };
 
@@ -28,9 +28,9 @@ const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["nus9331", "manus9331"],
     high:  ["nus9331", "manus9331", "VIP0955171905", "poypy789", "areeroon"],
-    mid: ["nus9331", "manus9331",  "VIP0955171905", "poypy789", "areeroon", "tuta3206"],
-    low: ["areeroon", "VIP0955171905", "poypy789", "tuta3206"],
-    all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789", "tuta3206"]
+    mid: ["nus9331", "manus9331",  "VIP0955171905", "poypy789", "areeroon"],
+    low: ["areeroon", "VIP0955171905", "poypy789"],
+    all: ["nus9331", "manus9331", "areeroon", "VIP0955171905", "poypy789"]
   },
   thai_jun88k36: {
     very_high:["nus9331", "aroon11", "manus9331"],
