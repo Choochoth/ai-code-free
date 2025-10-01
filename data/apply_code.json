@@ -6,8 +6,25 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
-      "playersLock": []
+      "players": [
+        {
+          "promo_code": "3tRsAMiYY",
+          "time": 1759338362166,
+          "time_limit": 1759424762166,
+          "status": "success",
+          "player": "nus9331",
+          "point": 20.88
+        }
+      ],
+      "playersLock": [
+        {
+          "player": "aroon11",
+          "timelock": 1759338372757,
+          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
+          "lockTime": 1800000,
+          "lockCode": 9007
+        }
+      ]
     }
   }
 }
