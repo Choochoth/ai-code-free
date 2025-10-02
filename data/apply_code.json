@@ -14,22 +14,6 @@
           "status": "success",
           "player": "nus9331",
           "point": 20.88
-        },
-        {
-          "promo_code": "3tRsAMiYY",
-          "time": 1759338362166,
-          "time_limit": 1759424762166,
-          "status": "success",
-          "player": "aroon11",
-          "point": 20.88
-        },
-        {
-          "promo_code": "3tRsAMiYY",
-          "time": 1759338362166,
-          "time_limit": 1759424762166,
-          "status": "success",
-          "player": "manus9331",
-          "point": 20.88
         }                
       ],
       "playersLock": []
