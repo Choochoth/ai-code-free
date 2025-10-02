@@ -6,7 +6,32 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
+      "players": [
+        {
+          "promo_code": "8OC6AUK",
+          "time": 1759424957307,
+          "time_limit": 1759511357307,
+          "status": "success",
+          "player": "bank0760",
+          "point": 21.88
+        },
+        {
+          "promo_code": "8OC6AUK",
+          "time": 1759424957307,
+          "time_limit": 1759511357307,
+          "status": "success",
+          "player": "aroon11",
+          "point": 21.88
+        },
+        {
+          "promo_code": "8OC6AUK",
+          "time": 1759424957307,
+          "time_limit": 1759511357307,
+          "status": "success",
+          "player": "nus9331",
+          "point": 21.88
+        }                
+      ],
       "playersLock": []
     }
   }
