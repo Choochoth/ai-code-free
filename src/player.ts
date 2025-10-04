@@ -23,7 +23,6 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 // };
 
 
-
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["nus9331", "manus9331", "areeroon"],
@@ -37,9 +36,10 @@ const playerPools: Record<string, PlayerPool> = {
     high: ["aroon11", "nus9331", "manus9331", "WUTTICHAIZX77"],
     mid: ["aroon11", "bank0760", "manus9331"],
     low: ["bank0760"],
-    all: ["nus9331", "manus9331", "aroon11", "bank0760"],
+    all: ["nus9331", "manus9331", "aroon11", "bank0760", "WUTTICHAIZX77"],
   }
 };
+
 
 export type Site = keyof typeof playerPools;
 
