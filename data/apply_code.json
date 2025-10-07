@@ -2,37 +2,11 @@
   "apply_code_today": {
     "date": "2025-10-07",
     "thai_789bet": {
-      "players": [
-        {
-          "promo_code": "ZYnL9Dv4wTq2F",
-          "time": 1759823959451,
-          "time_limit": 1759910359451,
-          "status": "success",
-          "player": "VIP0955171905",
-          "point": 27.88
-        }         
-      ],
+      "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "iR6HKHu0X",
-          "time": 1759820937563,
-          "time_limit": 1759907337563,
-          "status": "success",
-          "player": "ary11",
-          "point": 27.88
-        },
-        {
-          "promo_code": "pJzw3Mqcx",
-          "time": 1759823959451,
-          "time_limit": 1759910359451,
-          "status": "success",
-          "player": "bank0760",
-          "point": 27.88
-        }       
-      ],
+      "players": [],
       "playersLock": []
     }
   }
