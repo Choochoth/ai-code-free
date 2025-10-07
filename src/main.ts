@@ -1015,7 +1015,7 @@ async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
     minPoint = 20;
   } else {
-    minPoint = 16;
+    minPoint = 17;
   }
 
   const siteQueue = siteQueues[siteName];
