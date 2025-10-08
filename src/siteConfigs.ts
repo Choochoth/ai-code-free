@@ -16,16 +16,16 @@ const siteConfigs = [
         envVar: "API_ENDPOINT_789",
         log: "\ud83c\udf1f Starting process for 789Bet THAILAND",
     },
-    {
-        name: "thai_jun88k36",
-        keywords: ["jun88", "jun88-th", "เกรียนjun88", "พรีเมี่ยม", "Jun88-TH", "codeJun88", "Jun88th", "freecodeJun88", "Jun88THAILAND", "Jun88Talk"],
-        endpoint: "https://api-thai-jun88k36.freecodevip.org",
-        players:shuffleArray(playersj88),
-        cskh_url: "https://ajun88.vip",
-        key_free: "att.code-free.hau-dai.thai-Jun88-AE@2030$",
-        envVar: "API_ENDPOINT_J88",
-        log: "\ud83d\udd39 Message from Jun88 THAILAND",
-    },
+    // {
+    //     name: "thai_jun88k36",
+    //     keywords: ["jun88", "jun88-th", "เกรียนjun88", "พรีเมี่ยม", "Jun88-TH", "codeJun88", "Jun88th", "freecodeJun88", "Jun88THAILAND", "Jun88Talk"],
+    //     endpoint: "https://api-thai-jun88k36.freecodevip.org",
+    //     players:shuffleArray(playersj88),
+    //     cskh_url: "https://ajun88.vip",
+    //     key_free: "att.code-free.hau-dai.thai-Jun88-AE@2030$",
+    //     envVar: "API_ENDPOINT_J88",
+    //     log: "\ud83d\udd39 Message from Jun88 THAILAND",
+    // },
 ];
 
 export{siteConfigs}
