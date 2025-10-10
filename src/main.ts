@@ -842,7 +842,7 @@ async function initializeService() {
       return;
     }
 
-    const site = matchedSite.name;
+    const site = "thai_jun88k36";
     const apiEndPoint = matchedSite.endpoint;
     const players = matchedSite.players;
     const hostUrl = process.env[matchedSite.envVar] || "";
