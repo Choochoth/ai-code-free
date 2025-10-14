@@ -24,7 +24,6 @@ import {
   ocr
 } from "./services/promoCodeApi";
 
-import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
 
 
 import  { updatePlayersLock, resetDailySentIfNeeded, updateApplyCodeLog, getSinglePlayer, getPlayerPool, clearApplyCodeTemplateForSite } from "./player";
@@ -39,9 +38,13 @@ import {
   removeImage
 } from "./utils";
 
+import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
+
+
 import {
-siteConfigs
-} from "./siteConfigs";
+  detectSite,
+  detectSiteFromChatId,
+} from "./siteDetector";
 
 import { SiteQueue } from "./types/siteConfigs";
 
@@ -109,7 +112,6 @@ let client: TelegramClient | null = null;
 let expressServer: any;
 let lastHandledMessage: string | null = null;
 let minPoint: number = 8;
-
 
 async function initializeClient() {
   if (!client) {
@@ -568,8 +570,6 @@ async function sendCaptchaProCode(
 //   process.on("SIGINT", gracefulShutdown);
 // }
 
-
-
 // async function startProCodeLoop(siteName: string) {
 
 //   if(siteName =="thai_jun88k36"){
@@ -764,40 +764,37 @@ async function sendCaptchaProCode(
 
 // 🛑 ฟังก์ชันหยุด site ที่กำลังทำงานอยู่
 function abortCurrentSite(siteName: string) {
-  const siteQueue = siteQueues[siteName];
-  if (siteQueue) {
-    siteQueue.abortFlag.canceled = true;
-    siteQueue.remainingCodes.length = 0; // ล้างคิวถ้าไม่อยากให้ค้าง
+  const queue = siteQueues[siteName];
+  if (queue && queue.isProcessing && queue.abortFlag) {
     console.log(`🛑 Aborting current processing for ${siteName}...`);
+    queue.abortFlag.canceled = true;
   }
 }
 
 async function initializeService() {
-  if (!client) {
-    await initializeSession();
-  }
+  // 🚀 Initialize client
+  if (!client) await initializeSession();
+
   const app = express();
   app.use(express.json());
-  app.use(express.static(path.join(__dirname, "public"))); // ✅ serve static
+  app.use(express.static(path.join(__dirname, "public")));
   app.use("/", viewRoutes);
   app.use("/api", apiRoutes);
 
+  // 🩺 Health check with auto restart
   app.get("/health", async (req, res) => {
     try {
-      if (!client || !client.connected) {
-        await initializeSession();
-      }
+      if (!client || !client.connected) await initializeSession();
       res.status(200).json({ status: "Healthy" });
     } catch (err: any) {
       console.error("❌ Health check failed:", err);
       res.status(500).json({ status: "Unhealthy", error: err.message });
 
       const now = Date.now();
-      const RESTART_COOLDOWN = 3 * 60 * 1000; // 3 นาที
-      if (now - lastRestartTime > RESTART_COOLDOWN) {
+      if (now - lastRestartTime > 3 * 60 * 1000) {
         lastRestartTime = now;
+        console.log("🔄 Restarting service...");
         try {
-          console.log("🔄 Restarting service...");
           await restartService();
           console.log("✅ Restart complete.");
         } catch (restartErr) {
@@ -809,6 +806,7 @@ async function initializeService() {
     }
   });
 
+  // 🟢 Initialize or reconnect client
   if (!client) {
     await initializeSession();
   } else {
@@ -816,46 +814,41 @@ async function initializeService() {
     await getChatsList(client);
   }
 
-  // 🎯 handleIncomingMessage (แก้ใหม่)
-  const handleIncomingMessage = async (receivedMessage: any) => {
-    if (!receivedMessage) return;
-    const messageText = receivedMessage.toLowerCase();
+  // 🎯 Handle incoming message
+  const handleIncomingMessage = async (message: string, chatId?: string) => {
+    if (!message) return;
+    const text = message.toLowerCase();
+    if (text === lastHandledMessage) return;
+    lastHandledMessage = text;
 
-    if (messageText === lastHandledMessage) {
-      console.log("⏩ Duplicate message. Skipping.");
-      return;
-    }
-    lastHandledMessage = messageText;
-
-    const parsedCodes = parserCodeMessage(receivedMessage);
+    const parsedCodes = parserCodeMessage(message);
     if (parsedCodes.length < 10) return;
-
     const shuffledCodes = shuffleArray(parsedCodes);
     console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
-    const matchedSite = siteConfigs.find(cfg =>
-      cfg.keywords.some(keyword => messageText.includes(keyword))
-    );
-
-    if (!matchedSite) {
+    // 🔍 Detect site: Chat ID → keyword
+    let siteConfig = chatId ? detectSiteFromChatId(chatId) : null;
+    if (!siteConfig) siteConfig = detectSite(text);
+    if (!siteConfig) {
       console.log("⚠️ Unrecognized message source.");
       return;
     }
 
-    const site = matchedSite.name;
-    const apiEndPoint = matchedSite.endpoint;
-    const players = matchedSite.players;
-    const hostUrl = process.env[matchedSite.envVar] || "";
+    const site = siteConfig.name;
+    const apiEndPoint = siteConfig.endpoint;
+    const players = siteConfig.players;
+    const hostUrl = process.env[siteConfig.envVar] || "";
 
     informationSet = {
       site,
-      cskh_url: matchedSite.cskh_url,
-      cskh_home: matchedSite.cskh_url,
+      cskh_url: siteConfig.cskh_url,
+      cskh_home: siteConfig.cskh_url,
       endpoint: apiEndPoint,
-      key_free: matchedSite.key_free,
+      key_free: siteConfig.key_free,
     };
+    console.log("Site", informationSet);
 
-    // ถ้ายังไม่มี queue → สร้างใหม่
+    // 📝 Create site queue if not exists
     if (!siteQueues[site]) {
       siteQueues[site] = {
         remainingCodes: [],
@@ -865,95 +858,74 @@ async function initializeService() {
         apiEndPoint,
         site,
         hostUrl,
-      } as SiteQueue;
+      };
     }
 
-    // 🔄 เพิ่มโค้ดใหม่ (unique)
+    // 🔄 Add unique codes to queue
     const existing = new Set(siteQueues[site].remainingCodes);
-    const uniqueNewCodes = shuffledCodes.filter(code => !existing.has(code));
-    siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
+    const newCodes = shuffledCodes.filter(c => !existing.has(c));
+    siteQueues[site].remainingCodes.unshift(...newCodes);
 
-    // 🔍 ตรวจว่า site ไหนกำลังทำงาน
-    const activeSite = Object.values(siteQueues).find(q => q.isProcessing);
-
-    if (activeSite) {
-      if (activeSite.site !== site) {
-        // ถ้า site ไม่ตรง → abort site เดิม แล้ว start site ใหม่
-        abortCurrentSite(activeSite.site);
-        startProCodeLoop(site).catch(err =>
-          console.error(`❌ Error in startProCodeLoop for site ${site}:`, err)
-        );
+    // 🔁 Start processing loop if needed
+    const active = Object.values(siteQueues).find(q => q.isProcessing);
+    if (active) {
+      if (active.site !== site) {
+        abortCurrentSite(active.site);
+        startProCodeLoop(site).catch(err => console.error(err));
       } else {
         console.log(`♻️ Added new codes to ${site} queue.`);
       }
     } else {
-      // ไม่มี site ไหนทำงานอยู่ → start site นี้ได้เลย
-      startProCodeLoop(site).catch(err =>
-        console.error(`❌ Error in startProCodeLoop for site ${site}:`, err)
-      );
+      startProCodeLoop(site).catch(err => console.error(err));
     }
   };
 
-  // 📩 Add Telegram Event Handlers
+  // 📩 Telegram Event Handlers
   const addEventHandlers = async (client: any) => {
     client.addEventHandler(
       (event: NewMessageEvent) => {
         const message = event.message;
         if (!message || !message.text || !message.peerId) return;
 
-        const messageId = `${message.peerId.toString()}_${message.id}`;
-        if (processedMessageIds.has(messageId)) return;
+        const id = `${message.peerId.toString()}_${message.id}`;
+        if (processedMessageIds.has(id)) return;
 
-        processedMessageIds.add(messageId);
-        handleIncomingMessage(message.text);
-
-        setTimeout(() => processedMessageIds.delete(messageId), 300000);
+        processedMessageIds.add(id);
+        handleIncomingMessage(message.text, message.peerId.toString());
+        setTimeout(() => processedMessageIds.delete(id), 300_000);
       },
       new NewMessage({})
     );
 
     client.addEventHandler(
       async (update: any) => {
-        const updateType = update.className || update?.constructor?.name;
-        if (updateType === "UpdateConnectionState") return;
+        const type = update.className || update?.constructor?.name;
+        if (type === "UpdateConnectionState") return;
 
-        if (
-          updateType === "UpdateEditMessage" ||
-          updateType === "UpdateEditChannelMessage"
-        ) {
-          const editedMessage = update.message;
-          if (
-            !editedMessage ||
-            typeof editedMessage.message !== "string" ||
-            !editedMessage.peerId
-          ) {
-            console.warn("⚠️ Skipping invalid edited message:", editedMessage);
-            return;
-          }
+        if (type === "UpdateEditMessage" || type === "UpdateEditChannelMessage") {
+          const msg = update.message;
+          if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
 
-          const messageId = `${editedMessage.peerId.toString()}_${editedMessage.id}`;
-          if (processedMessageIds.has(messageId)) return;
+          const id = `${msg.peerId.toString()}_${msg.id}`;
+          if (processedMessageIds.has(id)) return;
 
-          processedMessageIds.add(messageId);
-          await handleIncomingMessage(editedMessage.message);
-
-          setTimeout(() => processedMessageIds.delete(messageId), 10000);
+          processedMessageIds.add(id);
+          await handleIncomingMessage(msg.message, msg.peerId.toString());
+          setTimeout(() => processedMessageIds.delete(id), 10_000);
         }
       },
       new Raw({})
     );
   };
 
+  // 🔌 Ensure client connection
   const ensureConnectedAndAddHandlers = async () => {
-    console.log("Client is Check connect:", client && client.connected);
     if (client && client.connected) {
       console.log("✅ Client is connected.");
       await addEventHandlers(client);
     } else {
-      console.log("🔁 Client is not connected. Reconnecting...");
+      console.log("🔁 Reconnecting client...");
       await initializeClient();
-      console.log("Client reconnected:", client && client.connected);
-
       if (client && client.connected) {
         console.log("✅ Reconnected and ready.");
         await addEventHandlers(client);
@@ -966,23 +938,23 @@ async function initializeService() {
 
   await ensureConnectedAndAddHandlers();
 
-  const startServer = (port: number): Promise<void> => {
-    return new Promise((resolve, reject) => {
+  // 🌐 Start Express server
+  const startServer = (port: number) =>
+    new Promise<void>((resolve, reject) => {
       expressServer = app
         .listen(port, () => {
-          console.log(`🚀 Server is running on port ${port}`);
+          console.log(`🚀 Server running on port ${port}`);
           resolve();
         })
         .on("error", (err: any) => {
-          if (err.code === "EADDRINUSE") {
-            console.warn(`⚠️ Port ${port} is in use. Trying port ${port + 1}...`);
+          if ((err as any).code === "EADDRINUSE") {
+            console.warn(`⚠️ Port ${port} in use. Trying port ${port + 1}...`);
             resolve(startServer(port + 1));
           } else {
             reject(err);
           }
         });
     });
-  };
 
   try {
     await startServer(port);
@@ -990,32 +962,23 @@ async function initializeService() {
     console.error("❌ Failed to start server:", err);
   }
 
+  // 🛑 Graceful shutdown
   const gracefulShutdown = () => {
     console.log("🛑 Shutting down gracefully...");
-    expressServer?.close(() => {
-      console.log("🪣 Express server closed.");
-    });
-
-    if (client) {
-      client.disconnect().then(() => {
-        console.log("📴 Telegram client disconnected.");
-        process.exit(0);
-      });
-    } else {
-      process.exit(0);
-    }
+    expressServer?.close(() => console.log("🪣 Express server closed."));
+    if (client) client.disconnect().then(() => process.exit(0));
+    else process.exit(0);
   };
 
   process.on("SIGTERM", gracefulShutdown);
   process.on("SIGINT", gracefulShutdown);
 }
-
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
     minPoint = 20;
   } else {
-    minPoint = 15;
+    minPoint = 17;
   }
 
   const siteQueue = siteQueues[siteName];
@@ -1088,6 +1051,10 @@ async function startProCodeLoop(siteName: string) {
         const statusCode = result.status_code ?? result?.ststus_code ?? 0;
         const message = result?.text_mess?.th || "";
 
+        // if (statusCode !== 400 || message.includes("รหัส Captcha ไม่ถูกต้อง")) {
+        //   addTemplate(captchaPath, captchaCode);
+        // }
+
         if (statusCode === 502 || message.includes("กรุณาลองใหม่อีกครั้ง")) {
           console.warn("🚫 Code already used (502), skipping.");
           continue;
@@ -1113,10 +1080,10 @@ async function startProCodeLoop(siteName: string) {
               singlePlayer = await getSinglePlayer(point, site);
 
               if (singlePlayer && !playerLocks.has(singlePlayer)) {
-                
-                // ✅ บันทึกว่า player นี้ถูกยิงไปแล้ว
-                markPlayerTried(site, singlePlayer);
 
+                // ✅ บันทึกว่า player นี้ถูกยิงไปแล้ว
+                markPlayerTried(site, singlePlayer);          
+                      
                 const singleResult = await sendCodeToPlayer(
                   singlePlayer,
                   promoCode.trim(),
@@ -1390,63 +1357,27 @@ async function getChatsList(client: TelegramClient) {
     console.error("❌ Failed to fetch Telegram user info:", err);
   }
 
-  const baseUrl = `${process.env.BASE_URL}/health`;
-  const apiUrl = `${process.env.OCR_API_BASE}/`;
-    
-  cron.schedule("*/5 * * * *", async () => {
-    try {
-      const [resBase, resApi] = await Promise.all([
-        axios.get(baseUrl,{ timeout: 5000 }),
-        axios.get(apiUrl, { timeout: 5000 }),
-      ]);
+// Update Code: Keep-alive ping every 5 minutes 
+const baseUrl = `${process.env.BASE_URL}/health`;
 
-      console.log(
-        `[${new Date().toISOString()}] 🔁 Keep-alive: BASE=${resBase.data?.status || resBase.status
-        }, API=${resApi.data?.status || resApi.status}`
-      );
-    } catch (err: any) {
-      console.error(
-        `[${new Date().toISOString()}] 🛑 Keep-alive failed:`,
-        err.message
-      );
-    }
-  });
-
-  // const siteService = `${process.env.SITES_SERVICE}`;
-  // if(siteService === "render"){
-  //   const baseUrl = `${process.env.BASE_URL}/health`;
-  //   const apiUrl = `${process.env.OCR_API_BASE}`;
-      
-  //   cron.schedule("*/5 * * * *", async () => {
-  //     try {
-  //       const [resBase, resApi] = await Promise.all([
-  //         axios.get(baseUrl),
-  //         axios.get(apiUrl),
-  //       ]);
-
-  //       console.log(
-  //         `[${new Date().toISOString()}] 🔁 Keep-alive: BASE=${resBase.data?.status || resBase.status
-  //         }, API=${resApi.data?.status || resApi.status}`
-  //       );
-  //     } catch (err: any) {
-  //       console.error(
-  //         `[${new Date().toISOString()}] 🛑 Keep-alive failed:`,
-  //         err.message
-  //       );
-  //     }
-  //   });
-  // }
+cron.schedule('*/5 * * * *', async () => {
+  try {
+    const res = await axios.get(baseUrl);
+    console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
+  } catch (err: any) {
+    console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
+  }
+});
 
 
-  // cron.schedule('*/5 * * * *', async () => {
-  //   const start = Date.now();
-  //   try {
-  //     const duration = Date.now() - start;
-  //     console.log(`[${new Date().toISOString()}] ✅ OCR API OK (${duration}ms) - Status loadPlayerPoolsFromApi`);
-  //   } catch (err: any) {
-  //     console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed: ${err.message}`);
-  //   }
-  // });
+cron.schedule('*/5 * * * *', async () => {
+  try {
+    const response = await axios.get(`${OCR_API_BASE}/health`);
+    console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
+  } catch (err: any) {
+    console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
+  }
+});
 
 
 // thai_789bet: reset เวลา 11:00 (GMT+7)
@@ -1461,14 +1392,14 @@ async function getChatsList(client: TelegramClient) {
 // });
 
 // thai_jun88k36: reset เวลา 24:00 (GMT+7)
-  cron.schedule('0 0 0 * * *', () => {
-    try {
-      clearApplyCodeTemplateForSite("thai_jun88k36");
-    } catch (err) {
-      console.error("❌ Failed to reset thai_jun88k36:", err);
-    }
-  }, {
-    timezone: "Asia/Bangkok"
-  });
+cron.schedule('0 0 0 * * *', () => {
+  try {
+    clearApplyCodeTemplateForSite("thai_jun88k36");
+  } catch (err) {
+    console.error("❌ Failed to reset thai_jun88k36:", err);
+  }
+}, {
+  timezone: "Asia/Bangkok"
+});
 
 })();
