@@ -1372,7 +1372,7 @@ cron.schedule('*/5 * * * *', async () => {
 
 cron.schedule('*/5 * * * *', async () => {
   try {
-    const response = await axios.get(`${OCR_API_BASE}/health`);
+    const response = await axios.get(`${OCR_API_BASE}`);
     console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
   } catch (err: any) {
     console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
