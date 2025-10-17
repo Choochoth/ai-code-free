@@ -1067,7 +1067,7 @@ async function startProCodeLoop(siteName: string) {
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
 
-          if (point > 10) {
+          if (point > minPoint) {
 
             try {
               if (point > 20) {
