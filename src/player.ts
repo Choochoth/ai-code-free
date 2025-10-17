@@ -5,31 +5,13 @@ import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/p
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 
-
-// const playerPools: Record<string, PlayerPool> = {
-//   thai_789bet: {
-//     very_high: ["nus9331", "manus9331"],
-//     high:  ["nus9331", "manus9331",  "VIP0955171905", "poypy789"],
-//     mid: ["nus9331", "manus9331",  "VIP0955171905", "poypy789"],
-//     low: ["areeroon", "VIP0955171905", "poypy789", "kootong"],
-//     all: ["nus9331", "manus9331", "VIP0955171905", "poypy789", "kootong"]
-//   },
-//   thai_jun88k36: {
-//     very_high:["nus9331", "aroon11", "manus9331"],
-//     high: ["aroon11", "nus9331", "manus9331"],
-//     mid: ["aroon11", "bank0760"],
-//     low: ["bank0760"],
-//     all: ["nus9331", "manus9331", "aroon11", "bank0760"],
-//   }
-// };
-
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["manus9331", "areeroon", "nus9331"],
-    high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789", "areeroon"],
-    mid: ["VIP0955171905", "poypy789", "areeroon"],
+    very_high: ["manus9331", "nus9331"],
+    high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789"],
+    mid: ["VIP0955171905", "poypy789"],
     low: ["VIP0955171905", "kootong", "poypy789"],
-    all: ["nus9331", "manus9331", "VIP0955171905", "poypy789", "kootong", "areeroon"]
+    all: ["nus9331", "manus9331", "VIP0955171905", "poypy789", "kootong"]
   },
   thai_jun88k36: {
     very_high:["nus9331", "aroon11", "manus9331"],

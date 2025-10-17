@@ -1,15 +1,18 @@
 [build]
 builder = "DOCKERFILE"
-buildCommand = "npm install && npm run build"
 dockerfilePath = "Dockerfile"
 
 [deploy]
 runtime = "V2"
 numReplicas = 1
-startCommand = "npm run start"
 healthcheckPath = "/health"
 sleepApplication = true
-multiRegionConfig = {"us-west2":{"numReplicas":1}}
+useLegacyStacker = false
 restartPolicyType = "ON_FAILURE"
 healthcheckTimeout = 300
 restartPolicyMaxRetries = 10
+
+# 🌏 Multi-region config (เขียนแบบ table ปลอดภัย)
+[deploy.multiRegionConfig]
+region = "asia-southeast1-eqsg3a"
+numReplicas = 1

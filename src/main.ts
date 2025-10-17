@@ -1337,26 +1337,17 @@ async function getChatsList(client: TelegramClient) {
   }
 
 // Update Code: Keep-alive ping every 5 minutes 
-const baseUrl = `${process.env.BASE_URL}/health`;
+// const baseUrl = `${process.env.BASE_URL}/health`;
 
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const res = await axios.get(baseUrl);
-    console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
-  } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
-  }
-});
+// cron.schedule('*/5 * * * *', async () => {
+//   try {
+//     const res = await axios.get(baseUrl);
+//     console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
+//   } catch (err: any) {
+//     console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
+//   }
+// });
 
-
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const response = await axios.get(`${OCR_API_BASE}`);
-    console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
-  } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
-  }
-});
 
 
 // thai_789bet: reset เวลา 11:00 (GMT+7)
