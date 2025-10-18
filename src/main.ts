@@ -973,6 +973,7 @@ async function initializeService() {
   process.on("SIGTERM", gracefulShutdown);
   process.on("SIGINT", gracefulShutdown);
 }
+
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
@@ -1345,8 +1346,6 @@ async function getChatsList(client: TelegramClient) {
 
 (async () => {
   await startClient();
-  // // Auto-check every 5 minutes
-  // setInterval(checkConnectivity, 5 * 60 * 1000); 
 
   try {
     const me = (await client!.getEntity("me")) as Api.User;
@@ -1380,16 +1379,16 @@ cron.schedule('*/5 * * * *', async () => {
 });
 
 
-// thai_789bet: reset เวลา 11:00 (GMT+7)
-// cron.schedule('0 0 11 * * *', () => {
-//   try {
-//     clearApplyCodeTemplateForSite("thai_789bet");
-//   } catch (err) {
-//     console.error("❌ Failed to reset thai_789bet:", err);
-//   }
-// }, {
-//   timezone: "Asia/Bangkok"
-// });
+//thai_789bet: reset เวลา 11:00 (GMT+7)
+cron.schedule('0 0 11 * * *', () => {
+  try {
+    clearApplyCodeTemplateForSite("thai_789bet");
+  } catch (err) {
+    console.error("❌ Failed to reset thai_789bet:", err);
+  }
+}, {
+  timezone: "Asia/Bangkok"
+});
 
 // thai_jun88k36: reset เวลา 24:00 (GMT+7)
 cron.schedule('0 0 0 * * *', () => {
