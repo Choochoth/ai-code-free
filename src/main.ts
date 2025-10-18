@@ -848,6 +848,7 @@ async function initializeService() {
     };
     console.log("Site", informationSet);
 
+    // 📝 Create site queue if not exists
     if (!siteQueues[site]) {
       siteQueues[site] = {
         remainingCodes: [],
@@ -857,20 +858,26 @@ async function initializeService() {
         apiEndPoint,
         site,
         hostUrl,
-      } as SiteQueue;
+      };
+    }
 
-      // เรียกครั้งแรก ต้อง start ลูป
-      startProCodeLoop(site).catch(err => {
-        console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
-      });
-
-    } 
-
-    // ไม่ต้องหยุดลูปเดิม
-    // แค่แทรกโค้ดใหม่เข้าไปข้างหน้า
+    // 🔄 Add unique codes to queue
     const existing = new Set(siteQueues[site].remainingCodes);
-    const uniqueNewCodes = shuffledCodes.filter(code => !existing.has(code));
-    siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
+    const newCodes = shuffledCodes.filter(c => !existing.has(c));
+    siteQueues[site].remainingCodes.unshift(...newCodes);
+
+    // 🔁 Start processing loop if needed
+    const active = Object.values(siteQueues).find(q => q.isProcessing);
+    if (active) {
+      if (active.site !== site) {
+        abortCurrentSite(active.site);
+        startProCodeLoop(site).catch(err => console.error(err));
+      } else {
+        console.log(`♻️ Added new codes to ${site} queue.`);
+      }
+    } else {
+      startProCodeLoop(site).catch(err => console.error(err));
+    }
   };
 
   // 📩 Telegram Event Handlers
@@ -971,7 +978,7 @@ async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
     minPoint = 20;
   } else {
-    minPoint = 18;
+    minPoint = 15;
   }
 
   const siteQueue = siteQueues[siteName];
@@ -1067,59 +1074,74 @@ async function startProCodeLoop(siteName: string) {
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
 
-          if (point > 10) {
-
+          if (point > minPoint) {
             try {
-              if (point > 20) {
-                const player = await getSinglePlayer(point, site);
-                console.log("getSinglePlayers: ", player);
+              let singlePlayer: string | undefined;
+              singlePlayer = await getSinglePlayer(point, site);
 
-                if (player && !playerLocks.has(player)) {
-                  const singleResult = await sendCodeToPlayer(
-                    player, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+              if (singlePlayer && !playerLocks.has(singlePlayer)) {
+
+                // ✅ บันทึกว่า player นี้ถูกยิงไปแล้ว
+                markPlayerTried(site, singlePlayer);          
+                      
+                const singleResult = await sendCodeToPlayer(
+                  singlePlayer,
+                  promoCode.trim(),
+                  key,
+                  apiEndPoint,
+                  site,
+                  token,
+                  hostUrl
+                );
+
+                console.log(
+                  `📩 Full Result in getSinglePlayers ${singlePlayer}:`,
+                  singleResult
+                );
+
+                const singleCodeStatus =
+                  singleResult.status_code ?? singleResult?.ststus_code ?? 0;
+                const singleMessage = singleResult?.text_mess?.th || "";
+
+                if (singleCodeStatus === 200 && singleResult?.valid) {
+                  await updateApplyCodeLog(
+                    site,
+                    singlePlayer,
+                    promoCode,
+                    point
                   );
+                  sentPlayerIds.add(singlePlayer);
+                  playersSkip.add(singlePlayer);
+                } else {
+                  const rawPlayers = await getPlayerPool(point, site);
+                  if (singleCodeStatus === 502) {
+                    continue;
+                  } else if ([9001, 9002].includes(singleCodeStatus)) {
+                    remainingCodes.unshift(promoCode);
+                    continue;
+                  }
 
-                  console.log(`📩 Full Result in getSinglePlayers ${player}:`, singleResult);
+                  if (lockDurations[singleCodeStatus]) {
+                    playerLocks.add(singlePlayer);
+                    try {
+                      await updatePlayersLock(
+                        site,
+                        singlePlayer,
+                        singleMessage,
+                        lockDurations[singleCodeStatus],
+                        singleCodeStatus
+                      );
+                      console.log("✔️ Add PlayersLock complete.");
+                    } catch (err) {
+                      console.error("❌ Failed to add PlayersLock:", err);
+                    }
 
-                  const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
-                  const singleMessage = singleResult?.text_mess?.th || "";
-
-                  if (singleCodeStatus === 200 && singleResult?.valid) {
-                    await updateApplyCodeLog(site, player, promoCode, point);
-                    sentPlayerIds.add(player);
-                    playersSkip.add(player);
-                  } else {
-                    const rawPlayers = await getPlayerPool(point, site);
-                    if (singleCodeStatus === 502) {
-                      continue;
-                    } else if ([9001, 9002].includes(singleCodeStatus)) {
+                    if ([403, 4044, 9003, 9004, 9007].includes(singleCodeStatus)) {
                       remainingCodes.unshift(promoCode);
                       continue;
                     }
-
-                    if (lockDurations[singleCodeStatus]) {
-                      playerLocks.add(player);
-                      try {
-                        await updatePlayersLock(site, player, singleMessage, lockDurations[singleCodeStatus], singleCodeStatus);
-                        console.log("✔️ Add PlayersLock complete.");
-                      } catch (err) {
-                        console.error("❌ Failed to add PlayersLock:", err);
-                      }
-
-                      if ([403, 4044, 9003, 9004, 9007].includes(singleCodeStatus)) {
-                        remainingCodes.unshift(promoCode);
-                        continue;
-                      }
-                    }
-
-                    await applyCodeToPlayers(
-                      promoCode, key, token, apiEndPoint, site, hostUrl,
-                      rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
-                    );
                   }
-                  continue;
-                } else {
-                  const rawPlayers = await getPlayerPool(point, site);
+
                   await applyCodeToPlayers(
                     promoCode,
                     key,
@@ -1134,24 +1156,23 @@ async function startProCodeLoop(siteName: string) {
                     remainingCodes
                   );
                 }
-              }else{
-                  const rawPlayers = await getPlayerPool(point, site);
-
-                  // สุ่มเลือก 1 คนจาก rawPlayers
-                  const randomPlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
-
-                  // ตรวจสอบว่ามีผู้เล่นหรือไม่
-                  if (randomPlayer) {
-                    await applyCodeToPlayers(
-                      promoCode, key, token, apiEndPoint, site, hostUrl,
-                      [randomPlayer], // ส่งเป็น array ที่มีแค่ 1 คน
-                      sentPlayerIds, playersSkip, playerLocks, remainingCodes
-                    );
-                  }
-
-                  continue;
-
-              }  
+                continue;
+              } else {
+                const rawPlayers = await getPlayerPool(point, site);
+                await applyCodeToPlayers(
+                  promoCode,
+                  key,
+                  token,
+                  apiEndPoint,
+                  site,
+                  hostUrl,
+                  rawPlayers,
+                  sentPlayerIds,
+                  playersSkip,
+                  playerLocks,
+                  remainingCodes
+                );
+              }
             } catch (err) {
               console.error("❌ Error in getSinglePlayer:", err);
               const rawPlayers = await getPlayerPool(point, site);
