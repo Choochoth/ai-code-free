@@ -6,16 +6,7 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "I0U91KP",
-          "time": 1761073292961,
-          "time_limit": 1761159692961,
-          "status": "success",
-          "player": "aroon11",
-          "point": 22.88
-        }
-      ],
+      "players": [],
       "playersLock": []
     }
   }
