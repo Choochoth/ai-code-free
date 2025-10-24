@@ -1,53 +1,12 @@
 {
   "apply_code_today": {
-    "date": "2025-10-24",
+    "date": "2025-10-25",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "JPE8ZXG",
-          "time": 1761243214979,
-          "time_limit": 1761329614979,
-          "status": "success",
-          "player": "aroon11",
-          "point": 25.88
-        },        
-        {
-          "promo_code": "XP801GN",
-          "time": 1761243214979,
-          "time_limit": 1761329614979,
-          "status": "success",
-          "player": "NATTIES",
-          "point": 25.88
-        },
-       {
-          "promo_code": "P6818C3",
-          "time": 1761243214979,
-          "time_limit": 1761329614979,
-          "status": "success",
-          "player": "Ammies",
-          "point": 25.88
-        },
-       {
-          "promo_code": "PX0FJX3",
-          "time": 1761243214979,
-          "time_limit": 1761329614979,
-          "status": "success",
-          "player": "nus9331",
-          "point": 25.88
-        },
-       {
-          "promo_code": "IMNX5WH",
-          "time": 1761243214979,
-          "time_limit": 1761329614979,
-          "status": "success",
-          "player": "manus9331",
-          "point": 25.88
-        }        
-      ],
+      "players": [],
       "playersLock": []
     }
   }
