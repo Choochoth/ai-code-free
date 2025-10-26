@@ -4,23 +4,38 @@ import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
+// const playerPools: Record<string, PlayerPool> = {
+//   thai_789bet: {
+//     very_high: ["nus9331", "VIP0955171905", "manus9331", "poypy789", "WUTTICHAIZX1"],
+//     high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789", "areeroon", "WUTTICHAIZX1"],
+//     mid: ["manus9331", "VIP0955171905", "nus9331", "poypy789", "areeroon"],
+//     low: ["VIP0955171905", "kootong", "poypy789"],
+//     all: ["nus9331", "manus9331", "VIP0955171905", "poypy789", "kootong", "areeroon", "WUTTICHAIZX1"]
+//   },
+//   thai_jun88k36: {
+//     very_high:["manus9331", "aroon11", "nus9331", "AMMIES", "WUTTICHAIZX77"],
+//     high: ["aroon11", "nus9331", "manus9331", "AMMIES", "WUTTICHAIZX77"],
+//     mid: ["bank0760", "ary11" ],
+//     low: ["bank0760", "ary11"],
+//     all: ["nus9331", "manus9331", "aroon11", "bank0760", "ary11", "AMMIES", "WUTTICHAIZX77"]
+//   }
+// };
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["nus9331", "VIP0955171905", "manus9331", "poypy789"],
-    high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789", "areeroon"],
-    mid: ["manus9331", "VIP0955171905", "nus9331", "poypy789", "areeroon"],
-    low: ["VIP0955171905", "kootong", "poypy789"],
-    all: ["nus9331", "manus9331", "VIP0955171905", "poypy789", "kootong", "areeroon"]
+    very_high: ["WUTTICHAIZX1"],
+    high:  ["areeroon", "WUTTICHAIZX1"],
+    mid: ["areeroon"],
+    low: ["kootong", "poypy789"],
+    all: ["kootong", "areeroon", "WUTTICHAIZX1"]
   },
   thai_jun88k36: {
-    very_high:["manus9331", "aroon11", "nus9331", "AMMIES"],
-    high: ["aroon11", "nus9331", "manus9331", "AMMIES"],
+    very_high:["manus9331", "aroon11", "nus9331", "AMMIES", "WUTTICHAIZX77"],
+    high: ["aroon11", "nus9331", "manus9331", "AMMIES", "WUTTICHAIZX77"],
     mid: ["bank0760", "ary11" ],
     low: ["bank0760", "ary11"],
-    all: ["nus9331", "manus9331", "aroon11", "bank0760", "ary11", "AMMIES"]
+    all: ["nus9331", "manus9331", "aroon11", "bank0760", "ary11", "AMMIES", "WUTTICHAIZX77"]
   }
 };
-
 
 export type Site = keyof typeof playerPools;
 
