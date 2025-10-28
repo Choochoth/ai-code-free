@@ -3,6 +3,7 @@ import readline from 'readline';
 import fs from 'fs/promises';
 import path from 'path';
 import 'dotenv/config';
+import { playerTelegram } from "./playerTelegram";
 
 const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
 
@@ -136,3 +137,9 @@ export async function removeImage(imagePath: string): Promise<void> {
   }
 }
 
+export function getTelegramId(user: string) {
+  const found = playerTelegram[0].users.find(item =>
+    item.users.includes(user)
+  );
+  return found ? found.TelegramId : null;
+}
