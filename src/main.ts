@@ -326,7 +326,6 @@ async function sendCaptchaProCode(
   });
 }
 
-// 🛑 ฟังก์ชันหยุด site ที่กำลังทำงานอยู่
 function abortCurrentSite(siteName: string) {
   const queue = siteQueues[siteName];
   if (queue && queue.isProcessing && queue.abortFlag) {
@@ -543,7 +542,7 @@ async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
     minPoint = 12;
   } else {
-    minPoint = 10;
+    minPoint = 12;
   }
 
   const siteQueue = siteQueues[siteName];
