@@ -53,7 +53,7 @@ export function formatTelegramMessage(data: any): string {
   const messageText = data.message || data.status_mess || "-";
 
   let message = "";
-  const freeUsers:any = ["ammies"];
+  const freeUsers:any = ["tunpayong"];
   const specialUsers:any = ["ammies", "wuttichaizx77"];
 
   if (site === "thai_789bet") {
