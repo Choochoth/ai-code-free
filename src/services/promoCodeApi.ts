@@ -6,7 +6,7 @@ import "dotenv/config";
 import Bottleneck from "bottleneck";
 import { generateMockSiteHeaders } from "../device";
 import { sendResultToTelegram } from "../telegramBot";
-import { formatTelegramMessage } from "../utils";
+import { formatTelegramMessage, getTelegramId } from "../utils";
 
 const agent = new https.Agent({
   keepAlive: true,
@@ -53,7 +53,6 @@ function getAxiosConfig(headers: any) {
 }
 
 // ---------------- API Functions ----------------
-
 export async function sendCodeToPlayer(
   playerId: string,
   promoCode: string,
@@ -63,6 +62,11 @@ export async function sendCodeToPlayer(
   token: string,
   hostUrl: string
 ) {
+  // ---------- F168 ไม่ต้อง call เลย ----------
+  if (site === "thai_f168") {
+    return { skip: true, reason: "F168 does not use send-to-player API." };
+  }
+
   const url = `${apiEndPoint}/client?player_id=${playerId}&promo_code=${promoCode}&site=${site}`;
   const payload = { key };
   const headers = generateMockSiteHeaders(hostUrl, site);
@@ -78,8 +82,15 @@ export async function sendCodeToPlayer(
     if (res.data.status_code === 200 && res.data.valid) {
       res.data.site = site;
       res.data.link = "https://shorturl.at/tdFu4";
-      await sendResultToTelegram(formatTelegramMessage(res.data));
+
+      const telegram_id = getTelegramId(res.data.player_id); // ✅ now correct
+
+      await sendResultToTelegram(
+        formatTelegramMessage(res.data),
+        telegram_id
+      );
     }
+
 
     return res.data;
   } catch (err: any) {

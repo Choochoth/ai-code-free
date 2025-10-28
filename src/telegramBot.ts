@@ -102,12 +102,22 @@ export async function sendCaptchaToTelegram(imagePath: string): Promise<string> 
 //   }
 // }
 
-export async function sendResultToTelegram(message: string): Promise<void> {
+export async function sendResultToTelegram(message: string, usertelegram?: number | null): Promise<void> {
+  // 1) Send to the user (only if ID exists and is a real number)
+  if (typeof usertelegram === "number" && usertelegram > 0) {
+    try {
+      await bot.telegram.sendMessage(usertelegram, message, { parse_mode: "Markdown" });
+    } catch (error) {
+      console.error(`❌ Failed to send result to user ${usertelegram}:`, error);
+    }
+  }
+
+  // 2) Broadcast to admins
   for (const adminId of ADMIN_IDS) {
     try {
       await bot.telegram.sendMessage(adminId, message, { parse_mode: "Markdown" });
     } catch (error) {
-      console.error(`❌ Failed to send result to ${adminId}:`, error);
+      console.error(`❌ Failed to send result to admin ${adminId}:`, error);
     }
   }
 }
@@ -126,7 +136,6 @@ export async function sendSlipToTelegram(packageName: string, imagePath: string)
     }
   }
 }
-
 
 // Start polling
 bot.launch()
