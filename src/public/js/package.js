@@ -1,7 +1,7 @@
 let packages = [];
 let selectedPackage = null;
 let selectedSite = "jun88"; // ค่าเริ่มต้น
-const apiBase = "http://localhost:8002";
+const apiBase = "https://ai-code-api-production-474c.up.railway.app";
 // ================== โหลดข้อมูลแพ็กเกจจาก API ==================
 async function loadPackages() {
   try {
@@ -178,7 +178,7 @@ async function submitPayment() {
   if (notifyTelegram) form.append("telegramId", telegramId);
 
   loading.style.display = "block";
-  const apiBase = "http://localhost:8002";
+  const apiBase = "https://ai-code-api-production-474c.up.railway.app";
 
   try {
     const res = await fetch(`${apiBase}/api/submit-order`, { method: "POST", body: form });
