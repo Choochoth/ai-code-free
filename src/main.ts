@@ -616,23 +616,23 @@ async function startProCodeLoop(siteName: string) {
           const statusCode = result.status_code ?? result?.ststus_code ?? 0;
           const message = result?.text_mess?.th || "";
 
-          if (siteName === "thai_f168") {
-            console.log(result);
-            return false;
-            // thai_168: ถ้าไม่ใช่ข้อความผิดแคปต์ชา → addTemplate
-            const isCaptchaError = result.message.includes("แคปต์ชาไม่ถูกต้องจ้า ลองพิมพ์ใหม่อีกครั้งนะ 💕");
-            if (!isCaptchaError) {
-              addTemplate(captchaPath, captchaCode, site);
-            } else {
-              console.log("แคปต์ชาไม่ถูกต้องจ้า ไม่เพิ่ม addTemplates");
-            }
-          } else {
-            // site อื่นๆ: ถ้า status 400 และข้อความบอก captcha ผิด → ไม่ add
-            const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
-            if (!isCaptchaError) {
-              addTemplate(captchaPath, captchaCode, site);
-            }
-          }
+          // if (siteName === "thai_f168") {
+          //   console.log(result);
+          //   return false;
+          //   // thai_168: ถ้าไม่ใช่ข้อความผิดแคปต์ชา → addTemplate
+          //   const isCaptchaError = result.message.includes("แคปต์ชาไม่ถูกต้องจ้า ลองพิมพ์ใหม่อีกครั้งนะ 💕");
+          //   if (!isCaptchaError) {
+          //     addTemplate(captchaPath, captchaCode, site);
+          //   } else {
+          //     console.log("แคปต์ชาไม่ถูกต้องจ้า ไม่เพิ่ม addTemplates");
+          //   }
+          // } else {
+          //   // site อื่นๆ: ถ้า status 400 และข้อความบอก captcha ผิด → ไม่ add
+          //   const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
+          //   if (!isCaptchaError) {
+          //     addTemplate(captchaPath, captchaCode, site);
+          //   }
+          // }
 
         
         if (statusCode === 502 || message.includes("กรุณาลองใหม่อีกครั้ง")) {
