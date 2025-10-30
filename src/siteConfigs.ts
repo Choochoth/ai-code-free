@@ -28,7 +28,17 @@ const siteConfigs = [
         envVar: "API_ENDPOINT_J88",
         log: "🔹 Message from Jun88 THAILAND",
     }
+    // {
+    //     name: "thai_f168",
+    //     priority: 3,
+    //     keywords: ["casinof168", "casinof168"],
+    //     endpoint: "https://api-freecode.781243555.com",
+    //     players: ["nus9331", "aroon11"],
+    //     cskh_url: "https://m.f16118.cc",
+    //     key_free: "",
+    //     envVar: "API_ENDPOINT_F168",
+    //     log: "🔹 Message from F168 THAILAND",
+    // }    
 ];
 
 export{siteConfigs}
-

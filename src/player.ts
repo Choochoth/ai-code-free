@@ -4,12 +4,13 @@ import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
+
 // const playerPools: Record<string, PlayerPool> = {
 //   thai_789bet: {
-//     very_high: ["nus9331", "manus9331"],
-//     high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789"],
-//     mid: ["manus9331", "VIP0955171905", "nus9331", "poypy789"],
-//     low: ["VIP0955171905", "kootong", "poypy789", "areeroon"],
+//     very_high: ["nus9331", "VIP0955171905", "manus9331", "poypy789"],
+//     high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789", "areeroon"],
+//     mid: ["manus9331", "VIP0955171905", "nus9331", "poypy789", "areeroon"],
+//     low: ["VIP0955171905", "kootong", "poypy789"],
 //     all: ["nus9331", "manus9331", "VIP0955171905", "poypy789", "kootong", "areeroon"]
 //   },
 //   thai_jun88k36: {
@@ -17,17 +18,25 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 //     high: ["aroon11", "nus9331", "manus9331"],
 //     mid: ["aroon11", "bank0760", "ary11"],
 //     low: ["bank0760", "ary11"],
-//     all: ["aroon11", "manus9331", "bank0760", "ary11"]
+//     all: ["bank0760", "ary11"]
+//   },
+//   thai_168: {
+//     very_high:["nus9331", "aroon11"],
+//     high: ["nus9331", "aroon11"],
+//     mid: ["nus9331", "aroon11"],
+//     low: ["nus9331", "aroon11"],
+//     all: ["nus9331", "aroon11"],
 //   }
 // };
 
+
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["nus9331", "manus9331", "VIP0955171905", "poypy789"],
+    very_high: ["manus9331", "nus9331", "VIP0955171905", "poypy789"],
     high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789"],
     mid: ["manus9331", "VIP0955171905", "nus9331", "poypy789"],
-    low: ["VIP0955171905", "kootong", "poypy789", "areeroon"],
-    all: ["nus9331", "manus9331", "VIP0955171905", "poypy789", "kootong", "tong551212"]
+    low: ["kootong", "tong551212"],
+    all: ["kootong", "tong551212"]
   },
   thai_jun88k36: {
     very_high:["manus9331", "aroon11", "nus9331"],
@@ -35,8 +44,16 @@ const playerPools: Record<string, PlayerPool> = {
     mid: ["aroon11", "bank0760", "ary11"],
     low: ["bank0760", "ary11"],
     all: ["bank0760", "ary11", "manus9331", "aroon11", "nus9331"]
+  },
+  thai_168: {
+    very_high:["nus9331", "aroon11"],
+    high: ["nus9331", "aroon11"],
+    mid: ["nus9331", "aroon11"],
+    low: ["nus9331", "aroon11"],
+    all: ["nus9331", "aroon11"],
   }
 };
+
 
 export type Site = keyof typeof playerPools;
 
@@ -55,7 +72,8 @@ async function ensureDataFile() {
       apply_code_today: {
         date: "",
         thai_789bet: { players: [], playersLock: [] },
-        thai_jun88k36: { players: [], playersLock: [] }
+        thai_jun88k36: { players: [], playersLock: [] },
+        thai_f168: { players: [], playersLock: [] }
       }
     };
     await fs.writeFile(applyCodeFile, JSON.stringify(initData, null, 2), "utf-8");
@@ -149,7 +167,7 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
     return strictFallback(pool.high, pool.very_high, pool.mid);
   }
   if (point >= 18) {
-    return strictFallback(pool.mid, pool.high, pool.very_high);
+    return strictFallback(pool.mid);
   }
   if (point >= 15) {
     return strictFallback(pool.mid, pool.low);
@@ -256,7 +274,8 @@ function clearApplyCodeTemplateForSite(site: Site | null) {
     apply_code_today: {
       date: today,
       thai_789bet: { players: [], playersLock: [] },
-      thai_jun88k36: { players: [], playersLock: [] }
+      thai_jun88k36: { players: [], playersLock: [] },
+      thai_f168: { players: [], playersLock: [] }
     }
   };
 

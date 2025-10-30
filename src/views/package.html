@@ -6,6 +6,7 @@
   <title>ซื้อแพ็กเก็จยิงโค้ด</title>
   <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="/css/package.css" />
+
   <!-- SweetAlert2 -->
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -15,11 +16,11 @@
     #modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0, 0, 0, 0.6);
       display: none;
       justify-content: center;
       align-items: center;
-      z-index: 1050; /* ไม่สูงเกินไป */
+      z-index: 1050;
     }
     #modal.modal-open {
       display: flex;
@@ -36,17 +37,15 @@
       position: relative;
       z-index: 1060;
     }
-    /* SweetAlert2 ปรับ z-index สูงกว่า modal */
     .swal2-container {
       z-index: 2000 !important;
     }
   </style>
 </head>
+
 <body>
   <h1>เลือกแพ็กเกจสุดคุ้ม</h1>
-  <div class="package-grid" id="packageGrid">
-    <!-- รายการแพ็กเกจจะถูกเพิ่มด้วย JS -->
-  </div>
+  <div class="package-grid" id="packageGrid"></div>
 
   <!-- Modal -->
   <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
@@ -74,7 +73,7 @@
       </div>
 
       <div class="slip-upload-container">
-        <label for="slipInput" class="upload-label">📎 แนบสลิปการโอนหรือคูปองจากจะบบ</label>
+        <label for="slipInput" class="upload-label">📎 แนบสลิปการโอนหรือคูปองจากระบบ</label>
         <input type="file" id="slipInput" accept="image/*" class="upload-input" onchange="handleSlipChange()" />
         <span id="slipFileName" class="file-name">ยังไม่ได้เลือกไฟล์</span>
         <img id="slipPreview" src="" alt="Preview สลิป" class="slip-preview" style="display: none;" />
@@ -86,6 +85,7 @@
           <option value="">-เลือกเว็บไซต์-</option>
           <option value="jun88" selected="selected">Jun88</option>
         </select>
+
         <label for="userInput">ยูสเซอร์:</label>
         <input type="text" id="userInput" class="styled-input" placeholder="กรอกชื่อผู้ใช้" aria-label="กรอกชื่อผู้ใช้" />
       </div>
@@ -104,96 +104,79 @@
             💡 คุณสามารถดู Chat ID ได้จาก 
             <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" style="color:#0088cc; text-decoration:none; font-weight:600;">
               @userinfobot
-            </a> 
+            </a>
             ใน Telegram
           </p>
         </div>
       </div>
 
       <p id="loadingStatus" style="display:none;"><span class="loader"></span> กำลังส่งข้อมูล...</p>
-      <button class="receive-btn" onclick="submitPayment()">ยืนยันการชำระเงิน</button>
+      <button id="submitPaymentBtn" class="receive-btn">ยืนยันการชำระเงิน</button>
     </div>
   </div>
 
-    <!-- Floating Contact Button -->
-    <div id="contactToggle" onclick="toggleContactBar()" title="ติดต่อเรา">
-      <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="Contact Mail" />
-    </div>
+  <!-- Floating Contact Button -->
+  <div id="contactToggle" onclick="toggleContactBar()" title="ติดต่อเรา">
+    <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="Contact Mail" />
+  </div>
 
-    <!-- Slide-out Contact Bar -->
-    <div id="contactBar">
-      <a href="https://t.me/freeceditcode" target="_blank" rel="noopener">
-        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
-        <span>ติดต่อแอดมิน</span>
-      </a>
-      <a href="https://t.me/AiCodeFree" target="_blank" rel="noopener">
-        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
-        <span>แจ้งรายชื่อผู้ได้รับโค้ด</span>
-      </a>
-      <a href="https://web.facebook.com/profile.php?id=61578301000831" target="_blank" rel="noopener">
-        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="facebook">
-        <span>Facebook</span>
-      </a>
-    </div>
-
-
+  <!-- Slide-out Contact Bar -->
+  <div id="contactBar">
+    <a href="https://t.me/freeceditcode" target="_blank" rel="noopener">
+      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
+      <span>ติดต่อแอดมิน</span>
+    </a>
+    <a href="https://t.me/AiCodeFree" target="_blank" rel="noopener">
+      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
+      <span>แจ้งรายชื่อผู้ได้รับโค้ด</span>
+    </a>
+    <a href="https://web.facebook.com/profile.php?id=61578301000831" target="_blank" rel="noopener">
+      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111392.png" alt="facebook">
+      <span>Facebook</span>
+    </a>
+  </div>
 
   <script>
     let packages = [];
     let selectedPackage = null;
-    const apiBaseUrls = {
-      'typescript-telegram-auto-forword-production.up.railway.app': 'https://captchaocrapi-production.up.railway.app',
-      'typescript-telegram-auto-forword.onrender.com': 'https://captcha-ocr-api.onrender.com',
-      'localhost:5100': 'http://localhost:8000',
-    };
 
     function toggleContactBar() {
       document.getElementById('contactBar').classList.toggle('open');
     }
 
     async function loadPackages() {
+      const apiBase = 'http://localhost:8002';
+      console.log('🔹 Fetching packages...');
       try {
-        const res = await fetch('/api/package-payment');
+        const res = await fetch(`${apiBase}/api/packages`);
+        console.log('🔹 Response received', res);
         if (!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
         const data = await res.json();
-
-        const allGroups = [
-          data.free_package,
-          data.day_package,
-          data.package,
-        ];
-
+        console.log('🔹 JSON data:', data);
+        const allGroups = [data.free_package, data.day_package, data.package];
         renderPackages(allGroups);
       } catch (e) {
+        console.error('Fetch error:', e);
         Swal.fire({
           icon: 'error',
           title: 'เกิดข้อผิดพลาด',
           text: 'ไม่สามารถโหลดข้อมูลแพ็กเกจได้',
           confirmButtonText: 'ปิด'
         });
-        console.error(e);
       }
     }
 
+
     function renderBadgeIcons(badges) {
       if (!badges || !Array.isArray(badges)) return '';
-
       const iconMap = {
         new: 'https://img.icons8.com/ios-filled/24/ff4e80/new.png',
-        hot: 'https://img.icons8.com/fluency/24/ff4e80/fire-element.png',       // ใช้ไฟล์ "fire-element" แทน hot
+        hot: 'https://img.icons8.com/fluency/24/ff4e80/fire-element.png',
         recommend: 'https://img.icons8.com/ios-filled/24/ff4e80/star--v1.png',
         sale: 'https://img.icons8.com/fluency/24/ff4e80/sale.png',
       };
-
-      return badges.map(b => {
-        const src = iconMap[b];
-        if (!src) return '';
-        return `
-          <img class="badge-icon" src="${src}" alt="${b}" title="${b}" loading="lazy" />
-        `;
-      }).join('');
+      return badges.map(b => iconMap[b] ? `<img class="badge-icon" src="${iconMap[b]}" alt="${b}" title="${b}" />` : '').join('');
     }
-
 
     function renderPackages(groups) {
       const grid = document.getElementById('packageGrid');
@@ -222,15 +205,13 @@
 
         group.package_data.forEach(pkg => {
           packages.push(pkg);
-
           const priceHtml = (pkg.package_sale && pkg.package_sale > 0)
             ? `<span class="old-price">${pkg.package_price} บาท</span>
-              <span class="sale-price">${pkg.package_sale} บาท</span>`
+               <span class="sale-price">${pkg.package_sale} บาท</span>`
             : `<span>${pkg.package_price} บาท</span>`;
 
           const card = document.createElement('div');
           card.className = 'package-card';
-
           card.innerHTML = `
             <div class="badge-wrapper">${renderBadgeIcons(pkg.package_badge)}</div>
             <img src="${pkg.package_logo}" alt="โลโก้ ${pkg.package_name}" class="package-logo" />
@@ -241,7 +222,6 @@
             <div class="package-benefit">${pkg.package_desc}</div>
             <button class="receive-btn" onclick="openModal('${pkg.package_name}')">รับสิทธิ์</button>
           `;
-
           cardWrapper.appendChild(card);
         });
 
@@ -251,36 +231,25 @@
     }
 
     function openModal(packageName) {
-        selectedPackage = packages.find(p => p.package_name === packageName);
-        if (!selectedPackage) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'แพ็กเกจไม่ถูกต้อง',
-            text: 'กรุณาเลือกแพ็กเกจที่ถูกต้อง',
-            confirmButtonText: 'ปิด'
-          });
-          return;
-        }
+      selectedPackage = packages.find(p => p.package_name === packageName);
+      if (!selectedPackage) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'แพ็กเกจไม่ถูกต้อง',
+          text: 'กรุณาเลือกแพ็กเกจที่ถูกต้อง',
+          confirmButtonText: 'ปิด'
+        });
+      }
 
-        document.getElementById('selected-package').textContent = `แพ็กเกจที่เลือก: ${selectedPackage.package_name}`;
-
-        // ✅ ใช้ราคา sale ถ้ามี
-        const displayPrice = (selectedPackage.package_sale && selectedPackage.package_sale > 0)
-          ? selectedPackage.package_sale
-          : selectedPackage.package_price;
-        document.getElementById('selected-price').textContent = displayPrice;
-
-        const modal = document.getElementById('modal');
-        modal.style.display = 'flex';
-        document.body.classList.add('modal-open');
-
-        modal.querySelector('.modal-content').focus();
+      document.getElementById('selected-package').textContent = `แพ็กเกจที่เลือก: ${selectedPackage.package_name}`;
+      const displayPrice = (selectedPackage.package_sale && selectedPackage.package_sale > 0)
+        ? selectedPackage.package_sale : selectedPackage.package_price;
+      document.getElementById('selected-price').textContent = displayPrice;
+      document.getElementById('modal').style.display = 'flex';
     }
 
     function closeModal() {
-      const modal = document.getElementById('modal');
-      modal.style.display = 'none';
-      document.body.classList.remove('modal-open');
+      document.getElementById('modal').style.display = 'none';
       clearForm();
     }
 
@@ -340,21 +309,16 @@
       group.style.display = check ? 'block' : 'none';
     }
 
+
     async function submitPayment() {
-      const site = document.getElementById('siteSelect').value.trim();
+      // const site = document.getElementById('siteSelect').value.trim();
+      const site = "thai_jun88k36";
       const user = document.getElementById('userInput').value.trim();
       const slip = document.getElementById('slipInput');
       const loading = document.getElementById('loadingStatus');
 
-      // ดึง apiUrl จาก host ปัจจุบัน
-      const currentHost = window.location.host;
-      const apiBaseUrls = {
-        'typescript-telegram-auto-forword-production.up.railway.app': 'https://captchaocrapi-production.up.railway.app',
-        'typescript-telegram-auto-forword.onrender.com': 'https://captcha-ocr-api.onrender.com',
-        'localhost:5100': 'http://localhost:8000',
-      };
-      const apiBase = apiBaseUrls[currentHost] || 'http://localhost:8000';
-      const apiUrl = `${apiBase}/api/submit-slip`;
+      const apiBase = 'http://localhost:8002';
+      const apiUrl = `${apiBase}/api/submit-order`;
 
       if (!selectedPackage) {
         return Swal.fire({
@@ -403,6 +367,7 @@
           ? selectedPackage.package_sale
           : selectedPackage.package_price;
       const form = new FormData();
+      form.append('package_id', selectedPackage.package_id);
       form.append('package', selectedPackage.package_name);
       form.append('price', displayPrice);
       form.append('site', site);
@@ -454,6 +419,8 @@
     document.getElementById('modal').addEventListener('click', e => {
       if (e.target.id === 'modal') closeModal();
     });
+    document.getElementById('submitPaymentBtn').addEventListener('click', submitPayment);
+
 
     window.addEventListener('DOMContentLoaded', loadPackages);
   </script>

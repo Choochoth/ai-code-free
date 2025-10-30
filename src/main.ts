@@ -326,6 +326,7 @@ async function sendCaptchaProCode(
   });
 }
 
+
 function abortCurrentSite(siteName: string) {
   const queue = siteQueues[siteName];
   if (queue && queue.isProcessing && queue.abortFlag) {
@@ -409,7 +410,7 @@ async function initializeService() {
       endpoint: apiEndPoint,
       key_free: siteConfig.key_free,
     };
-    console.log("Site", informationSet);
+    // console.log("Site", informationSet);
 
     // 📝 Create site queue if not exists
     if (!siteQueues[site]) {
@@ -599,7 +600,7 @@ async function startProCodeLoop(siteName: string) {
           site,
           hostUrl
         );
-        const { captchaCode, captchaPath } = await getInputCaptcha(captchaUrl);
+        const { captchaCode, captchaPath } = await getInputCaptcha(captchaUrl, site);
 
         const result = await sendCaptchaProCode(
           promoCode,
@@ -612,13 +613,28 @@ async function startProCodeLoop(siteName: string) {
         );
         if (!result) continue;
 
-        const statusCode = result.status_code ?? result?.ststus_code ?? 0;
-        const message = result?.text_mess?.th || "";
+          const statusCode = result.status_code ?? result?.ststus_code ?? 0;
+          const message = result?.text_mess?.th || "";
 
-        // if (statusCode !== 400 || message.includes("รหัส Captcha ไม่ถูกต้อง")) {
-        //   addTemplate(captchaPath, captchaCode);
-        // }
+          if (siteName === "thai_f168") {
+            console.log(result);
+            return false;
+            // thai_168: ถ้าไม่ใช่ข้อความผิดแคปต์ชา → addTemplate
+            const isCaptchaError = result.message.includes("แคปต์ชาไม่ถูกต้องจ้า ลองพิมพ์ใหม่อีกครั้งนะ 💕");
+            if (!isCaptchaError) {
+              addTemplate(captchaPath, captchaCode, site);
+            } else {
+              console.log("แคปต์ชาไม่ถูกต้องจ้า ไม่เพิ่ม addTemplates");
+            }
+          } else {
+            // site อื่นๆ: ถ้า status 400 และข้อความบอก captcha ผิด → ไม่ add
+            const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
+            if (!isCaptchaError) {
+              addTemplate(captchaPath, captchaCode, site);
+            }
+          }
 
+        
         if (statusCode === 502 || message.includes("กรุณาลองใหม่อีกครั้ง")) {
           console.warn("🚫 Code already used (502), skipping.");
           continue;
