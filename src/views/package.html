@@ -145,7 +145,7 @@
     }
 
     async function loadPackages() {
-      const apiBase = 'http://localhost:8002';
+      const apiBase = 'https://api-okvip-code-ai-production.up.railway.app';
       console.log('🔹 Fetching packages...');
       try {
         const res = await fetch(`${apiBase}/api/packages`);
@@ -317,7 +317,7 @@
       const slip = document.getElementById('slipInput');
       const loading = document.getElementById('loadingStatus');
 
-      const apiBase = 'http://localhost:8002';
+      const apiBase = 'https://api-okvip-code-ai-production.up.railway.app';
       const apiUrl = `${apiBase}/api/submit-order`;
 
       if (!selectedPackage) {
