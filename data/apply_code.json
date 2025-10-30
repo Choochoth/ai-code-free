@@ -2,10 +2,23 @@
   "apply_code_today": {
     "date": "2025-10-31",
     "thai_789bet": {
-      "players": [],
+      "players": [
+        {
+          "promo_code": "QRQci9itx8Pvu",
+          "time": 1761853197611,
+          "time_limit": 1761939597611,
+          "status": "success",
+          "player": "nus9331",
+          "point": 15.89
+        }
+      ],
       "playersLock": []
     },
     "thai_jun88k36": {
+      "players": [],
+      "playersLock": []
+    },
+    "thai_168": {
       "players": [],
       "playersLock": []
     }
