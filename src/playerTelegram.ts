@@ -1,5 +1,5 @@
  //playerTelegram.ts
- const playerTelegram = [
+  const playerTelegram = [
     {
       users: [
         {
