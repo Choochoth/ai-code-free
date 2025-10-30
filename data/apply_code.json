@@ -15,7 +15,16 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
+      "players": [
+        {
+          "promo_code": "kyWYBCU",
+          "time": 1761858371985,
+          "time_limit": 1761944771985,
+          "status": "success",
+          "player": "bank0760",
+          "point": 25.88
+        }
+      ],
       "playersLock": []
     },
     "thai_168": {
