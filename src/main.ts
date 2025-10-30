@@ -55,12 +55,12 @@ const apiId = Number(process.env.API_ID);
 const apiHash = process.env.API_HASH || "";
 const phoneNumber = process.env.APP_YOUR_PHONE || "";
 const userPassword = process.env.APP_YOUR_PWD || "";
-const port = Number(process.env.PORT) || 5500;
+const port = Number(process.env.PORT) || 5100;
 const MAX_RETRIES = 3;
 let retryInterval = 6000;
 let lastRestartTime = 0;
 let isRestarting: boolean = false;
-const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8004";
+const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
 const appSession = process.env.APP_SESSION;
 
 const processedMessageIds = new Set<string>();

@@ -611,3 +611,143 @@ h1 {
   font-weight: 700;
   font-size: 1.3rem;
 }
+
+/* ================== Package Card ================== */
+.package-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  padding: 15px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.package-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.package-card h3 {
+  font-size: 1.2rem;
+  margin: 10px 0 5px;
+}
+.package-card p {
+  margin: 5px 0;
+  font-size: 0.95rem;
+}
+.package-card .price {
+  font-weight: bold;
+  color: #0088cc;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+.select-package-btn {
+  background: #0088cc;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s, transform 0.2s;
+}
+.select-package-btn:hover {
+  background: #006699;
+  transform: translateY(-2px);
+}
+
+/* ================== Input Modern Style ================== */
+input[type="text"],
+input[type="number"],
+input[type="file"],
+#telegramId {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #ccc;
+  font-size: 0.95rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="file"]:focus,
+#telegramId:focus {
+  border-color: #0088cc;
+  box-shadow: 0 0 6px rgba(0,136,204,0.3);
+  outline: none;
+}
+
+/* ================== File Input Custom ================== */
+input[type="file"] {
+  padding: 6px;
+  cursor: pointer;
+  background: #f7f7f7;
+}
+input[type="file"]::file-selector-button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #0088cc;
+  background: #0088cc;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+input[type="file"]::file-selector-button:hover {
+  background: #006699;
+}
+
+/* ================== Add User Button ================== */
+.add-user-btn {
+  background: #00bfa5;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s, transform 0.2s;
+}
+.add-user-btn:hover {
+  background: #009e8f;
+  transform: translateY(-2px);
+}
+
+/* ================== Remove User Button ================== */
+.remove-user-btn {
+  background: #ff4e4e;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+.remove-user-btn:hover {
+  background: #cc3b3b;
+}
+
+/* ================== Loader ================== */
+.loader {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #0088cc;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ================== Modal Scroll ================== */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background: #0088cc;
+  border-radius: 3px;
+}

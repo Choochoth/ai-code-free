@@ -25,7 +25,6 @@ const execAsync = promisify(exec);
 const baseDir = __dirname;  // Current directory of this script
 const dataDir = path.join(baseDir, "data");
 const captchaDirectory = path.join(dataDir, "images", "captchas");
-const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
 
 try {
   if (!fs.existsSync(captchaDirectory)) {
@@ -70,30 +69,6 @@ async function encryptText(text: string, key_free: string) {
     }
   };
 
-/**
- * Resets and renews the IP address on Windows using ipconfig.
- * Requires administrative privileges to work correctly.
- */
-async function resetAndRenewIP_Windows(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    console.log("🔄 Releasing IP address...");
-    const batPath = path.join(__dirname, '../resetnet/reset_network.bat');
-
-    exec(`start "" "${batPath}"`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`เกิดข้อผิดพลาด: ${error.message}`);
-        return reject(error);
-      }
-      if (stderr) {
-        console.error(`stderr: ${stderr}`);
-        // สามารถเลือก resolve หรือ reject ตามกรณี
-        return reject(new Error(stderr));
-      }
-      console.log(`stdout: ${stdout}`);
-      return resolve();
-    });
-  });
-}
 
 async function getInputCaptcha(imageUrl: string, site:string): Promise<{ captchaCode: string, captchaPath: string }> {
   await fs.promises.mkdir(captchaDirectory, { recursive: true });
@@ -124,9 +99,9 @@ async function getInputCaptcha(imageUrl: string, site:string): Promise<{ captcha
     const captchas = await ocr(tempPath, site);
     console.log(`✅Before OCR Result: ${captchas.text}`);
     console.log(`📊 Confidence: ${captchas.confidence}% (ความมั่นใจเฉลี่ยของทั้ง 4 ตัว)`);
-   let captchaCode: string = captchas.text.trim();
+    let captchaCode: string = captchas.text.trim();
     // let captchaCode: string;
-    // if (captchas.confidence >= 95) {
+    // if (captchas.confidence >= 90) {
     //   captchaCode = captchas.text;
     // } else {
     //   console.warn("⚠️ IrfanView check removed, using default viewer...");
@@ -300,5 +275,5 @@ async function openImage(captchaPath: string, ocrResult: string): Promise<string
   return captchaCode || ocrResult;
 }
 
-export { encryptText, decryptText, resetAndRenewIP_Windows, getInputCaptcha, parserCodeMessage, getCaptchaMessage, openImage};
+export { encryptText, decryptText,  getInputCaptcha, parserCodeMessage, getCaptchaMessage, openImage};
   
