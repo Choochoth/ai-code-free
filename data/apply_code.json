@@ -15,8 +15,25 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
-      "playersLock": []
+      "players": [
+        {
+          "promo_code": "kyWYBCU",
+          "time": 1761858371985,
+          "time_limit": 1761944771985,
+          "status": "success",
+          "player": "bank0760",
+          "point": 25.88
+        }
+      ],
+      "playersLock": [
+        {
+          "player": "manus9331",
+          "timelock": 1761858356873,
+          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
+          "lockTime": 1800000,
+          "lockCode": 9007
+        }
+      ]
     },
     "thai_168": {
       "players": [],
