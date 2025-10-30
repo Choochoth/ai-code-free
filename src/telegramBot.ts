@@ -1,4 +1,4 @@
-import { Telegraf, Context } from 'telegraf';
+import { Telegraf, Context, Telegram } from 'telegraf';
 import { Message, Update } from 'telegraf/typings/core/types/typegram';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -12,6 +12,8 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "")
   .map(id => id.trim())
   .filter(id => id.length > 0)
   .map(id => Number(id)); // แปลงเป็น number
+
+  
 // const ADMIN_IDS: (number | string)[] = [7841730633, 7551758092];
 
 // Map to track pending CAPTCHA replies
@@ -74,34 +76,6 @@ export async function sendCaptchaToTelegram(imagePath: string): Promise<string> 
   });
 }
 
-// export async function sendResultToTelegram(result: {
-//   site: string;
-//   link: string;
-//   status_code: number;
-//   valid: boolean;
-//   status_mess: string;
-//   player_id: string;
-//   point: number;
-// }): Promise<void> {
-//   const caption = `
-// Site: ${result.site}
-// Link: ${result.link}
-// Status Code: ${result.status_code}
-// Valid: ${result.valid}
-// Message: ${result.status_mess}
-// Player ID: ${result.player_id}
-// Points: ${result.point}
-// `.trim();
-
-//   for (const adminId of ADMIN_IDS) {
-//     try {
-//       await bot.telegram.sendMessage(adminId, caption);
-//     } catch (error) {
-//       console.error(`❌ Failed to send result to ${adminId}:`, error);
-//     }
-//   }
-// }
-
 export async function sendResultToTelegram(message: string, usertelegram?: number | null): Promise<void> {
   // 1) Send to the user (only if ID exists and is a real number)
   if (typeof usertelegram === "number" && usertelegram > 0) {
@@ -135,6 +109,20 @@ export async function sendSlipToTelegram(packageName: string, imagePath: string)
       console.error(`❌ Failed to send slip to ${adminId}:`, error);
     }
   }
+}
+
+
+function getTelegramId(user:string){
+  const playerTelegram:any=[{
+    user:{
+      TelegramId:7795985512,
+      users:["Ammies", "NATTIES"]
+    }
+  }]
+  if (user.includes(playerTelegram.users)) {
+    return playerTelegram.TelegramId
+  }
+
 }
 
 // Start polling

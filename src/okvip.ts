@@ -143,7 +143,7 @@ async function resetAndRenewIP_Windows(): Promise<void> {
   });
 }
 
-async function getInputCaptcha(imageUrl: string): Promise<{ captchaCode: string, captchaPath: string }> {
+async function getInputCaptcha(imageUrl: string, site:string): Promise<{ captchaCode: string, captchaPath: string }> {
   await fs.promises.mkdir(captchaDirectory, { recursive: true });
 
   const buffer = imageUrl.startsWith('data:image/svg+xml')
@@ -169,32 +169,32 @@ async function getInputCaptcha(imageUrl: string): Promise<{ captchaCode: string,
     await fs.promises.writeFile(tempPath, processedBuffer);
     // console.log('✅ CAPTCHA image saved to:', tempPath);
 
-    const captchas = await ocr(tempPath);
-    // console.log(`✅Before OCR Result: ${captchas.text}`);
-    // console.log(`📊 Confidence: ${captchas.confidence}% (ความมั่นใจเฉลี่ยของทั้ง 4 ตัว)`);
-    let captchaCode: string = captchas.text.trim();
-    // let captchaCode: string;
-    // if (captchas.confidence >= 100) {
-    //   captchaCode = captchas.text;
-    // } else {
-    //   console.warn("⚠️ IrfanView check removed, using default viewer...");
-    //   await execAsync(`start "" "${tempPath.replace(/\\/g, '\\\\')}"`);
+    const captchas = await ocr(tempPath, site);
+    console.log(`✅Before OCR Result: ${captchas.text}`);
+    console.log(`📊 Confidence: ${captchas.confidence}% (ความมั่นใจเฉลี่ยของทั้ง 4 ตัว)`);
+   // let captchaCode: string = captchas.text.trim();
+    let captchaCode: string;
+    if (captchas.confidence >= 95) {
+      captchaCode = captchas.text;
+    } else {
+      console.warn("⚠️ IrfanView check removed, using default viewer...");
+      await execAsync(`start "" "${tempPath.replace(/\\/g, '\\\\')}"`);
 
-    //   try {
-    //     captchaCode = await Promise.race([
-    //       promptInput('🔤 Enter CAPTCHA code from image (within 30s): '),
-    //       new Promise<string>((resolve) =>
-    //         setTimeout(() => {
-    //           console.warn("⏰ Timeout - using OCR result instead");
-    //           resolve(captchas.text);
-    //         }, 20000)
-    //       ),
-    //     ]);
-    //   } catch (error) {
-    //     console.warn("⚠️ Error or timeout, using OCR result");
-    //     captchaCode = captchas.text;
-    //   }
-    // }
+      try {
+        captchaCode = await Promise.race([
+          promptInput('🔤 Enter CAPTCHA code from image (within 30s): '),
+          new Promise<string>((resolve) =>
+            setTimeout(() => {
+              console.warn("⏰ Timeout - using OCR result instead");
+              resolve(captchas.text);
+            }, 20000)
+          ),
+        ]);
+      } catch (error) {
+        console.warn("⚠️ Error or timeout, using OCR result");
+        captchaCode = captchas.text;
+      }
+    }
 
     if (!captchaCode || captchaCode.trim().length < 4) {
       console.warn(`❗️Invalid CAPTCHA input. Skipping. Input: ${captchaCode}`);
@@ -202,12 +202,12 @@ async function getInputCaptcha(imageUrl: string): Promise<{ captchaCode: string,
       throw new Error("Invalid CAPTCHA input");
     }
 
-    const finalPath = path.join(captchaDirectory, `${captchaCode.toUpperCase()}_${timestamp}.png`);
+    const finalPath = path.join(captchaDirectory, `${captchaCode}_${timestamp}.png`);
     await fs.promises.rename(tempPath, finalPath);
     // console.log('📦 Image renamed to:', finalPath);
     // await addTemplate(finalPath, captchaCode.toUpperCase())
     return {
-      captchaCode: captchaCode.toUpperCase(),
+      captchaCode: captchaCode,
       captchaPath: finalPath,
     };
 

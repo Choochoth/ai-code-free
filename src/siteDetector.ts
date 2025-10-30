@@ -10,6 +10,8 @@ export const chatIdMap: Record<string, string> = {
   "-1002040396559": "thai_789bet",
   "-1002406062886": "thai_789bet",
   "-1002544749433": "thai_789bet",  
+  // F168
+  // "-1002983089547": "thai_f168"
 };
 
 // ฟังก์ชัน detect site จากข้อความ
