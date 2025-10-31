@@ -29,19 +29,18 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 //   }
 // };
 
-
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["manus9331", "nus9331", "VIP0955171905", "poypy789"],
-    high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789"],
-    mid: ["manus9331", "VIP0955171905", "nus9331", "poypy789", "areeroon"],
-    low: ["kootong", "tong551212", "areeroon"],
-    all: ["kootong", "tong551212", "areeroon"]
+    high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789", "qeerty"],
+    mid: ["manus9331", "VIP0955171905", "nus9331", "poypy789", "qeerty"],
+    low: ["kootong", "tong551212", "qeerty"],
+    all: ["kootong", "tong551212", "qeerty"]
   },
   thai_jun88k36: {
-    very_high:["manus9331", "aroon11", "nus9331"],
-    high: ["aroon11", "nus9331", "manus9331"],
-    mid: ["aroon11", "bank0760", "ary11"],
+    very_high:["manus9331", "aroon11", "nus9331", "AMMIES", "NATTIES"],
+    high: ["aroon11", "nus9331", "manus9331", "AMMIES", "NATTIES"],
+    mid: ["aroon11", "bank0760", "manus9331", "ary11" , "AMMIES", "NATTIES"],
     low: ["bank0760", "ary11"],
     all: ["bank0760", "ary11", "manus9331", "aroon11", "nus9331"]
   },
@@ -53,6 +52,7 @@ const playerPools: Record<string, PlayerPool> = {
     all: ["nus9331", "aroon11"],
   }
 };
+
 
 
 export type Site = keyof typeof playerPools;
