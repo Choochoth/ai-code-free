@@ -5,7 +5,7 @@ import path from 'path';
 import 'dotenv/config';
 import { playerTelegram, rewardUsers, freeUsers} from "./playerTelegram";
 
-const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
+const OCR_API_BASE = process.env.OCR_API_BASE || "https://api-okvip-code-ai-production.up.railway.app";
 
 function escapeMarkdown(text: string): string {
   // Escape เฉพาะ Markdown characters ที่ต้องการจริงๆ
