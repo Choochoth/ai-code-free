@@ -94,7 +94,7 @@ function addUserInput(isSingle = false) {
   div.className = "user-item";
   div.innerHTML = `
     <input type="text" class="user-name" placeholder="ชื่อยูสเซอร์" required />
-    <input type="number" class="count-input" placeholder="จำนวน" min="1" value="1" />
+    <input type="number" class="count-input" placeholder="จำนวนโค้ด" min="1" value="1" />
     ${!isSingle ? `<button class="remove-user-btn" onclick="removeUser(this)">✖</button>` : ""}
   `;
 
