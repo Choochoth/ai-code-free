@@ -1,7 +1,8 @@
 let packages = [];
 let selectedPackage = null;
-let selectedSite = "jun88"; // ค่าเริ่มต้น
+let selectedSite = "jun88";
 const apiBase = "https://ai-code-api-production-474c.up.railway.app";
+
 // ================== โหลดข้อมูลแพ็กเกจจาก API ==================
 async function loadPackages() {
   try {
@@ -45,12 +46,11 @@ function openModal(pkg) {
   userList.innerHTML = "";
 
   const maxQty = pkg.code_qty || 1;
-
   if (maxQty > 1) {
     addUserInput();
     document.querySelector(".add-user-btn").disabled = false;
   } else {
-    addUserInput(true); // โหมดห้ามเพิ่ม
+    addUserInput(true);
     document.querySelector(".add-user-btn").disabled = true;
   }
 }
@@ -73,10 +73,16 @@ document.addEventListener("click", e => {
 // ================== เพิ่มยูสเซอร์ ==================
 function addUserInput(isSingle = false) {
   const userList = document.getElementById("userList");
-  const currentItems = userList.querySelectorAll(".user-item").length;
   const maxQty = selectedPackage.code_qty || 1;
 
-  if (currentItems >= maxQty && !isSingle) {
+  // รวมจำนวนโค้ดทั้งหมดในตอนนี้
+  let currentTotal = 0;
+  document.querySelectorAll(".count-input").forEach(input => {
+    currentTotal += parseInt(input.value || 0);
+  });
+
+  // ถ้าเกิน maxQty แล้วห้ามเพิ่ม
+  if (currentTotal >= maxQty && !isSingle) {
     return Swal.fire({
       icon: "warning",
       title: "เกินจำนวนโค้ดที่กำหนด!",
@@ -91,12 +97,50 @@ function addUserInput(isSingle = false) {
     <input type="number" class="count-input" placeholder="จำนวน" min="1" value="1" />
     ${!isSingle ? `<button class="remove-user-btn" onclick="removeUser(this)">✖</button>` : ""}
   `;
+
+  // ตรวจสอบการเปลี่ยนค่าแบบเรียลไทม์
+  const countInput = div.querySelector(".count-input");
+  countInput.addEventListener("input", validateTotalQty);
+
   userList.appendChild(div);
+  validateTotalQty();
 }
 
 // ================== ลบยูสเซอร์ ==================
 function removeUser(btn) {
   btn.parentElement.remove();
+  validateTotalQty();
+}
+
+// ================== ตรวจสอบยอดรวมโค้ดแบบเรียลไทม์ ==================
+function validateTotalQty() {
+  const maxQty = selectedPackage.code_qty || 1;
+  let total = 0;
+
+  const inputs = document.querySelectorAll(".count-input");
+  inputs.forEach(input => {
+    let val = parseInt(input.value || 0);
+    if (val > maxQty) {
+      input.value = maxQty;
+      val = maxQty;
+      Swal.fire({
+        icon: "warning",
+        title: "จำนวนเกิน!",
+        text: `แพ็กเกจนี้มีได้สูงสุด ${maxQty} โค้ดเท่านั้น`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    }
+    total += val;
+  });
+
+  // ปิดปุ่มเพิ่มถ้าเกิน
+  const addBtn = document.querySelector(".add-user-btn");
+  if (total >= maxQty) {
+    addBtn.disabled = true;
+  } else {
+    addBtn.disabled = false;
+  }
 }
 
 // ================== พรีวิวสลิป ==================
@@ -178,7 +222,6 @@ async function submitPayment() {
   if (notifyTelegram) form.append("telegramId", telegramId);
 
   loading.style.display = "block";
-  const apiBase = "https://ai-code-api-production-474c.up.railway.app";
 
   try {
     const res = await fetch(`${apiBase}/api/submit-order`, { method: "POST", body: form });
