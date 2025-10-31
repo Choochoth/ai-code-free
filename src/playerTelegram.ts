@@ -1,5 +1,5 @@
  //playerTelegram.ts
-  const playerTelegram = [
+ const playerTelegram = [
     {
       users: [
         {
@@ -14,5 +14,9 @@
     }
   ];
 
-  export {playerTelegram}
+
+  const freeUsers:any = [];
+  const rewardUsers:any = [];
+
+  export {playerTelegram, freeUsers, rewardUsers}
   
