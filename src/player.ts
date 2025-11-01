@@ -47,8 +47,7 @@ async function ensureDataFile() {
       apply_code_today: {
         date: "",
         thai_789bet: { players: [], playersLock: [] },
-        thai_jun88k36: { players: [], playersLock: [] },
-        thai_f168: { players: [], playersLock: [] }
+        thai_jun88k36: { players: [], playersLock: [] }
       }
     };
     await fs.writeFile(applyCodeFile, JSON.stringify(initData, null, 2), "utf-8");
@@ -249,8 +248,7 @@ function clearApplyCodeTemplateForSite(site: Site | null) {
     apply_code_today: {
       date: today,
       thai_789bet: { players: [], playersLock: [] },
-      thai_jun88k36: { players: [], playersLock: [] },
-      thai_f168: { players: [], playersLock: [] }
+      thai_jun88k36: { players: [], playersLock: [] }
     }
   };
 
