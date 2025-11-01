@@ -5,10 +5,9 @@ import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/p
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 
-
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["manus9331", "nus9331"],
+    very_high: ["manus9331", "nus9331", "VIP0955171905", "poypy789"],
     high:  ["manus9331", "VIP0955171905", "nus9331", "poypy789"],
     mid: ["manus9331", "VIP0955171905", "poypy789"],
     low: ["kootong", "tong551212"],
@@ -48,8 +47,7 @@ async function ensureDataFile() {
       apply_code_today: {
         date: "",
         thai_789bet: { players: [], playersLock: [] },
-        thai_jun88k36: { players: [], playersLock: [] },
-        thai_f168: { players: [], playersLock: [] }
+        thai_jun88k36: { players: [], playersLock: [] }
       }
     };
     await fs.writeFile(applyCodeFile, JSON.stringify(initData, null, 2), "utf-8");
@@ -143,7 +141,7 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
     return strictFallback(pool.high, pool.very_high, pool.mid);
   }
   if (point >= 18) {
-    return strictFallback(pool.high, pool.mid);
+    return strictFallback(pool.mid);
   }
   if (point >= 15) {
     return strictFallback(pool.mid, pool.low);
@@ -250,8 +248,7 @@ function clearApplyCodeTemplateForSite(site: Site | null) {
     apply_code_today: {
       date: today,
       thai_789bet: { players: [], playersLock: [] },
-      thai_jun88k36: { players: [], playersLock: [] },
-      thai_f168: { players: [], playersLock: [] }
+      thai_jun88k36: { players: [], playersLock: [] }
     }
   };
 
