@@ -578,6 +578,7 @@ async function startProCodeLoop(siteName: string) {
     const playersSkip = new Set<string>();
     cleanupExpiredBlocks();
 
+    console.log("Start Loop Code in site : ",siteName)
     while (true) {
       if (abortFlag?.canceled) {
         console.log(`⏹️ Processing for ${site} aborted.`);
