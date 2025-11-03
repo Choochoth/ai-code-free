@@ -39,7 +39,39 @@
           "status": "success",
           "player": "aroon11",
           "point": 24.88
-        }        
+        },
+                {
+          "promo_code": "Zrf6ddR",
+          "time": 1762099562614,
+          "time_limit": 1762185962614,
+          "status": "success",
+          "player": "nus9331",
+          "point": 24.88
+        },
+        {
+          "promo_code": "Zrf6ddR",
+          "time": 1762099562614,
+          "time_limit": 1762185962614,
+          "status": "success",
+          "player": "bank0760",
+          "point": 24.88
+        },
+                {
+          "promo_code": "Zrf6ddR",
+          "time": 1762099562614,
+          "time_limit": 1762185962614,
+          "status": "success",
+          "player": "ary11",
+          "point": 24.88
+        },
+        {
+          "promo_code": "Zrf6ddR",
+          "time": 1762099562614,
+          "time_limit": 1762185962614,
+          "status": "success",
+          "player": "bank0760",
+          "point": 24.88
+        }
       ],
       "playersLock": []
     }
