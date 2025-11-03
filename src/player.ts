@@ -7,16 +7,16 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["manus9331", "VIP0955171905", "CHEKKKK19", "CHEKKKK16", "nus9331"],
-    high:  ["CHEKKKK18", "CHEKKKK19", "CHEKKKK16", "manus9331", "VIP0955171905", "nus9331", "poypy789"],
-    mid: ["manus9331", "VIP0955171905", "CHEKKKK19", "CHEKKKK16", "poypy789", "nus9331"],
+    very_high: ["manus9331", "nus9331", "CHEKKKK16"],
+    high:  ["CHEKKKK16", "manus9331", "VIP0955171905", "nus9331", "poypy789"],
+    mid: ["manus9331", "VIP0955171905", "CHEKKKK16", "poypy789", "nus9331"],
     low: ["kootong", "tong551212"],
-    all: ["manus9331", "VIP0955171905", "nus9331", "CHEKKKK19", "CHEKKKK16", "poypy789", "kootong", "tong551212"]
+    all: ["manus9331", "VIP0955171905", "nus9331", "CHEKKKK16", "poypy789", "kootong", "tong551212"]
   },
   thai_jun88k36: {
-    very_high:["manus9331", "aroon11", "nus9331"],
+    very_high:["manus9331", "aroon11", "nus9331", "CHEKKKK14"],
     high: ["aroon11", "nus9331", "manus9331", "CHEKKKK14"],
-    mid: ["aroon11", "bank0760", "ary11", "nuschai", "CHEKKKK14"],
+    mid: ["aroon11", "bank0760", "ary11", "nuschai", "CHEKKKK14", "nus9331"],
     low: ["bank0760", "ary11", "nuschai"],
     all: ["bank0760", "ary11", "manus9331", "aroon11", "nus9331", "nuschai", "CHEKKKK14"]
   }
