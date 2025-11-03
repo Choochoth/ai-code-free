@@ -11,7 +11,7 @@ const playerPools: Record<string, PlayerPool> = {
     high:  ["CHEKKKK16", "manus9331", "VIP0955171905", "nus9331", "poypy789"],
     mid: ["manus9331", "VIP0955171905", "CHEKKKK16", "poypy789", "nus9331"],
     low: ["kootong", "tong551212"],
-    all: ["manus9331", "VIP0955171905", "nus9331", "CHEKKKK16", "poypy789", "kootong", "tong551212"]
+    all: ["manus9331", "VIP0955171905", "nus9331", "CHEKKKK16", "poypy789", "kootong"]
   },
   thai_jun88k36: {
     very_high:["manus9331", "aroon11", "nus9331", "CHEKKKK14"],
