@@ -12,7 +12,7 @@
         },
         {
           TelegramId: 1891499609,
-          users: ["Chekkkk04", "Chekkkk09", "Chekkkk14", "Chekkkk18"]
+          users: ["Chekkkk04", "Chekkkk09", "Chekkkk12", "Chekkkk16", "Chekkkk18", "Chekkkk19"]
         }
       ]
     }
