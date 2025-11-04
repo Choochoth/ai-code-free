@@ -541,9 +541,9 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 20;
+    minPoint = 17;
   } else {
-    minPoint = 18;
+    minPoint = 17;
   }
 
   const siteQueue = siteQueues[siteName];
