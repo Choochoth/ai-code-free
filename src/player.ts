@@ -30,13 +30,15 @@ const playerPools: Record<string, PlayerPool> = {
     all: ["manus9331", "VIP0955171905", "nus9331", "Chekkkk15", "Chekkkk16", "Chekkkk18", "Chekkkk19", "AMMIES", "poypy789", "kootong", "tong551212"]
   },
   thai_jun88k36: {
-    very_high:["Chekkkk12", "Chekkkk16", "Chekkkk18", "Chekkkk19", "manus9331", "AMMIES", "aroon11", "nus9331"],
-    high: ["aroon11", "nus9331", "manus9331", "AMMIES", "Chekkkk12", "Chekkkk16", "Chekkkk18", "Chekkkk19",],
-    mid: ["aroon11", "bank0760", "Chekkkk12", "Chekkkk16", "Chekkkk18", "Chekkkk19","ary11", "nuschai", "AMMIES"],
-    low: ["bank0760", "ary11", "nuschai"],
-    all: ["bank0760", "ary11", "manus9331", "aroon11", "Chekkkk12", "Chekkkk16", "Chekkkk18", "Chekkkk19", "nus9331", "nuschai", "AMMIES"]
+    very_high:["Chekkkk16", "Chekkkk18", "Chekkkk19", "manus9331", "AMMIES", "aroon11", "nus9331"],
+    high: ["aroon11", "nus9331", "manus9331", "AMMIES", "Chekkkk16", "Chekkkk18", "Chekkkk19",],
+    mid: ["aroon11", "bank0760", "Chekkkk16", "Chekkkk18", "Chekkkk19","ary11", "nuschai", "AMMIES", "Chekkkk14", "Chekkkk04", "Chekkkk08", "notea0035", "manu69", "AMJA1122", "momay199314", "Darin668"],
+    low: ["bank0760", "ary11", "nuschai" ,"Chekkkk14", "Chekkkk04", "Chekkkk08", "notea0035", "manu69", "AMJA1122", "momay199314", "Darin668"],
+    all: ["Chekkkk14", "Chekkkk04", "Chekkkk08", "notea0035", "manu69", "AMJA1122", "momay199314", "Darin668"]
   }
 };
+
+
 export type Site = keyof typeof playerPools;
 
 const baseDir = __dirname;
