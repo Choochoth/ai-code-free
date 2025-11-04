@@ -112,19 +112,6 @@ export async function sendSlipToTelegram(packageName: string, imagePath: string)
 }
 
 
-function getTelegramId(user:string){
-  const playerTelegram:any=[{
-    user:{
-      TelegramId:7795985512,
-      users:["Ammies", "NATTIES"]
-    }
-  }]
-  if (user.includes(playerTelegram.users)) {
-    return playerTelegram.TelegramId
-  }
-
-}
-
 // Start polling
 bot.launch()
   .then(() => console.log('🤖 Bot started'))
