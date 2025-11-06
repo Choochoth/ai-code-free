@@ -22,6 +22,22 @@
           "status": "success",
           "player": "ary11",
           "point": 16.88
+        },
+        {
+          "promo_code": "lLyg2mw",
+          "time": 1762415168714,
+          "time_limit": 1762501568714,
+          "status": "success",
+          "player": "aroon11",
+          "point": 16.88
+        },        
+        {
+          "promo_code": "lLyg2mw",
+          "time": 1762415168714,
+          "time_limit": 1762501568714,
+          "status": "success",
+          "player": "manus9331",
+          "point": 16.88
         }
       ],
       "playersLock": []
