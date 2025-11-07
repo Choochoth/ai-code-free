@@ -1,21 +1,12 @@
 {
   "apply_code_today": {
-    "date": "2025-11-07",
+    "date": "2025-11-08",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "3VXR41C",
-          "time": 1762499906283,
-          "time_limit": 1762586306283,
-          "status": "success",
-          "player": "aroon11",
-          "point": 25.88
-        }
-      ],
+      "players": [],
       "playersLock": []
     }
   }
