@@ -6,6 +6,7 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 
 
+
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["manus9331", "nus9331", "poypy789", "VIP0955171905"],
@@ -15,13 +16,14 @@ const playerPools: Record<string, PlayerPool> = {
     all: ["manus9331", "nus9331", "VIP0955171905","poypy789", "kootong"]
   },
   thai_jun88k36: {
-    very_high:["manus9331", "aroon11", "nus9331", "Apoung"],
-    high: ["aroon11", "nus9331", "manus9331", "Apoung"],
-    mid: ["aroon11", "nuschai", "ary11", "bank7060", "Apoung"],
+    very_high:["manus9331", "aroon11", "nus9331", "Chekkkk14", "Chekkkk19", "Apoung", "Chekkkk18", "Chekkkk16"],
+    high: ["aroon11", "nus9331", "manus9331", "Chekkkk14", "Chekkkk19", "Apoung", "Chekkkk18", "Chekkkk16"],
+    mid: ["aroon11", "nuschai", "ary11", "bank7060", "Chekkkk14", "Chekkkk19", "Apoung", "Chekkkk18", "Chekkkk16"],
     low: ["ary11", "bank7060", "nuschai"],
-    all: ["aroon11", "nus9331", "manus9331", "ary11", "bank7060", "nuschai", "Apoung"]
+    all: ["ary11", "bank7060", "nuschai", "Chekkkk14", "Chekkkk19", "Apoung", "Chekkkk18", "Chekkkk16"]
   }
 };
+
 
 export type Site = keyof typeof playerPools;
 
