@@ -17,7 +17,11 @@
         {
           TelegramId: 7777347424,
           users: ["ply757"]
-        }
+        },
+        {
+          TelegramId: 788225380,
+          users: ["Apoung"]
+        }        
       ]
     }
   ];
