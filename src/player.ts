@@ -6,18 +6,18 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["manus9331", "nus9331", "poypy789", "VIP0955171905"],
-    high:  ["manus9331", "nus9331", "poypy789", "VIP0955171905"],
-    mid: ["manus9331", "poypy789", "nus9331", "VIP0955171905", "areeroon"],
-    low: ["kootong", "VIP0955171905","poypy789", "areeroon"],
-    all: ["manus9331", "nus9331", "VIP0955171905","poypy789", "kootong", "areeroon"]
+    very_high: ["manus9331", "nus9331", "poypy789", "VIP0955171905", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"],
+    high:  ["manus9331", "nus9331", "poypy789", "VIP0955171905", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"],
+    mid: ["manus9331", "poypy789", "nus9331", "VIP0955171905", "areeroon", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"],
+    low: ["kootong", "VIP0955171905","poypy789", "areeroon", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"],
+    all: ["manus9331", "nus9331", "VIP0955171905","poypy789", "kootong", "areeroon", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"]
   },
   thai_jun88k36: {
-    very_high:["manus9331", "aroon11", "nus9331", "Chekkkk16"],
-    high: ["aroon11", "nus9331", "manus9331", "Chekkkk16"],
-    mid: ["nuschai", "ary11", "bank7060", "Chekkkk16"],
-    low: ["ary11", "bank7060", "nuschai"],
-    all: ["ary11", "manus9331", "aroon11", "nus9331", "bank7060", "nuschai", "Chekkkk16"]
+    very_high:["manus9331", "aroon11", "nus9331"],
+    high: ["aroon11", "nus9331", "manus9331", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk14", "Apoung", "Ammies"],
+    mid: ["nuschai", "ary11", "bank7060", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk14", "Apoung", "Ammies"],
+    low: ["ary11", "bank7060", "nuschai", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk14", "Apoung", "Ammies"],
+    all: ["ary11", "manus9331", "aroon11", "nus9331", "bank7060", "nuschai", "Chekkkk18", "Chekkkk18", "Chekkkk19", "Chekkkk14", "Apoung", "Ammies"]
   }
 };
 
