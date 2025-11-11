@@ -4,7 +4,7 @@
       users: [
         {
           TelegramId: 7795985512,
-          users: ["Ammies", "natties"]
+          users: ["amies", "natties"]
         },
         {
           TelegramId: 8371851714,
@@ -12,7 +12,7 @@
         },
         {
           TelegramId: 1891499609,
-          users: ["Chekkkk04", "Chekkkk09", "Chekkkk12", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk14","Chekkkk08", "notea0035", "manu69", "AMJA1122", "momay199314", "Darin668", "tong1689"]
+          users: ["chekkkk04", "chekkkk09", "chekkkk12", "chekkkk16", "chekkkk18", "chekkkk19", "chekkkk14", "chekkkk04", "chekkkk08"]
         },
         {
           TelegramId: 7777347424,
@@ -20,8 +20,8 @@
         },
         {
           TelegramId: 788225380,
-          users: ["Apoung"]
-        }
+          users: ["apoung"]
+        }          
       ]
     }
   ];
