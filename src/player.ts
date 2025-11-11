@@ -6,18 +6,18 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["manus9331", "nus9331", "poypy789", "VIP0955171905", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"],
-    high:  ["manus9331", "nus9331", "poypy789", "VIP0955171905", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"],
-    mid: ["manus9331", "poypy789", "nus9331", "VIP0955171905", "areeroon", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"],
-    low: ["kootong", "VIP0955171905","poypy789", "areeroon", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"],
-    all: ["manus9331", "nus9331", "VIP0955171905","poypy789", "kootong", "areeroon", "Ammies", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk15"]
+    very_high: ["manus9331", "nus9331", "poypy789", "vip0955171905", "ammies", "chekkkk19", "chekkkk15"],
+    high:  ["manus9331", "nus9331", "poypy789", "vip0955171905", "ammies", "chekkkk19", "chekkkk15"],
+    mid: ["manus9331", "poypy789", "nus9331", "vip0955171905", "areeroon", "ammies", "chekkkk19", "chekkkk15"],
+    low: ["kootong", "vip0955171905","poypy789", "areeroon", "ammies", "chekkkk19", "chekkkk15"],
+    all: ["manus9331", "nus9331", "vip0955171905","poypy789", "kootong", "areeroon", "ammies", "chekkkk19", "chekkkk15"]
   },
   thai_jun88k36: {
     very_high:["manus9331", "aroon11", "nus9331"],
-    high: ["aroon11", "nus9331", "manus9331", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk14", "Apoung", "Ammies"],
-    mid: ["nuschai", "ary11", "bank7060", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk14", "Apoung", "Ammies"],
-    low: ["ary11", "bank7060", "nuschai", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk14", "Apoung", "Ammies"],
-    all: ["ary11", "manus9331", "aroon11", "nus9331", "bank7060", "nuschai", "Chekkkk16", "Chekkkk18", "Chekkkk19", "Chekkkk14", "Apoung", "Ammies"]
+    high: ["aroon11", "nus9331", "manus9331"],
+    mid: ["nuschai", "ary11", "bank7060"],
+    low: ["ary11", "bank7060", "nuschai"],
+    all: ["ary11", "manus9331", "aroon11", "nus9331", "bank7060", "nuschai"]
   }
 };
 
