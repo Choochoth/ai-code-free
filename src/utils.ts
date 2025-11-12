@@ -5,7 +5,7 @@ import path from 'path';
 import 'dotenv/config';
 import { playerTelegram, rewardUsers, freeUsers} from "./playerTelegram";
 
-const OCR_API_BASE = process.env.OCR_API_BASE || "https://ai-code-api-production-474c.up.railway.app";
+const OCR_API_BASE = process.env.OCR_API_BASE || "https://api-okvip-code-ai-production.up.railway.app";
 
 function escapeMarkdown(text: string): string {
   // Escape เฉพาะ Markdown characters ที่ต้องการจริงๆ
@@ -77,6 +77,7 @@ export function formatTelegramMessage(data: any): string {
       💰 *ยอดฟรีเครดิต:* ${points} บาท
       🔗 *ซื้อแพ็กเกจยิงโค้ด :* ${link}`;
     }
+
   } else if (site === "thai_jun88k36") {
     if (rewardUsers.includes(playerId)) {
       message = `🎯 *ยินดีด้วย! คุณได้รับรางวัลสมนาคุณลูกค้า เครดิตถูกส่งเข้าบัญชีแล้ว*

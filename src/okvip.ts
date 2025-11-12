@@ -25,6 +25,7 @@ const execAsync = promisify(exec);
 const baseDir = __dirname;  // Current directory of this script
 const dataDir = path.join(baseDir, "data");
 const captchaDirectory = path.join(dataDir, "images", "captchas");
+const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
 
 try {
   if (!fs.existsSync(captchaDirectory)) {
