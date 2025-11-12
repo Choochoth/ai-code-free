@@ -21,8 +21,6 @@ const playerPools: Record<string, PlayerPool> = {
   }
 };
 
-
-
 export type Site = keyof typeof playerPools;
 
 const baseDir = __dirname;
@@ -134,7 +132,7 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
     return strictFallback(pool.high, pool.very_high, pool.mid);
   }
   if (point >= 18) {
-    return strictFallback(pool.mid, pool.high);
+    return strictFallback(pool.high, pool.mid);
   }
   if (point >= 15) {
     return strictFallback(pool.mid, pool.low);
