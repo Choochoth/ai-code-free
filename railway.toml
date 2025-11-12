@@ -12,7 +12,5 @@ restartPolicyType = "ON_FAILURE"
 healthcheckTimeout = 300
 restartPolicyMaxRetries = 10
 
-# 🌏 Multi-region config (เขียนแบบ table ปลอดภัย)
-[deploy.multiRegionConfig]
-region = "asia-southeast1-eqsg3a"
+[deploy.multiRegionConfig."asia-southeast1-eqsg3a"]
 numReplicas = 1
