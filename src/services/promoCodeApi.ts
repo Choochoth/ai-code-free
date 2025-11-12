@@ -14,6 +14,7 @@ const agent = new https.Agent({
 });
 
 const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
+const BASE_URL = process.env.BASE_URL || "";
 
 // ---------------- Axios + Bottleneck ----------------
 const api: AxiosInstance = axios.create({
@@ -82,9 +83,10 @@ export async function sendCodeToPlayer(
 
     if (res.data.status_code === 200 && res.data.valid) {
       res.data.site = site;
-      res.data.link = "https://shorturl.at/tdFu4";
+      res.data.link = `${BASE_URL.replace(/\/$/, '')}/package`;
+      res.data.user = (res.data.player_id || '').toString().toLowerCase();
 
-      const telegram_id = getTelegramId(res.data.player_id); // ✅ now correct
+      const telegram_id = getTelegramId(res.data.user); // ✅ now correct
 
       await sendResultToTelegram(
         formatTelegramMessage(res.data),
