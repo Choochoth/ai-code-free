@@ -32,6 +32,6 @@ COPY package*.json ./
 # 🟢 ใช้แบบนี้แทน npm ci เพราะไม่มี package-lock.json
 RUN npm install --omit=dev
 
-EXPOSE 3000
+EXPOSE 5400
 
-CMD ["sh", "-c", "node dist/main.js --port ${PORT:-3000}"]
+CMD ["sh", "-c", "node dist/main.js --port ${PORT:-5400}"]
