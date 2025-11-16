@@ -55,7 +55,7 @@ const apiId = Number(process.env.API_ID);
 const apiHash = process.env.API_HASH || "";
 const phoneNumber = process.env.APP_YOUR_PHONE || "";
 const userPassword = process.env.APP_YOUR_PWD || "";
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.PORT) || 5400;
 const MAX_RETRIES = 3;
 let retryInterval = 6000;
 let lastRestartTime = 0;
@@ -938,19 +938,18 @@ async function getChatsList(client: TelegramClient) {
 // Update Code: Keep-alive ping every 5 minutes 
 const baseUrl = `${process.env.BASE_URL}/health`;
 
-cron.schedule('*/5 * * * *', async () => {
+cron.schedule("*/5 * * * *", async () => {
   try {
-    const res = await axios.get(baseUrl);
+    const res = await axios.get(`${process.env.BASE_URL}/health`);
     console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
   } catch (err: any) {
     console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
   }
 });
 
-
-cron.schedule('*/5 * * * *', async () => {
+cron.schedule("*/5 * * * *", async () => {
   try {
-    const response = await axios.get(`${OCR_API_BASE}/health`);
+    const response = await axios.get(`${process.env.OCR_API_BASE}/health`);
     console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
   } catch (err: any) {
     console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
