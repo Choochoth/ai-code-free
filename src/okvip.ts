@@ -25,7 +25,7 @@ const execAsync = promisify(exec);
 const baseDir = __dirname;  // Current directory of this script
 const dataDir = path.join(baseDir, "data");
 const captchaDirectory = path.join(dataDir, "images", "captchas");
-const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
+const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8002";
 
 try {
   if (!fs.existsSync(captchaDirectory)) {
@@ -102,7 +102,7 @@ async function getInputCaptcha(imageUrl: string, site:string): Promise<{ captcha
     console.log(`📊 Confidence: ${captchas.confidence}% (ความมั่นใจเฉลี่ยของทั้ง 4 ตัว)`);
     let captchaCode: string = captchas.text.trim();
     // let captchaCode: string;
-    // if (captchas.confidence >= 90) {
+    // if (captchas.confidence >= 91) {
     //   captchaCode = captchas.text;
     // } else {
     //   console.warn("⚠️ IrfanView check removed, using default viewer...");
@@ -115,7 +115,7 @@ async function getInputCaptcha(imageUrl: string, site:string): Promise<{ captcha
     //         setTimeout(() => {
     //           console.warn("⏰ Timeout - using OCR result instead");
     //           resolve(captchas.text);
-    //         }, 20000)
+    //         }, 15000)
     //       ),
     //     ]);
     //   } catch (error) {
@@ -124,11 +124,11 @@ async function getInputCaptcha(imageUrl: string, site:string): Promise<{ captcha
     //   }
     // }
 
-    if (!captchaCode || captchaCode.trim().length < 4) {
-      console.warn(`❗️Invalid CAPTCHA input. Skipping. Input: ${captchaCode}`);
-      await removeImage(tempPath);
-      throw new Error("Invalid CAPTCHA input");
-    }
+    // if (!captchaCode || captchaCode.trim().length < 4) {
+    //   console.warn(`❗️Invalid CAPTCHA input. Skipping. Input: ${captchaCode}`);
+    //   await removeImage(tempPath);
+    //   throw new Error("Invalid CAPTCHA input");
+    // }
 
     const finalPath = path.join(captchaDirectory, `${captchaCode}_${timestamp}.png`);
     await fs.promises.rename(tempPath, finalPath);
@@ -237,7 +237,7 @@ function parserCodeMessage(message: string): string[] {
     !token.startsWith("Twitter") &&
     !token.startsWith("ติดตาม") &&
     !token.startsWith("เพื่มความรวด") &&
-    !/^("🫠🤫🤭🫡🥺🤥Bigger|Frenzy|88OKPAY|Official|คาสโน|สลอต|แจก|เกม|โปรโมท|ราย|ได|การ|เงน|facebook|promotion|telegarm|instagram|twitter|789betthailand|https|freecode.06789bet.com|m.99789bet.vip|88Talk|789BET|JUN88|LiveChat|Bounty|Google|Chrome|Youtude|TELEGRAM|Scatter|SCATTER|MINITERE|88OKPAY|BIRTHDAY)$/i.test(token)
+    !/^("🫠🤫🤭🫡🥺🤥Bigger|Frenzy|88OKPAY|Official|คาสโน|สลอต|แจก|เกม|โปรโมท|ราย|ได|การ|เงน|facebook|promotion|telegarm|instagram|twitter|789betthailand|https|freecode.06789bet.com|m.99789bet.vip|88Talk|789BET|JUN88|LiveChat|Bounty|Google|Chrome|Youtude|TELEGRAM|Scatter|SCATTER|MINITERE|88OKPAY|BIRTHDAY|YouTube|IPHONE)$/i.test(token)
   );
 
   const cleanedCodes = codes
