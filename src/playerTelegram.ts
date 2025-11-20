@@ -4,7 +4,7 @@
       users: [
         {
           TelegramId: 7795985512,
-          users: ["amies", "natties", "iamkanya"]
+          users: ["amies", "natties", "iamkanya", "Iammy89"]
         },
         {
           TelegramId: 8371851714,
