@@ -109,13 +109,7 @@ function getInlineButtons(link: string) {
           text: "📞 ติดต่อแอดมิน",
           url: "https://t.me/freeceditcode",
         },
-      ],
-      [
-        {
-          text: "🔄 ยิงโค้ดอีกครั้ง",
-          callback_data: "retry_code",
-        },
-      ],
+      ]
     ],
   };
 }
