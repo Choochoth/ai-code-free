@@ -55,7 +55,7 @@ const apiId = Number(process.env.API_ID);
 const apiHash = process.env.API_HASH || "";
 const phoneNumber = process.env.APP_YOUR_PHONE || "";
 const userPassword = process.env.APP_YOUR_PWD || "";
-const port = Number(process.env.PORT) || 5400;
+const port = Number(process.env.PORT) || 5300;
 const MAX_RETRIES = 3;
 let retryInterval = 6000;
 let lastRestartTime = 0;
@@ -578,6 +578,7 @@ async function startProCodeLoop(siteName: string) {
     const playersSkip = new Set<string>();
     cleanupExpiredBlocks();
 
+    console.log("Start Loop Code in site : ",siteName)
     while (true) {
       if (abortFlag?.canceled) {
         console.log(`⏹️ Processing for ${site} aborted.`);
@@ -633,6 +634,12 @@ async function startProCodeLoop(siteName: string) {
           //     addTemplate(captchaPath, captchaCode, site);
           //   }
           // }
+
+
+        // const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
+        // if (!isCaptchaError) {
+        //   addTemplate(captchaPath, captchaCode, site);
+        // }
 
         
         if (statusCode === 502 || message.includes("กรุณาลองใหม่อีกครั้ง")) {
