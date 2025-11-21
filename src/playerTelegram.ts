@@ -4,7 +4,7 @@
       users: [
         {
           TelegramId: 7795985512,
-          users: ["amies", "natties", "iamkanya"]
+          users: ["amies", "natties", "iamkanya", "Iammy89"]
         },
         {
           TelegramId: 8371851714,
@@ -28,6 +28,6 @@
 
 
   const freeUsers:any = [];
-  const rewardUsers:any = [];
+  const rewardUsers:any = ["iamkanya", "Iammy89", "frankk2709", "ary11", "junplayer", "sjd9331", "nus3206","manus9331", "aroon11", "nus9331", "vip0955171905", "poypy789", "sjd9331"];
   export {playerTelegram, freeUsers, rewardUsers}
   
