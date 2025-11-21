@@ -123,7 +123,7 @@ export async function sendResultToTelegram(
 ): Promise<void> {
   const options = {
     parse_mode: "HTML" as const,
-    reply_markup: getInlineButtons(`${baseUrl}/packages`),
+    reply_markup: getInlineButtons(`${baseUrl}/package`),
   };
 
   // ส่งให้ user ก่อน
