@@ -12,7 +12,8 @@ import { Raw } from "telegram/events/Raw";
 import Bottleneck from "bottleneck";
 import cron from 'node-cron';
 import axios from "axios";
-
+import viewRoutes from "./routes/viewRoutes";
+import apiRoutes from "./routes/apiRoutes";
 
 import { encryptText, getInputCaptcha, parserCodeMessage} from "./okvip";
 import {
@@ -37,9 +38,13 @@ import {
   removeImage
 } from "./utils";
 
+import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
+
+
 import {
-siteConfigs
-} from "./siteConfigs";
+  detectSite,
+  detectSiteFromChatId,
+} from "./siteDetector";
 
 import { SiteQueue } from "./types/siteConfigs";
 
@@ -50,7 +55,7 @@ const apiId = Number(process.env.API_ID);
 const apiHash = process.env.API_HASH || "";
 const phoneNumber = process.env.APP_YOUR_PHONE || "";
 const userPassword = process.env.APP_YOUR_PWD || "";
-const port = Number(process.env.PORT) || 5100;
+const port = Number(process.env.PORT) || 5300;
 const MAX_RETRIES = 3;
 let retryInterval = 6000;
 let lastRestartTime = 0;
@@ -68,12 +73,12 @@ const captchaLimiter = new Bottleneck({
 
 // 🔧 กำหนดระยะเวลา Lock ตามสถานะ
 const lockDurations: Record<number, number> = {
-  403: 3 * 60 * 1000,
-  9002: 30 * 24 * 60 * 60 * 1000,
-  9003: 24 * 60 * 60 * 1000,
+  403: 30 * 60 * 1000,
+  9002: 30 * 60 * 1000,
+  9003: 30 * 60 * 1000,
   9004: 3 * 60 * 1000,
-  9007: 24 * 60 * 60 * 1000,
-  0: 24 * 60 * 60 * 1000,
+  9007: 30 * 60 * 1000,
+  0: 30 * 60 * 1000,
   4044: 30 * 24 * 60 * 60 * 1000,
 };
 
@@ -106,7 +111,7 @@ try {
 let client: TelegramClient | null = null;
 let expressServer: any;
 let lastHandledMessage: string | null = null;
-
+let minPoint: number = 8;
 
 async function initializeClient() {
   if (!client) {
@@ -321,98 +326,51 @@ async function sendCaptchaProCode(
   });
 }
 
-async function initializeService() {
-  if (!client) {
-    await initializeSession();
+
+function abortCurrentSite(siteName: string) {
+  const queue = siteQueues[siteName];
+  if (queue && queue.isProcessing && queue.abortFlag) {
+    console.log(`🛑 Aborting current processing for ${siteName}...`);
+    queue.abortFlag.canceled = true;
   }
+}
+
+async function initializeService() {
+  // 🚀 Initialize client
+  if (!client) await initializeSession();
+
   const app = express();
   app.use(express.json());
-  // ✅ เสิร์ฟไฟล์จาก public แบบครอบคลุมทั้งหมด
-  app.use(express.static(path.join(__dirname, 'public')));
-   // Serve view
-  app.get("/",async (_req, res) => {
-    await ensureConnectedAndAddHandlers();
-    res.sendFile(path.join(__dirname, "views", "apply_codes.html"));
-  });
+  app.use(express.static(path.join(__dirname, "public")));
+  app.use("/", viewRoutes);
+  app.use("/api", apiRoutes);
 
-  app.get("/package", (_req, res) => {
-    res.sendFile(path.join(__dirname, "views", "package.html"));
-  });
-
-
-  // API: serve data
-  app.get("/api/applied-codes", (_req, res) => {
-    fs.readFile(applyCodePath, "utf8", (err, data) => {
-      if (err) {
-        console.error("❌ Read error:", err);
-        return res.status(500).json({ error: "อ่านข้อมูลไม่สำเร็จ" });
-      }
-
-      try {
-        const parsed = JSON.parse(data);
-        res.json(parsed);
-      } catch (e) {
-        res.status(500).json({ error: "JSON ผิดพลาด" });
-      }
-    });
-  });
-
-  app.get("/api/package-payment", (_req, res) => {
-    fs.readFile(packagePath, "utf8", (err, data) => {
-      if (err) {
-        console.error("❌ Read error:", err);
-        return res.status(500).json({ error: "อ่านข้อมูลไม่สำเร็จ" });
-      }
-
-      try {
-        const parsed = JSON.parse(data);
-        res.json(parsed);
-      } catch (e) {
-        res.status(500).json({ error: "JSON ผิดพลาด" });
-      }
-    });
-  });
-
-  
+  // 🩺 Health check with auto restart
   app.get("/health", async (req, res) => {
     try {
-      // 1. Ensure client is initialized and connected
-      if (!client || !client.connected) {
-        await initializeSession();
-      }
-
-      // 2. Add handlers or ensure active connection
-      // await ensureConnectedAndAddHandlers();
-
-      // 3. Respond with healthy status
+      if (!client || !client.connected) await initializeSession();
       res.status(200).json({ status: "Healthy" });
-
     } catch (err: any) {
       console.error("❌ Health check failed:", err);
-
       res.status(500).json({ status: "Unhealthy", error: err.message });
 
-      // 4. Only restart the service if enough time has passed
       const now = Date.now();
-      const RESTART_COOLDOWN = 3 * 60 * 1000; // 3 minutes
-
-      if (now - lastRestartTime > RESTART_COOLDOWN) {
+      if (now - lastRestartTime > 3 * 60 * 1000) {
         lastRestartTime = now;
-
+        console.log("🔄 Restarting service...");
         try {
-          console.log("🔄 Restarting service...");
           await restartService();
           console.log("✅ Restart complete.");
         } catch (restartErr) {
           console.error("🚨 Restart failed:", restartErr);
         }
-
       } else {
         console.warn("⚠️ Restart skipped to avoid rapid restart loop.");
       }
     }
   });
 
+  // 🟢 Initialize or reconnect client
   if (!client) {
     await initializeSession();
   } else {
@@ -420,43 +378,41 @@ async function initializeService() {
     await getChatsList(client);
   }
 
-  const handleIncomingMessage = async (receivedMessage: any) => {
-    if (!receivedMessage) return;
-    const messageText = receivedMessage.toLowerCase();
-    if (messageText === lastHandledMessage) {
-      console.log("\u23e9 Duplicate message. Skipping.");
-      return;
-    }
+  // 🎯 Handle incoming message
+  const handleIncomingMessage = async (message: string, chatId?: string) => {
+    if (!message) return;
+    const text = message.toLowerCase();
+    if (text === lastHandledMessage) return;
+    lastHandledMessage = text;
 
-    lastHandledMessage = messageText;
-    const parsedCodes = parserCodeMessage(receivedMessage);
+    const parsedCodes = parserCodeMessage(message);
     if (parsedCodes.length < 10) return;
-
     const shuffledCodes = shuffleArray(parsedCodes);
-    console.log("\ud83c\udfaf Valid Bonus Codes:", parsedCodes);
+    console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
-    const matchedSite = siteConfigs.find(cfg =>
-      cfg.keywords.some(keyword => messageText.includes(keyword))
-    );
-
-    if (!matchedSite) {
-      console.log("\u26a0\ufe0f Unrecognized message source.");
+    // 🔍 Detect site: Chat ID → keyword
+    let siteConfig = chatId ? detectSiteFromChatId(chatId) : null;
+    if (!siteConfig) siteConfig = detectSite(text);
+    if (!siteConfig) {
+      console.log("⚠️ Unrecognized message source.");
       return;
     }
 
-    const site = matchedSite.name;
-    const apiEndPoint = matchedSite.endpoint;
-    const players = matchedSite.players;
-    const hostUrl = process.env[matchedSite.envVar] || "";
+    const site = siteConfig.name;
+    const apiEndPoint = siteConfig.endpoint;
+    const players = siteConfig.players;
+    const hostUrl = process.env[siteConfig.envVar] || "";
 
     informationSet = {
       site,
-      cskh_url: matchedSite.cskh_url,
-      cskh_home: matchedSite.cskh_url,
+      cskh_url: siteConfig.cskh_url,
+      cskh_home: siteConfig.cskh_url,
       endpoint: apiEndPoint,
-      key_free: matchedSite.key_free,
+      key_free: siteConfig.key_free,
     };
+    // console.log("Site", informationSet);
 
+    // 📝 Create site queue if not exists
     if (!siteQueues[site]) {
       siteQueues[site] = {
         remainingCodes: [],
@@ -466,90 +422,79 @@ async function initializeService() {
         apiEndPoint,
         site,
         hostUrl,
-      } as SiteQueue;
+      };
+    }
 
-      // เรียกครั้งแรก ต้อง start ลูป
-      startProCodeLoop(site).catch(err => {
-        console.error(`❌ Error in startProCodeLoop for site ${site}:`, err);
-      });
-
-    } 
-
-    // ไม่ต้องหยุดลูปเดิม
-    // แค่แทรกโค้ดใหม่เข้าไปข้างหน้า
+    // 🔄 Add unique codes to queue
     const existing = new Set(siteQueues[site].remainingCodes);
-    const uniqueNewCodes = shuffledCodes.filter(code => !existing.has(code));
-    siteQueues[site].remainingCodes.unshift(...uniqueNewCodes);
+    const newCodes = shuffledCodes.filter(c => !existing.has(c));
+    siteQueues[site].remainingCodes.unshift(...newCodes);
+
+    // 🔁 Start processing loop if needed
+    const active = Object.values(siteQueues).find(q => q.isProcessing);
+    if (active) {
+      if (active.site !== site) {
+        abortCurrentSite(active.site);
+        startProCodeLoop(site).catch(err => console.error(err));
+      } else {
+        console.log(`♻️ Added new codes to ${site} queue.`);
+      }
+    } else {
+      startProCodeLoop(site).catch(err => console.error(err));
+    }
   };
 
+  // 📩 Telegram Event Handlers
   const addEventHandlers = async (client: any) => {
-    // if (handlersAdded) return;  // Prevent adding multiple times
-    //     handlersAdded = true;
-   
     client.addEventHandler(
       (event: NewMessageEvent) => {
         const message = event.message;
         if (!message || !message.text || !message.peerId) return;
 
-        const messageId = `${message.peerId.toString()}_${message.id}`;
-        if (processedMessageIds.has(messageId)) return;
+        const id = `${message.peerId.toString()}_${message.id}`;
+        if (processedMessageIds.has(id)) return;
 
-        processedMessageIds.add(messageId);
-        handleIncomingMessage(message.text);
-
-        // ล้าง messageId หลังผ่านไป 5 นาที (หรือระยะเวลาที่เหมาะสม)
-        setTimeout(() => processedMessageIds.delete(messageId), 300000);
+        processedMessageIds.add(id);
+        handleIncomingMessage(message.text, message.peerId.toString());
+        setTimeout(() => processedMessageIds.delete(id), 300_000);
       },
       new NewMessage({})
     );
 
     client.addEventHandler(
       async (update: any) => {
-        const updateType = update.className || update?.constructor?.name;
-        if (updateType === "UpdateConnectionState") return;
+        const type = update.className || update?.constructor?.name;
+        if (type === "UpdateConnectionState") return;
 
-        if (
-          updateType === "UpdateEditMessage" ||
-          updateType === "UpdateEditChannelMessage"
-        ) {
-          const editedMessage = update.message;
-          if (
-            !editedMessage ||
-            typeof editedMessage.message !== "string" ||
-            !editedMessage.peerId
-          ) {
-            console.warn("⚠️ Skipping invalid edited message:", editedMessage);
-            return;
-          }
+        if (type === "UpdateEditMessage" || type === "UpdateEditChannelMessage") {
+          const msg = update.message;
+          if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
 
-          const messageId = `${editedMessage.peerId.toString()}_${editedMessage.id}`;
-          if (processedMessageIds.has(messageId)) return;
+          const id = `${msg.peerId.toString()}_${msg.id}`;
+          if (processedMessageIds.has(id)) return;
 
-          processedMessageIds.add(messageId);
-          await handleIncomingMessage(editedMessage.message);
-
-          setTimeout(() => processedMessageIds.delete(messageId), 10000);
+          processedMessageIds.add(id);
+          await handleIncomingMessage(msg.message, msg.peerId.toString());
+          setTimeout(() => processedMessageIds.delete(id), 10_000);
         }
       },
       new Raw({})
     );
   };
 
+  // 🔌 Ensure client connection
   const ensureConnectedAndAddHandlers = async () => {
-    console.log("Client is Check connect:", client && client.connected);
     if (client && client.connected) {
-      console.log("\u2705 Client is connected.");
+      console.log("✅ Client is connected.");
       await addEventHandlers(client);
     } else {
-      console.log("\ud83d\udd01 Client is not connected. Reconnecting...");
+      console.log("🔁 Reconnecting client...");
       await initializeClient();
-      console.log("Client reconnected:", client && client.connected);
-
       if (client && client.connected) {
-        console.log("\u2705 Reconnected and ready.");
+        console.log("✅ Reconnected and ready.");
         await addEventHandlers(client);
       } else {
-        console.log("\u274c Failed to reconnect client.");
+        console.log("❌ Failed to reconnect client.");
         await restartService();
       }
     }
@@ -557,66 +502,67 @@ async function initializeService() {
 
   await ensureConnectedAndAddHandlers();
 
-
-  const startServer = (port: number): Promise<void> => {
-    return new Promise((resolve, reject) => {
+  // 🌐 Start Express server
+  const startServer = (port: number) =>
+    new Promise<void>((resolve, reject) => {
       expressServer = app
         .listen(port, () => {
-          console.log(`\ud83d\ude80 Server is running on port ${port}`);
+          console.log(`🚀 Server running on port ${port}`);
           resolve();
         })
         .on("error", (err: any) => {
-          if (err.code === "EADDRINUSE") {
-            console.warn(`\u26a0\ufe0f Port ${port} is in use. Trying port ${port + 1}...`);
+          if ((err as any).code === "EADDRINUSE") {
+            console.warn(`⚠️ Port ${port} in use. Trying port ${port + 1}...`);
             resolve(startServer(port + 1));
           } else {
             reject(err);
           }
         });
     });
-  };
 
   try {
     await startServer(port);
   } catch (err) {
-    console.error("\u274c Failed to start server:", err);
+    console.error("❌ Failed to start server:", err);
   }
 
+  // 🛑 Graceful shutdown
   const gracefulShutdown = () => {
-    console.log("\ud83d\uded1 Shutting down gracefully...");
-    expressServer?.close(() => {
-      console.log("\ud83e\uddf9 Express server closed.");
-    });
-
-    if (client) {
-      client.disconnect().then(() => {
-        console.log("\ud83d\udcf4 Telegram client disconnected.");
-        process.exit(0);
-      });
-    } else {
-      process.exit(0);
-    }
+    console.log("🛑 Shutting down gracefully...");
+    expressServer?.close(() => console.log("🪣 Express server closed."));
+    if (client) client.disconnect().then(() => process.exit(0));
+    else process.exit(0);
   };
 
   process.on("SIGTERM", gracefulShutdown);
   process.on("SIGINT", gracefulShutdown);
 }
 
+// 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
+  if (siteName == "thai_jun88k36") {
+    minPoint = 20;
+  } else {
+    minPoint = 15;
+  }
+
   const siteQueue = siteQueues[siteName];
-  if (!siteQueue || siteQueue.isProcessing) return;
+  if (!siteQueue) return;
+
+  if (siteQueue.isProcessing) return;
+
   siteQueue.isProcessing = true;
+  siteQueue.abortFlag.canceled = false; // reset flag
   const abortFlag = siteQueue.abortFlag;
 
   try {
     const { remainingCodes, players, apiEndPoint, site, hostUrl } = siteQueue;
-
     const rawSentPlayers = await resetDailySentIfNeeded();
 
     const siteData: SiteSentPlayers = rawSentPlayers[siteName]
       ? {
           appliedPlayers: rawSentPlayers[siteName],
-          playersLock: [], // หากต้องการ โหลดจาก disk ให้เพิ่มภายหลัง
+          playersLock: [],
         }
       : { appliedPlayers: [], playersLock: [] };
 
@@ -630,35 +576,78 @@ async function startProCodeLoop(siteName: string) {
 
     const playerLocks = new Set(siteData.playersLock.map(lock => lock.player));
     const playersSkip = new Set<string>();
+    cleanupExpiredBlocks();
 
-    while (remainingCodes.length > 0) {
+    console.log("Start Loop Code in site : ",siteName)
+    while (true) {
       if (abortFlag?.canceled) {
         console.log(`⏹️ Processing for ${site} aborted.`);
         break;
       }
 
+      if (remainingCodes.length === 0) {
+        await new Promise(res => setTimeout(res, 1000));
+        if (remainingCodes.length === 0) break;
+        else continue;
+      }
+
       const promoCode = remainingCodes.shift();
-      if (!promoCode) break;
+      if (!promoCode) continue;
 
       try {
         const key = await encryptText(promoCode, informationSet.key_free);
-        const { captchaUrl, token } = await getVerificationCode(apiEndPoint, site, hostUrl);
-        const { captchaCode, captchaPath } = await getInputCaptcha(captchaUrl);
+        const { captchaUrl, token } = await getVerificationCode(
+          apiEndPoint,
+          site,
+          hostUrl
+        );
+        const { captchaCode, captchaPath } = await getInputCaptcha(captchaUrl, site);
 
         const result = await sendCaptchaProCode(
-          promoCode, key, captchaCode, token, apiEndPoint, site, hostUrl
+          promoCode,
+          key,
+          captchaCode,
+          token,
+          apiEndPoint,
+          site,
+          hostUrl
         );
         if (!result) continue;
 
-        const statusCode = result.status_code ?? result?.ststus_code ?? 0;
-        const message = result?.text_mess?.th || "";
+          const statusCode = result.status_code ?? result?.ststus_code ?? 0;
+          const message = result?.text_mess?.th || "";
 
+          // if (siteName === "thai_f168") {
+          //   console.log(result);
+          //   return false;
+          //   // thai_168: ถ้าไม่ใช่ข้อความผิดแคปต์ชา → addTemplate
+          //   const isCaptchaError = result.message.includes("แคปต์ชาไม่ถูกต้องจ้า ลองพิมพ์ใหม่อีกครั้งนะ 💕");
+          //   if (!isCaptchaError) {
+          //     addTemplate(captchaPath, captchaCode, site);
+          //   } else {
+          //     console.log("แคปต์ชาไม่ถูกต้องจ้า ไม่เพิ่ม addTemplates");
+          //   }
+          // } else {
+          //   // site อื่นๆ: ถ้า status 400 และข้อความบอก captcha ผิด → ไม่ add
+          //   const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
+          //   if (!isCaptchaError) {
+          //     addTemplate(captchaPath, captchaCode, site);
+          //   }
+          // }
+
+
+        // const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
+        // if (!isCaptchaError) {
+        //   addTemplate(captchaPath, captchaCode, site);
+        // }
+
+        
         if (statusCode === 502 || message.includes("กรุณาลองใหม่อีกครั้ง")) {
           console.warn("🚫 Code already used (502), skipping.");
           continue;
         }
 
-        if (statusCode === 429 || statusCode === 400 ) {
+        if (statusCode === 429 || statusCode === 400) {
           console.warn("⏳ Rate limited. Resetting IP and retrying...");
           remainingCodes.unshift(promoCode);
           continue;
@@ -672,100 +661,131 @@ async function startProCodeLoop(siteName: string) {
         if (statusCode === 200 && result.valid) {
           const point = result?.detail?.point ?? 0;
 
-          if (point > 10) {
-
+          if (point > minPoint) {
             try {
-              if (point > 20) {
-                const player = await getSinglePlayer(point, site);
-                console.log("getSinglePlayers: ", player);
+              let singlePlayer: string | undefined;
+              singlePlayer = await getSinglePlayer(point, site);
 
-                if (player && !playerLocks.has(player)) {
-                  const singleResult = await sendCodeToPlayer(
-                    player, promoCode.trim(), key, apiEndPoint, site, token, hostUrl
+              if (singlePlayer && !playerLocks.has(singlePlayer)) {
+
+                // ✅ บันทึกว่า player นี้ถูกยิงไปแล้ว
+                markPlayerTried(site, singlePlayer);          
+                      
+                const singleResult = await sendCodeToPlayer(
+                  singlePlayer,
+                  promoCode.trim(),
+                  key,
+                  apiEndPoint,
+                  site,
+                  token,
+                  hostUrl
+                );
+
+                console.log(
+                  `📩 Full Result in getSinglePlayers ${singlePlayer}:`,
+                  singleResult
+                );
+
+                const singleCodeStatus =
+                  singleResult.status_code ?? singleResult?.ststus_code ?? 0;
+                const singleMessage = singleResult?.text_mess?.th || "";
+
+                if (singleCodeStatus === 200 && singleResult?.valid) {
+                  await updateApplyCodeLog(
+                    site,
+                    singlePlayer,
+                    promoCode,
+                    point
                   );
+                  sentPlayerIds.add(singlePlayer);
+                  playersSkip.add(singlePlayer);
+                } else {
+                  const rawPlayers = await getPlayerPool(point, site);
+                  if (singleCodeStatus === 502) {
+                    continue;
+                  } else if ([9001, 9002].includes(singleCodeStatus)) {
+                    remainingCodes.unshift(promoCode);
+                    continue;
+                  }
 
-                  console.log(`📩 Full Result in getSinglePlayers ${player}:`, singleResult);
+                  if (lockDurations[singleCodeStatus]) {
+                    playerLocks.add(singlePlayer);
+                    try {
+                      await updatePlayersLock(
+                        site,
+                        singlePlayer,
+                        singleMessage,
+                        lockDurations[singleCodeStatus],
+                        singleCodeStatus
+                      );
+                      console.log("✔️ Add PlayersLock complete.");
+                    } catch (err) {
+                      console.error("❌ Failed to add PlayersLock:", err);
+                    }
 
-                  const singleCodeStatus = singleResult.status_code ?? singleResult?.ststus_code ?? 0;
-                  const singleMessage = singleResult?.text_mess?.th || "";
-
-                  if (singleCodeStatus === 200 && singleResult?.valid) {
-                    await updateApplyCodeLog(site, player, promoCode, point);
-                    sentPlayerIds.add(player);
-                    playersSkip.add(player);
-                  } else {
-                    const rawPlayers = await getPlayerPool(point, site);
-                    if (singleCodeStatus === 502) {
-                      continue;
-                    } else if ([9001, 9002].includes(singleCodeStatus)) {
+                    if ([403, 4044, 9003, 9004, 9007].includes(singleCodeStatus)) {
                       remainingCodes.unshift(promoCode);
                       continue;
                     }
-
-                    if (lockDurations[singleCodeStatus]) {
-                      playerLocks.add(player);
-                      try {
-                        await updatePlayersLock(site, player, singleMessage, lockDurations[singleCodeStatus], singleCodeStatus);
-                        console.log("✔️ Add PlayersLock complete.");
-                      } catch (err) {
-                        console.error("❌ Failed to add PlayersLock:", err);
-                      }
-
-                      if ([403, 4044, 9003, 9004, 9007].includes(singleCodeStatus)) {
-                        remainingCodes.unshift(promoCode);
-                        continue;
-                      }
-                    }
-
-                    await applyCodeToPlayers(
-                      promoCode, key, token, apiEndPoint, site, hostUrl,
-                      rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
-                    );
                   }
-                  continue;
-                } else {
-                  const rawPlayers = await getPlayerPool(point, site);
+
                   await applyCodeToPlayers(
-                    promoCode, key, token, apiEndPoint, site, hostUrl,
-                    rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                    promoCode,
+                    key,
+                    token,
+                    apiEndPoint,
+                    site,
+                    hostUrl,
+                    rawPlayers,
+                    sentPlayerIds,
+                    playersSkip,
+                    playerLocks,
+                    remainingCodes
                   );
                 }
-              }else{
-                  const rawPlayers = await getPlayerPool(point, site);
-
-                  // สุ่มเลือก 1 คนจาก rawPlayers
-                  const randomPlayer = rawPlayers[Math.floor(Math.random() * rawPlayers.length)];
-
-                  // ตรวจสอบว่ามีผู้เล่นหรือไม่
-                  if (randomPlayer) {
-                    await applyCodeToPlayers(
-                      promoCode, key, token, apiEndPoint, site, hostUrl,
-                      [randomPlayer], // ส่งเป็น array ที่มีแค่ 1 คน
-                      sentPlayerIds, playersSkip, playerLocks, remainingCodes
-                    );
-                  }
-
-                  continue;
-
-              }  
+                continue;
+              } else {
+                const rawPlayers = await getPlayerPool(point, site);
+                await applyCodeToPlayers(
+                  promoCode,
+                  key,
+                  token,
+                  apiEndPoint,
+                  site,
+                  hostUrl,
+                  rawPlayers,
+                  sentPlayerIds,
+                  playersSkip,
+                  playerLocks,
+                  remainingCodes
+                );
+              }
             } catch (err) {
               console.error("❌ Error in getSinglePlayer:", err);
               const rawPlayers = await getPlayerPool(point, site);
               await applyCodeToPlayers(
-                promoCode, key, token, apiEndPoint, site, hostUrl,
-                rawPlayers, sentPlayerIds, playersSkip, playerLocks, remainingCodes
+                promoCode,
+                key,
+                token,
+                apiEndPoint,
+                site,
+                hostUrl,
+                rawPlayers,
+                sentPlayerIds,
+                playersSkip,
+                playerLocks,
+                remainingCodes
               );
               continue;
             }
           } else {
-            console.log(`⚠️ Promo code: ${promoCode} is Point not target (${point})`);
+            console.log(
+              `⚠️ Promo code: ${promoCode} is Point not target (${point})`
+            );
           }
 
           continue;
         }
-
-        // await removeImage(captchaPath); // อาจลบไฟล์หากต้องการ
-
       } catch (err) {
         console.error("❌ Unexpected error:", err);
       }
@@ -773,7 +793,19 @@ async function startProCodeLoop(siteName: string) {
   } finally {
     console.log(`⏹️ Processing remainingCodes End.`);
     siteQueue.isProcessing = false;
+
+    // ❌ ป้องกันไม่ให้ site ที่ถูก abort รีสตาร์ทตัวเอง
+    if (!siteQueue.abortFlag?.canceled &&
+        siteQueue.remainingCodes.length > 0 &&
+        !siteQueue.isProcessing) {
+
+      console.log(`🔄 New codes detected after end, restarting loop for ${siteName}...`);
+      startProCodeLoop(siteName).catch(err => {
+        console.error(`❌ Error restarting loop for site ${siteName}:`, err);
+      });
+    }
   }
+
 }
 
 async function applyCodeToPlayers(
@@ -900,8 +932,6 @@ async function getChatsList(client: TelegramClient) {
 
 (async () => {
   await startClient();
-  // // Auto-check every 5 minutes
-  // setInterval(checkConnectivity, 5 * 60 * 1000); 
 
   try {
     const me = (await client!.getEntity("me")) as Api.User;
@@ -915,19 +945,18 @@ async function getChatsList(client: TelegramClient) {
 // Update Code: Keep-alive ping every 5 minutes 
 const baseUrl = `${process.env.BASE_URL}/health`;
 
-cron.schedule('*/5 * * * *', async () => {
+cron.schedule("*/5 * * * *", async () => {
   try {
-    const res = await axios.get(baseUrl);
+    const res = await axios.get(`${process.env.BASE_URL}/health`);
     console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
   } catch (err: any) {
     console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
   }
 });
 
-
-cron.schedule('*/5 * * * *', async () => {
+cron.schedule("*/5 * * * *", async () => {
   try {
-    const response = await axios.get(`${OCR_API_BASE}/health`);
+    const response = await axios.get(`${process.env.OCR_API_BASE}/health`);
     console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
   } catch (err: any) {
     console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
@@ -935,16 +964,16 @@ cron.schedule('*/5 * * * *', async () => {
 });
 
 
-// thai_789bet: reset เวลา 11:00 (GMT+7)
-// cron.schedule('0 0 11 * * *', () => {
-//   try {
-//     clearApplyCodeTemplateForSite("thai_789bet");
-//   } catch (err) {
-//     console.error("❌ Failed to reset thai_789bet:", err);
-//   }
-// }, {
-//   timezone: "Asia/Bangkok"
-// });
+//thai_789bet: reset เวลา 11:00 (GMT+7)
+cron.schedule('0 0 11 * * *', () => {
+  try {
+    clearApplyCodeTemplateForSite("thai_789bet");
+  } catch (err) {
+    console.error("❌ Failed to reset thai_789bet:", err);
+  }
+}, {
+  timezone: "Asia/Bangkok"
+});
 
 // thai_jun88k36: reset เวลา 24:00 (GMT+7)
 cron.schedule('0 0 0 * * *', () => {
@@ -958,3 +987,5 @@ cron.schedule('0 0 0 * * *', () => {
 });
 
 })();
+
+

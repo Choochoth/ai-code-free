@@ -14,6 +14,7 @@ export interface PlayerLock {
   timelock: number;
   lockMessage: string;
   lockTime: number; // หน่วยเป็นมิลลิวินาที หรือจะใช้เป็นชั่วโมงก็ได้
+  lockCode: number;
 }
 
 export interface SiteData {
@@ -65,7 +66,8 @@ export function isSiteData(data: any): data is SiteData {
         typeof lock.player === "string" &&
         typeof lock.timelock === "number" &&
         typeof lock.lockMessage === "string" &&
-        typeof lock.lockTime === "number"
+        typeof lock.lockTime === "number"  &&
+        typeof lock.lockCode === "number"
     )
   );
 }
