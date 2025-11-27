@@ -83,7 +83,7 @@ export async function sendCodeToPlayer(
 
     if (res.data.status_code === 200 && res.data.valid) {
       res.data.site = site;
-      res.data.link = `${baseUrl}/packages`;
+      res.data.link = `${baseUrl}/package`;
 
       const telegram_id = getTelegramId(res.data.player_id); // ✅ now correct
 
