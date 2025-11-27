@@ -109,7 +109,13 @@ function getInlineButtons(link: string) {
           text: "📞 ติดต่อแอดมิน",
           url: "https://t.me/freeceditcode",
         },
-      ]
+      ],
+      [
+        {
+          text: "💬 แจ้งเตือนรับโค้ดฟรี",
+          url: "https://t.me/AiCodeFree",
+        },
+      ]      
     ],
   };
 }
