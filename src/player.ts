@@ -5,24 +5,39 @@ import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/p
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 
+// const playerPools: Record<string, PlayerPool> = {
+//   thai_789bet: {
+//     very_high: ["manus9331", "nus9331"],
+//     high:  ["manus9331", "nus9331", "vip0955171905", "poypy789"],
+//     mid: ["manus9331", "nus9331", "vip0955171905", "poypy789", "areeroon"],
+//     low: ["vip0955171905", "poypy789", "areeroon"],
+//     all: ["vip0955171905", "poypy789", "manus9331", "nus9331", "areeroon"]
+//   },
+//   thai_jun88k36: {
+//     very_high:["aroon11", "nus9331", "manus9331"],
+//     high: ["manus9331", "nus9331","aroon11"],
+//     mid: ["ary11", "junplayer"],
+//     low: ["ary11", "junplayer"],
+//     all: ["ary11", "junplayer", "manus9331", "nus9331", "aroon11"]
+//   }
+// };
+
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["manus9331", "nus9331"],
     high:  ["manus9331", "nus9331", "vip0955171905", "poypy789"],
-    mid: ["manus9331", "nus9331", "vip0955171905", "poypy789", "areeroon"],
-    low: ["vip0955171905", "poypy789", "areeroon"],
-    all: ["vip0955171905", "poypy789", "manus9331", "nus9331", "areeroon"]
+    mid: ["manus9331", "nus9331", "vip0955171905", "poypy789"],
+    low: ["vip0955171905", "poypy789"],
+    all: ["vip0955171905", "poypy789", "manus9331", "nus9331", "aroon11", "koonogk", "nus9331", "kaimook11", "wat3366" ,"VIP0955171905", "borvon", "manus9331", "kootong"]
   },
   thai_jun88k36: {
     very_high:["aroon11", "nus9331", "manus9331"],
     high: ["manus9331", "nus9331","aroon11"],
     mid: ["ary11", "junplayer"],
     low: ["ary11", "junplayer"],
-    all: ["ary11", "junplayer", "manus9331", "nus9331", "aroon11"]
+    all: ["ary11", "junplayer", "manus9331", "nus9331", "aroon11", "nus9331", "koonogk", "manus9331", "aroon11", "kaimook11", "aroon2511", "goft22", "poiy88", "tong234", "tata5511", "manusj88", "manuchai", "hinjun88", "mn3206", "manusvip"]
   }
 };
-
-
 export type Site = keyof typeof playerPools;
 
 const baseDir = __dirname;
