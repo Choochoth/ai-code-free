@@ -35,7 +35,7 @@ const playerPools: Record<string, PlayerPool> = {
     high: ["manus9331", "nus9331","aroon11"],
     mid: ["ary11", "junplayer"],
     low: ["ary11", "junplayer"],
-    all: ["ary11", "junplayer", "manus9331", "nus9331", "aroon11", "nus9331", "koonogk", "manus9331", "aroon11", "kaimook11", "aroon2511", "goft22", "poiy88", "tong234", "tata5511", "manusj88", "manuchai", "hinjun88", "mn3206", "manusvip"]
+    all: ["ary11", "junplayer", "manus9331", "nus9331", "aroon11", "nus3206", "koonogk", "sjd9331", "aroon2511", "kaimook11", "aroon2511", "goft22", "poiy88", "tong234", "tata5511", "manusj88", "manuchai", "hinjun88", "mn3206", "manusvip"]
   }
 };
 export type Site = keyof typeof playerPools;
