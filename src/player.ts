@@ -4,11 +4,12 @@ import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
+
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["manus9331", "nus9331", "aroon11"],
-    high:  ["manus9331", "nus9331", "aroon11", "wuttichaizx1"],
-    mid: ["manus9331", "nus9331", "aroon11", "wuttichaizx1"],
+    high:  ["manus9331", "nus9331", "vip0955171905", "poypy789", "aroon11", "wuttichaizx1"],
+    mid: ["manus9331", "nus9331", "vip0955171905", "poypy789", "borvon", "aroon11", "wuttichaizx1"],
     low: ["vip0955171905", "poypy789", "borvon", "kootong"],
     all: ["vip0955171905", "poypy789", "aroon11", "VIP0955171905", "borvon", "kootong", "wuttichaizx1"]
   },
@@ -20,6 +21,7 @@ const playerPools: Record<string, PlayerPool> = {
     all: ["ary11", "junplayer", "manus9331", "nus9331","aroon11", "nuschai"]
   }
 };
+
 
 export type Site = keyof typeof playerPools;
 
