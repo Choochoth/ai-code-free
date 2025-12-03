@@ -23,7 +23,16 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
+      "players": [
+        {
+          "promo_code": "G8R1GOH",
+          "time": 1764748901299,
+          "time_limit": 1764835301299,
+          "status": "success",
+          "player": "frankk2709",
+          "point": 21.88
+        }
+      ],
       "playersLock": []
     }
   }
