@@ -53,44 +53,77 @@ bot.on(
 // =======================
 // 📌 ส่ง CAPTCHA ให้แอดมิน
 // =======================
-export async function sendCaptchaToTelegram(
-  imagePath: string
-): Promise<string> {
-  const captchaId = path.basename(imagePath, ".png");
-  const caption = `🔒 CAPTCHA ID: ${captchaId}\nพิมพ์โค้ดตอบกลับเพื่อยืนยัน`;
+export async function sendApplyCodeDataToTelegram() {
+  try {
+    const baseDir = __dirname;
+    const dataDir = path.join(baseDir, "data");
+    const applyCodeFile = path.join(dataDir, "apply_code.json");
 
-  let sentMessageId: number | null = null;
+    if (!fs.existsSync(applyCodeFile)) {
+      console.error("❌ apply_code.json not found");
+      return;
+    }
 
-  for (const adminId of ADMIN_IDS) {
-    try {
-      const sent = await bot.telegram.sendPhoto(
-        adminId,
-        { source: imagePath },
-        { caption }
-      );
+    const raw = fs.readFileSync(applyCodeFile, "utf8");
+    const data = JSON.parse(raw);
 
-      if (sentMessageId === null) {
-        sentMessageId = sent.message_id;
+    if (!data.apply_code_today) {
+      console.error("❌ apply_code_today missing");
+      return;
+    }
+
+    const todayData = data.apply_code_today;
+    const msgLines: string[] = [];
+
+    msgLines.push(`📌 *Apply Code Report*`);
+    msgLines.push(`📅 วันที่: *${todayData.date}*`);
+    msgLines.push("");
+
+    for (const site of Object.keys(todayData)) {
+      if (site === "date") continue;
+
+      msgLines.push(`🏷️ *${site}*`);
+
+      const players = todayData[site].players || [];
+
+      if (players.length === 0) {
+        msgLines.push(`— ไม่มีรายการ`);
+        msgLines.push("");
+        continue;
       }
 
-      console.log(`✅ CAPTCHA sent to ${adminId}`);
-    } catch (err) {
-      console.error(`❌ Failed to send CAPTCHA to ${adminId}:`, err);
+      players.forEach((p: any, index: number) => {
+        msgLines.push(
+          `#${index + 1}\n` +
+          `👤 Player: *${p.player}*\n` +
+          `🎟️ Code: \`${p.promo_code}\`\n` +
+          `⭐ Status: *${p.status}*\n` +
+          `💎 Point: *${p.point}*\n` +
+          `⏱️ เวลา: ${new Date(p.time).toLocaleString("th-TH")}\n` +
+          `⏳ หมดเวลา: ${new Date(p.time_limit).toLocaleString("th-TH")}`
+        );
+        msgLines.push("");
+      });
     }
+
+    const finalMessage = msgLines.join("\n");
+
+    const id = String(8253154458).trim();  // <-- แก้ error ตรงนี้
+
+    await bot.telegram.sendMessage(id, finalMessage, {
+      parse_mode: "Markdown"
+    });
+
+    await bot.telegram.sendDocument(id, {
+      source: applyCodeFile,
+      filename: "apply_code.json"
+    });
+
+
+    console.log("✅ ส่งรายงาน + ไฟล์ JSON ให้แอดมินแล้ว");
+  } catch (error) {
+    console.error("❌ Error sendApplyCodeDataToTelegram:", error);
   }
-
-  if (sentMessageId === null) {
-    throw new Error("❌ Failed to send CAPTCHA to all admins.");
-  }
-
-  return new Promise<string>((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      pendingCaptchas.delete(sentMessageId!);
-      reject(new Error("⏰ CAPTCHA reply timeout"));
-    }, 2 * 60 * 1000);
-
-    pendingCaptchas.set(sentMessageId, { resolve, reject, timeout });
-  });
 }
 
 
