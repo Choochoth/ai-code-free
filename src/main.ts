@@ -39,6 +39,7 @@ import {
 } from "./utils";
 
 import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
+import { sendApplyCodeDataToTelegram } from "./telegramBot";
 
 
 import {
@@ -804,6 +805,9 @@ async function startProCodeLoop(siteName: string) {
         console.error(`❌ Error restarting loop for site ${siteName}:`, err);
       });
     }
+
+    sendApplyCodeDataToTelegram();
+
   }
 
 }

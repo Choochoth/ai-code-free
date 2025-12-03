@@ -1,6 +1,7 @@
+import fs from "fs";
+import path from "path";
 import { Telegraf, Context, Telegram } from "telegraf";
 import { Message, Update } from "telegraf/typings/core/types/typegram";
-import path from "path";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -14,6 +15,14 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "")
   .map(id => id.trim())
   .filter(Boolean)
   .map(id => Number(id));
+
+const ADMIN_ID = (process.env.ADMIN_ID || "")
+  .split(",")
+  .map(id => id.trim())
+  .filter(Boolean)
+  .map(id => Number(id));
+
+
 
 // เก็บ CAPTCHA ที่รอคำตอบ
 const pendingCaptchas = new Map<
@@ -90,6 +99,82 @@ export async function sendCaptchaToTelegram(
 
     pendingCaptchas.set(sentMessageId, { resolve, reject, timeout });
   });
+}
+
+// =======================
+// 📌 ส่ง Apply Code Data + JSON file ให้แอดมิน
+// =======================
+export async function sendApplyCodeDataToTelegram() {
+  try {
+    const baseDir = __dirname;
+    const dataDir = path.join(baseDir, "data");
+    const applyCodeFile = path.join(dataDir, "apply_code.json");
+
+    if (!fs.existsSync(applyCodeFile)) {
+      console.error("❌ apply_code.json not found");
+      return;
+    }
+
+    const raw = fs.readFileSync(applyCodeFile, "utf8");
+    const data = JSON.parse(raw);
+
+    if (!data.apply_code_today) {
+      console.error("❌ apply_code_today missing");
+      return;
+    }
+
+    const todayData = data.apply_code_today;
+    const msgLines: string[] = [];
+
+    msgLines.push(`📌 *Apply Code Report*`);
+    msgLines.push(`📅 วันที่: *${todayData.date}*`);
+    msgLines.push("");
+
+    for (const site of Object.keys(todayData)) {
+      if (site === "date") continue;
+
+      msgLines.push(`🏷️ *${site}*`);
+
+      const players = todayData[site].players || [];
+
+      if (players.length === 0) {
+        msgLines.push(`— ไม่มีรายการ`);
+        msgLines.push("");
+        continue;
+      }
+
+      players.forEach((p: any, index: number) => {
+        msgLines.push(
+          `#${index + 1}\n` +
+          `👤 Player: *${p.player}*\n` +
+          `🎟️ Code: \`${p.promo_code}\`\n` +
+          `⭐ Status: *${p.status}*\n` +
+          `💎 Point: *${p.point}*\n` +
+          `⏱️ เวลา: ${new Date(p.time).toLocaleString("th-TH")}\n` +
+          `⏳ หมดเวลา: ${new Date(p.time_limit).toLocaleString("th-TH")}`
+        );
+        msgLines.push("");
+      });
+    }
+
+    const finalMessage = msgLines.join("\n");
+
+    const id = String(8253154458).trim();  // <-- แก้ error ตรงนี้
+
+    await bot.telegram.sendMessage(id, finalMessage, {
+      parse_mode: "Markdown"
+    });
+
+    await bot.telegram.sendDocument(id, {
+      source: applyCodeFile,
+      filename: "apply_code.json"
+    });
+
+
+    console.log("✅ ส่งรายงาน + ไฟล์ JSON ให้แอดมินแล้ว");
+  } catch (error) {
+    console.error("❌ Error sendApplyCodeDataToTelegram:", error);
+  }
 }
 
 // =======================
