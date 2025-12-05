@@ -5,20 +5,21 @@ import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/p
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 
+
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["manus9331", "nus9331", "aroon11"],
     high:  ["manus9331", "nus9331", "vip0955171905", "poypy789", "aroon11"],
-    mid: ["manus9331", "nus9331", "vip0955171905", "poypy789", "aroon11"],
+    mid: ["manus9331", "nus9331", "vip0955171905", "poypy789", "aroon11", "borvon"],
     low: ["vip0955171905", "poypy789", "borvon", "kootong"],
     all: ["vip0955171905", "poypy789", "aroon11", "VIP0955171905", "borvon", "kootong"]
   },
   thai_jun88k36: {
-    very_high:["aroon11", "nus9331", "manus9331", "nuschai"],
-    high: ["manus9331", "nus9331","aroon11", "nuschai"],
-    mid: ["ary11", "nuschai"],
+    very_high:["aroon11", "nus9331", "manus9331", "nuschai", "tun12345"],
+    high: ["manus9331", "nus9331","aroon11", "nuschai", "tun12345"],
+    mid: ["ary11" ,"nuschai", "tun12345"],
     low: ["ary11"],
-    all: ["ary11", "manus9331", "nus9331","aroon11", "nuschai"]
+    all: ["ary11", "manus9331", "nus9331","aroon11", "nuschai", "tun12345"]
   }
 };
 
