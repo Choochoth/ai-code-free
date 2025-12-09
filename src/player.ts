@@ -5,6 +5,7 @@ import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/p
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 
+
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["manus9331", "nus9331", "aroon11"],
@@ -14,11 +15,11 @@ const playerPools: Record<string, PlayerPool> = {
     all: ["manus9331", "poypy789", "aroon11", "VIP0955171905", "borvon", "nus9331"]
   },
   thai_jun88k36: {
-    very_high:["aroon11", "nus9331", "manus9331", "nuschai", "Gio777"],
-    high: ["manus9331", "nus9331", "aroon11", "nuschai", "Gio777"],
-    mid: ["ary11", "nuschai", "Gio777"],
+    very_high:["aroon11", "nus9331", "manus9331", "nuschai"],
+    high: ["manus9331", "nus9331", "aroon11", "nuschai"],
+    mid: ["ary11", "nuschai"],
     low: ["ary11"],
-    all: ["ary11", "manus9331", "nus9331","aroon11", "nuschai", "Gio777"]
+    all: ["ary11", "manus9331", "nus9331","aroon11", "nuschai"]
   }
 };
 
