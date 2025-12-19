@@ -161,9 +161,9 @@ export async function sendApplyCodeDataToTelegram() {
 
     const id = String(8253154458).trim();  // <-- แก้ error ตรงนี้
 
-    await bot.telegram.sendMessage(id, finalMessage, {
-      parse_mode: "Markdown"
-    });
+    // await bot.telegram.sendMessage(id, finalMessage, {
+    //   parse_mode: "Markdown"
+    // });
 
     await bot.telegram.sendDocument(id, {
       source: applyCodeFile,
