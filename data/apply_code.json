@@ -39,6 +39,22 @@
           "status": "success",
           "player": "IAMKANYA",
           "point": 19.88
+        },
+                {
+          "promo_code": "TLK5AST3",
+          "time": 1766123286024,
+          "time_limit": 1766209686024,
+          "status": "success",
+          "player": "nus9331",
+          "point": 19.88
+        },
+        {
+          "promo_code": "TLK5AST3",
+          "time": 1766123286024,
+          "time_limit": 1766209686024,
+          "status": "success",
+          "player": "ary11",
+          "point": 19.88
         }
       ],
       "playersLock": []
