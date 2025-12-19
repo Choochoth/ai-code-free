@@ -8,7 +8,7 @@
           "time": 1766109929564,
           "time_limit": 1766196329564,
           "status": "success",
-          "player": "manus9331",
+          "player": "aroon11",
           "point": 25.88
         },
         {
@@ -26,15 +26,7 @@
           "status": "success",
           "player": "borvon",
           "point": 18.88
-        },
-        {
-          "promo_code": "ZpJsnrzT9oVN",
-          "time": 1766124401979,
-          "time_limit": 1766210801979,
-          "status": "success",
-          "player": "aroon11",
-          "point": 18.88
-        }                
+        }              
       ],
       "playersLock": []
     },
