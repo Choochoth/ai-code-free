@@ -806,7 +806,7 @@ async function startProCodeLoop(siteName: string) {
       });
     }
 
-    sendApplyCodeDataToTelegram();
+    // sendApplyCodeDataToTelegram();
 
   }
 
