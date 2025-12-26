@@ -28,6 +28,6 @@
 
 
   const freeUsers:any = [];
-  const rewardUsers:any = ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "junplayer", "iamkanya", "poypy789", "aroon11", "vip0955171905"];
+  const rewardUsers:any = [];
   export {playerTelegram, freeUsers, rewardUsers}
   
