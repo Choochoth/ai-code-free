@@ -4,21 +4,20 @@ import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
-
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["manus9331", "nus9331", "aroon11"],
-    high:  ["manus9331", "nus9331", "aroon11", "vip0955171905", "poypy789"],
-    mid: ["manus9331", "nus9331", "poypy789", "aroon11", "vip0955171905" ],
+    high:  ["manus9331", "nus9331", "aroon11", "vip0955171905", "poypy789", "iammy89"],
+    mid: ["manus9331", "nus9331", "poypy789", "aroon11", "vip0955171905", "iammy89"],
     low: ["vip0955171905", "poypy789", "borvon", "kootong"],
-    all: ["manus9331", "poypy789", "aroon11", "vip0955171905", "nus9331"]
+    all: ["manus9331", "poypy789", "aroon11", "vip0955171905", "nus9331", "iammy89"]
   },
   thai_jun88k36: {
     very_high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"],
-    high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "junplayer", "pleasea", "tunpayongdnk", "tun12345", "tunpayong"],
-    mid:  ["aroon11", "junplayer", "pleasea", "tunpayongdnk", "tun12345", "tunpayong"],
-    low: ["bank0760", "junplayer"],
-    all: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "junplayer", "pleasea", "tunpayongdnk", "tun12345", "tunpayong"]
+    high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "junplayer"],
+    mid:  ["aroon11", "junplayer", "Patipan42"],
+    low: ["bank0760", "junplayer", "Patipan42"],
+    all: ["junplayer", "Patipan42"]
   }
 };
 
