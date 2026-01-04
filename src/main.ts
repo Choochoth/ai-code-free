@@ -456,6 +456,8 @@ async function initializeService() {
         if (processedMessageIds.has(id)) return;
 
         processedMessageIds.add(id);
+        console.log("NewMessage")
+
         handleIncomingMessage(message.text, message.peerId.toString());
         setTimeout(() => processedMessageIds.delete(id), 300_000);
       },
@@ -475,6 +477,7 @@ async function initializeService() {
           if (processedMessageIds.has(id)) return;
 
           processedMessageIds.add(id);
+          console.log("UpdateEditMessage")
           await handleIncomingMessage(msg.message, msg.peerId.toString());
           setTimeout(() => processedMessageIds.delete(id), 10_000);
         }
