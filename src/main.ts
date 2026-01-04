@@ -387,7 +387,7 @@ async function initializeService() {
     lastHandledMessage = text;
 
     const parsedCodes = parserCodeMessage(message);
-    if (parsedCodes.length < 10) return;
+    if (parsedCodes.length < 8) return;
     const shuffledCodes = shuffleArray(parsedCodes);
     console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
