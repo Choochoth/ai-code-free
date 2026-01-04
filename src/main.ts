@@ -74,12 +74,12 @@ const captchaLimiter = new Bottleneck({
 
 // 🔧 กำหนดระยะเวลา Lock ตามสถานะ
 const lockDurations: Record<number, number> = {
-  403: 3 * 60 * 1000,
-  9002: 3 * 60 * 1000,
-  9003: 3 * 60 * 1000,
+  403: 30 * 60 * 1000,
+  9002: 30 * 60 * 1000,
+  9003: 30 * 60 * 1000,
   9004: 3 * 60 * 1000,
-  9007: 3 * 60 * 1000,
-  0: 3 * 60 * 1000,
+  9007: 30 * 60 * 1000,
+  0: 30 * 60 * 1000,
   4044: 30 * 24 * 60 * 60 * 1000,
 };
 
@@ -387,7 +387,7 @@ async function initializeService() {
     lastHandledMessage = text;
 
     const parsedCodes = parserCodeMessage(message);
-    if (parsedCodes.length < 10) return;
+    if (parsedCodes.length < 8) return;
     const shuffledCodes = shuffleArray(parsedCodes);
     console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
@@ -456,6 +456,8 @@ async function initializeService() {
         if (processedMessageIds.has(id)) return;
 
         processedMessageIds.add(id);
+        console.log("NewMessage")
+
         handleIncomingMessage(message.text, message.peerId.toString());
         setTimeout(() => processedMessageIds.delete(id), 300_000);
       },
@@ -475,6 +477,7 @@ async function initializeService() {
           if (processedMessageIds.has(id)) return;
 
           processedMessageIds.add(id);
+          console.log("UpdateEditMessage")
           await handleIncomingMessage(msg.message, msg.peerId.toString());
           setTimeout(() => processedMessageIds.delete(id), 10_000);
         }
@@ -542,7 +545,7 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 19;
+    minPoint = 20;
   } else {
     minPoint = 15;
   }
@@ -805,7 +808,7 @@ async function startProCodeLoop(siteName: string) {
         console.error(`❌ Error restarting loop for site ${siteName}:`, err);
       });
     }
-
+    
     // sendApplyCodeDataToTelegram();
 
   }
