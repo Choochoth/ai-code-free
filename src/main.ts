@@ -950,17 +950,6 @@ async function getChatsList(client: TelegramClient) {
   }
 
 // Update Code: Keep-alive ping every 5 minutes 
-const baseUrl = `${process.env.BASE_URL}/health`;
-
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const res = await axios.get(baseUrl);
-    console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
-  } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
-  }
-});
-
 
 cron.schedule('*/5 * * * *', async () => {
   try {
