@@ -336,8 +336,47 @@ function abortCurrentSite(siteName: string) {
   }
 }
 
+function normalizeChatId(peerId: any): string | null {
+  if (!peerId) return null;
+
+  if (peerId instanceof Api.PeerChannel) {
+    return `-100${peerId.channelId}`;
+  }
+
+  if (peerId instanceof Api.PeerChat) {
+    return `-${peerId.chatId}`;
+  }
+
+  if (peerId instanceof Api.PeerUser) {
+    return peerId.userId.toString();
+  }
+
+  return peerId.toString();
+}
+
+async function forceReadAllChannels(client: any) {
+  try {
+    const dialogs = await client.getDialogs({});
+    for (const d of dialogs) {
+      if (d.isChannel) {
+        try {
+          await client.invoke(
+            new Api.messages.ReadHistory({
+              peer: d.inputEntity,
+              maxId: d.topMessage || 0,
+            })
+          );
+          console.log("👁️ Marked read:", d.title);
+        } catch {}
+      }
+    }
+  } catch (e) {
+    console.warn("⚠️ forceReadAllChannels failed");
+  }
+}
+
 async function initializeService() {
-  // 🚀 Initialize client
+  // 🔌 Init client
   if (!client) await initializeSession();
 
   const app = express();
@@ -346,164 +385,119 @@ async function initializeService() {
   app.use("/", viewRoutes);
   app.use("/api", apiRoutes);
 
-  // 🩺 Health check with auto restart
-  app.get("/health", async (req, res) => {
+  // 🩺 Health check
+  app.get("/health", async (_, res) => {
     try {
-      if (!client || !client.connected) await initializeSession();
-      res.status(200).json({ status: "Healthy" });
+      if (!client || !client.connected) {
+        await initializeClient();
+        await forceReadAllChannels(client);
+      }
+      res.json({ status: "Healthy" });
     } catch (err: any) {
-      console.error("❌ Health check failed:", err);
       res.status(500).json({ status: "Unhealthy", error: err.message });
 
       const now = Date.now();
-      if (now - lastRestartTime > 3 * 60 * 1000) {
+      if (now - lastRestartTime > 3 * 60_000) {
         lastRestartTime = now;
-        console.log("🔄 Restarting service...");
-        try {
-          await restartService();
-          console.log("✅ Restart complete.");
-        } catch (restartErr) {
-          console.error("🚨 Restart failed:", restartErr);
-        }
-      } else {
-        console.warn("⚠️ Restart skipped to avoid rapid restart loop.");
+        await restartService();
       }
     }
   });
 
-  // 🟢 Initialize or reconnect client
-  if (!client) {
-    await initializeSession();
-  } else {
+  // 🟢 Ensure connected
+  if (!client || !client.connected) {
     await initializeClient();
-    await getChatsList(client);
+    await forceReadAllChannels(client!);
   }
 
-  // 🎯 Handle incoming message
+
+  // 🎯 Message handler
   const handleIncomingMessage = async (message: string, chatId?: string) => {
     if (!message) return;
+
     const text = message.toLowerCase();
     if (text === lastHandledMessage) return;
     lastHandledMessage = text;
 
     const parsedCodes = parserCodeMessage(message);
-    if (parsedCodes.length < 8) return;
     const shuffledCodes = shuffleArray(parsedCodes);
-    console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
-    // 🔍 Detect site: Chat ID → keyword
     let siteConfig = chatId ? detectSiteFromChatId(chatId) : null;
     if (!siteConfig) siteConfig = detectSite(text);
-    if (!siteConfig) {
-      console.log("⚠️ Unrecognized message source.");
-      return;
-    }
+    if (!siteConfig) return;
 
     const site = siteConfig.name;
-    const apiEndPoint = siteConfig.endpoint;
-    const players = siteConfig.players;
-    const hostUrl = process.env[siteConfig.envVar] || "";
 
-    informationSet = {
-      site,
-      cskh_url: siteConfig.cskh_url,
-      cskh_home: siteConfig.cskh_url,
-      endpoint: apiEndPoint,
-      key_free: siteConfig.key_free,
-    };
-    // console.log("Site", informationSet);
-
-    // 📝 Create site queue if not exists
     if (!siteQueues[site]) {
       siteQueues[site] = {
         remainingCodes: [],
         isProcessing: false,
         abortFlag: { canceled: false },
-        players,
-        apiEndPoint,
+        players: siteConfig.players,
+        apiEndPoint: siteConfig.endpoint,
         site,
-        hostUrl,
+        hostUrl: process.env[siteConfig.envVar] || "",
       };
     }
 
-    // 🔄 Add unique codes to queue
     const existing = new Set(siteQueues[site].remainingCodes);
     const newCodes = shuffledCodes.filter(c => !existing.has(c));
     siteQueues[site].remainingCodes.unshift(...newCodes);
 
-    // 🔁 Start processing loop if needed
     const active = Object.values(siteQueues).find(q => q.isProcessing);
-    if (active) {
-      if (active.site !== site) {
-        abortCurrentSite(active.site);
-        startProCodeLoop(site).catch(err => console.error(err));
-      } else {
-        console.log(`♻️ Added new codes to ${site} queue.`);
-      }
-    } else {
-      startProCodeLoop(site).catch(err => console.error(err));
+    if (active && active.site !== site) {
+      abortCurrentSite(active.site);
+    }
+
+    if (!siteQueues[site].isProcessing) {
+      startProCodeLoop(site).catch(console.error);
     }
   };
 
-  // 📩 Telegram Event Handlers
-  const addEventHandlers = async (client: any) => {
+  // 📩 Add Telegram handlers (ONCE)
+  let handlersAdded = false;
+
+  const addEventHandlers = async () => {
+    if (handlersAdded) return;
+    if (!client) return;
+
+    handlersAdded = true;
+    console.log("📡 Telegram event handlers added");
+
     client.addEventHandler(
-      (event: NewMessageEvent) => {
-        const message = event.message;
-        if (!message || !message.text || !message.peerId) return;
+      async (event: NewMessageEvent) => {
+        const msg = event.message;
+        if (!msg?.text || !msg.peerId) return;
 
-        const id = `${message.peerId.toString()}_${message.id}`;
+        const chatId = normalizeChatId(msg.peerId);
+        if (!chatId) return;
+
+        const isEdited = Boolean(msg.editDate);
+        const id = `${isEdited ? "edit" : "new"}_${chatId}_${msg.id}`;
+
         if (processedMessageIds.has(id)) return;
-
         processedMessageIds.add(id);
-        handleIncomingMessage(message.text, message.peerId.toString());
+
+        console.log(
+          isEdited ? "✏️ Edited message" : "📣 New message",
+          chatId
+        );
+
+        await handleIncomingMessage(msg.text, chatId);
+
         setTimeout(() => processedMessageIds.delete(id), 300_000);
       },
-      new NewMessage({})
-    );
-
-    client.addEventHandler(
-      async (update: any) => {
-        const type = update.className || update?.constructor?.name;
-        if (type === "UpdateConnectionState") return;
-
-        if (type === "UpdateEditMessage" || type === "UpdateEditChannelMessage") {
-          const msg = update.message;
-          if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
-
-          const id = `${msg.peerId.toString()}_${msg.id}`;
-          if (processedMessageIds.has(id)) return;
-
-          processedMessageIds.add(id);
-          await handleIncomingMessage(msg.message, msg.peerId.toString());
-          setTimeout(() => processedMessageIds.delete(id), 10_000);
-        }
-      },
-      new Raw({})
+      new NewMessage({
+        edits: true,
+        // chats: Object.keys(chatIdMap), // ใส่ถ้ามี
+      })
     );
   };
 
-  // 🔌 Ensure client connection
-  const ensureConnectedAndAddHandlers = async () => {
-    if (client && client.connected) {
-      console.log("✅ Client is connected.");
-      await addEventHandlers(client);
-    } else {
-      console.log("🔁 Reconnecting client...");
-      await initializeClient();
-      if (client && client.connected) {
-        console.log("✅ Reconnected and ready.");
-        await addEventHandlers(client);
-      } else {
-        console.log("❌ Failed to reconnect client.");
-        await restartService();
-      }
-    }
-  };
 
-  await ensureConnectedAndAddHandlers();
+  await addEventHandlers();
 
-  // 🌐 Start Express server
+  // 🌐 Start server
   const startServer = (port: number) =>
     new Promise<void>((resolve, reject) => {
       expressServer = app
@@ -512,27 +506,19 @@ async function initializeService() {
           resolve();
         })
         .on("error", (err: any) => {
-          if ((err as any).code === "EADDRINUSE") {
-            console.warn(`⚠️ Port ${port} in use. Trying port ${port + 1}...`);
+          if (err.code === "EADDRINUSE") {
             resolve(startServer(port + 1));
-          } else {
-            reject(err);
-          }
+          } else reject(err);
         });
     });
 
-  try {
-    await startServer(port);
-  } catch (err) {
-    console.error("❌ Failed to start server:", err);
-  }
+  await startServer(port);
 
   // 🛑 Graceful shutdown
   const gracefulShutdown = () => {
-    console.log("🛑 Shutting down gracefully...");
-    expressServer?.close(() => console.log("🪣 Express server closed."));
-    if (client) client.disconnect().then(() => process.exit(0));
-    else process.exit(0);
+    console.log("🛑 Shutting down...");
+    expressServer?.close();
+    client?.disconnect().finally(() => process.exit(0));
   };
 
   process.on("SIGTERM", gracefulShutdown);
