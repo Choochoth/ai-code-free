@@ -74,11 +74,11 @@ const captchaLimiter = new Bottleneck({
 
 // 🔧 กำหนดระยะเวลา Lock ตามสถานะ
 const lockDurations: Record<number, number> = {
-  403: 3 * 60 * 1000,
-  9002: 3 * 60 * 1000,
-  9003: 3 * 60 * 1000,
+  403: 30 * 60 * 1000,
+  9002: 30 * 60 * 1000,
+  9003: 30 * 60 * 1000,
   9004: 3 * 60 * 1000,
-  9007: 3 * 60 * 1000,
+  9007: 30 * 60 * 1000,
   0: 30 * 60 * 1000,
   4044: 30 * 24 * 60 * 60 * 1000,
 };
@@ -88,6 +88,21 @@ const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
 const applyCodePath = path.join(dataDir, "apply_code.json");
 const packagePath = path.join(dataDir, "package.json");
+// mapping Channel ID (-100xxxx) → site name
+export const chatIdMap: Record<string, string> = {
+  // ================= Jun88 =================
+  "-1002519263985": "thai_jun88k36",
+  "-1002668963498": "thai_jun88k36",
+  "-1002142874457": "thai_jun88k36",
+
+  // ================= 789BET =================
+  "-1002040396559": "thai_789bet",
+  "-1002406062886": "thai_789bet",
+  "-1002544749433": "thai_789bet",
+
+  // ================= F168 =================
+  // "-1002983089547": "thai_f168",
+};
 
 try {
   if (!fs.existsSync(sessionDir)) {
@@ -351,26 +366,36 @@ function normalizeChatId(peerId: any): string | null {
     return peerId.userId.toString();
   }
 
-  return peerId.toString();
+  return null;
 }
 
 async function forceReadAllChannels(client: any) {
   try {
-    const dialogs = await client.getDialogs({});
+    const dialogs = await client.getDialogs({ limit: 200 });
+
     for (const d of dialogs) {
-      if (d.isChannel) {
-        try {
-          await client.invoke(
-            new Api.messages.ReadHistory({
-              peer: d.inputEntity,
-              maxId: d.topMessage || 0,
-            })
-          );
-          console.log("👁️ Marked read:", d.title);
-        } catch {}
-      }
+      if (!d.isChannel) continue;
+
+      try {
+        // 👁️ mark read
+        await client.invoke(
+          new Api.messages.ReadHistory({
+            peer: d.inputEntity,
+            maxId: d.topMessage || 0,
+          })
+        );
+
+        // ⭐ เพิ่ม step activate (สำคัญมาก)
+        await client.invoke(
+          new Api.channels.GetChannels({
+            id: [d.inputEntity],
+          })
+        );
+
+        console.log("👁️ Activated channel:", d.title);
+      } catch {}
     }
-  } catch (e) {
+  } catch {
     console.warn("⚠️ forceReadAllChannels failed");
   }
 }
@@ -469,8 +494,12 @@ async function initializeService() {
         const msg = event.message;
         if (!msg?.text || !msg.peerId) return;
 
+        // ⭐ ใช้ normalizeChatId ที่ fix แล้ว
         const chatId = normalizeChatId(msg.peerId);
         if (!chatId) return;
+
+        // ⭐ filter เฉพาะ channel ที่ map ไว้
+        if (!chatIdMap[chatId]) return;
 
         const isEdited = Boolean(msg.editDate);
         const id = `${isEdited ? "edit" : "new"}_${chatId}_${msg.id}`;
@@ -479,7 +508,7 @@ async function initializeService() {
         processedMessageIds.add(id);
 
         console.log(
-          isEdited ? "✏️ Edited message" : "📣 New message",
+          isEdited ? "✏️ Edited channel message" : "📣 New channel message",
           chatId
         );
 
@@ -489,10 +518,11 @@ async function initializeService() {
       },
       new NewMessage({
         edits: true,
-        // chats: Object.keys(chatIdMap), // ใส่ถ้ามี
+        chats: Object.keys(chatIdMap), // ⭐ FIX หลัก
       })
     );
   };
+
 
 
   await addEventHandlers();
@@ -530,7 +560,7 @@ async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
     minPoint = 20;
   } else {
-    minPoint = 15;
+    minPoint = 18;
   }
 
   const siteQueue = siteQueues[siteName];
@@ -791,9 +821,8 @@ async function startProCodeLoop(siteName: string) {
         console.error(`❌ Error restarting loop for site ${siteName}:`, err);
       });
     }
-
+    
     // sendApplyCodeDataToTelegram();
-
   }
 
 }
@@ -933,16 +962,16 @@ async function getChatsList(client: TelegramClient) {
   }
 
 // Update Code: Keep-alive ping every 5 minutes 
-const baseUrl = `${process.env.BASE_URL}/health`;
+// const baseUrl = `${process.env.BASE_URL}/health`;
 
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const res = await axios.get(baseUrl);
-    console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
-  } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
-  }
-});
+// cron.schedule('*/5 * * * *', async () => {
+//   try {
+//     const res = await axios.get(baseUrl);
+//     console.log(`[${new Date().toISOString()}] 🔁 Self-ping: ${res.data.status}`);
+//   } catch (err: any) {
+//     console.error(`[${new Date().toISOString()}] 🛑 Self-ping failed:`, err.message);
+//   }
+// });
 
 
 cron.schedule('*/5 * * * *', async () => {
