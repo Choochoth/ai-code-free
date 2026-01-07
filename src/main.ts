@@ -446,17 +446,91 @@ async function initializeService() {
   };
 
   // 📩 Telegram Event Handlers
-  const addEventHandlers = async (client: any) => {
+  // const addEventHandlers = async (client: TelegramClient) => {
+  //   console.log("📡 Attaching Telegram Event Handlers...");
+
+  //   client.addEventHandler(
+  //     async (event: any) => {
+  //       const msg = event.message;
+  //       if (!msg || !msg.message || !msg.peerId) return;
+
+  //       let chatId: string | null = null;
+
+  //       if (msg.peerId.channelId) {
+  //         chatId = `-100${msg.peerId.channelId.toString()}`;
+  //       } else if (msg.peerId.chatId) {
+  //         chatId = `-${msg.peerId.chatId.toString()}`;
+  //       } else if (msg.peerId.userId) {
+  //         chatId = msg.peerId.userId.toString();
+  //       }
+
+  //       if (!chatId) return;
+
+  //       const allowChats = new Set([
+  //         "-1002292832183",
+  //         "-1002406062886",
+  //         "-1002519263985",
+  //         "-1002668963498",
+  //         "-1002142874457",
+  //         "-1002040396559",
+  //         "-1002544749433",
+  //         "-1002870022460",
+  //       ]);
+
+  //       if (!allowChats.has(chatId)) return;
+
+  //       const dedupId = `${chatId}_${msg.id}`;
+  //       if (processedMessageIds.has(dedupId)) return;
+  //       processedMessageIds.add(dedupId);
+
+  //       console.log("🔥 New Telegram Message", chatId, msg.message);
+
+  //       await handleIncomingMessage(msg.message, chatId);
+
+  //       setTimeout(() => processedMessageIds.delete(dedupId), 300_000);
+  //     },
+  //     new NewMessage({ incoming: true })
+  //   );
+
+
+  //   client.addEventHandler(
+  //     async (update: any) => {
+  //       const type = update.className || update?.constructor?.name;
+  //       if (type === "UpdateConnectionState") return;
+
+  //       if (type === "UpdateEditMessage" || type === "UpdateEditChannelMessage") {
+  //         const msg = update.message;
+  //         if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
+
+  //         const id = `${msg.peerId.toString()}_${msg.id}`;
+  //         if (processedMessageIds.has(id)) return;
+
+  //         processedMessageIds.add(id);
+  //         console.log("UpdateEditMessage")
+  //         await handleIncomingMessage(msg.message, msg.peerId.toString());
+  //         setTimeout(() => processedMessageIds.delete(id), 10_000);
+  //       }
+  //     },
+  //     new Raw({})
+  //   )
+
+  //   console.log("✅ Telegram Event Handlers READY (Channel -100 supported)");
+  // };
+
+
+  const addEventHandlers = async (client: TelegramClient) => {
+    console.log("📡 Attaching Telegram Event Handlers...");
     client.addEventHandler(
       (event: NewMessageEvent) => {
         const message = event.message;
         if (!message || !message.text || !message.peerId) return;
+        console.log("event: ", event)
 
         const id = `${message.peerId.toString()}_${message.id}`;
         if (processedMessageIds.has(id)) return;
 
         processedMessageIds.add(id);
-        console.log("NewMessage")
+        console.log("NewMessage: ", message.text)
 
         handleIncomingMessage(message.text, message.peerId.toString());
         setTimeout(() => processedMessageIds.delete(id), 300_000);
@@ -469,7 +543,9 @@ async function initializeService() {
         const type = update.className || update?.constructor?.name;
         if (type === "UpdateConnectionState") return;
 
-        if (type === "UpdateEditMessage" || type === "UpdateEditChannelMessage") {
+        if (type === "UpdateEditMessage" || type === "UpdateEditChannelMessage")
+        {
+          console.log("update: ", update)
           const msg = update.message;
           if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
 
@@ -477,7 +553,7 @@ async function initializeService() {
           if (processedMessageIds.has(id)) return;
 
           processedMessageIds.add(id);
-          console.log("UpdateEditMessage")
+          console.log("UpdateEditMessage: ", msg.message)
           await handleIncomingMessage(msg.message, msg.peerId.toString());
           setTimeout(() => processedMessageIds.delete(id), 10_000);
         }
