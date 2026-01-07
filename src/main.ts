@@ -446,7 +446,7 @@ async function initializeService() {
   };
 
   // 📩 Telegram Event Handlers
-  const addEventHandlers = async (client: any) => {
+  const addEventHandlers = async (client: TelegramClient) => {
     client.addEventHandler(
       (event: NewMessageEvent) => {
         const message = event.message;
@@ -545,7 +545,7 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 20;
+    minPoint = 17;
   } else {
     minPoint = 15;
   }
