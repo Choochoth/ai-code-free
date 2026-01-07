@@ -524,7 +524,7 @@ async function initializeService() {
       (event: NewMessageEvent) => {
         const message = event.message;
         if (!message || !message.text || !message.peerId) return;
-        console.log("event: ", event)
+        // console.log("event: ", event)
 
         const id = `${message.peerId.toString()}_${message.id}`;
         if (processedMessageIds.has(id)) return;
@@ -545,7 +545,7 @@ async function initializeService() {
 
         if (type === "UpdateEditMessage" || type === "UpdateEditChannelMessage")
         {
-          console.log("update: ", update)
+          // console.log("update: ", update)
           const msg = update.message;
           if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
 
