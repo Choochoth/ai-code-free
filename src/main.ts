@@ -88,6 +88,7 @@ const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
 const applyCodePath = path.join(dataDir, "apply_code.json");
 const packagePath = path.join(dataDir, "package.json");
+let handlersAttached = false;
 
 try {
   if (!fs.existsSync(sessionDir)) {
@@ -351,63 +352,51 @@ function getChatIdFromPeer(peerId: any): string | null {
 
 
 async function initializeService() {
-  // 🚀 Initialize client
-  if (!client) await initializeSession();
+  // 🚀 Initialize client (ONCE)
+  if (!client) {
+    await initializeSession();
+  }
 
+  if (client) {
+    await getChatsList(client);
+  }
+  
   const app = express();
   app.use(express.json());
   app.use(express.static(path.join(__dirname, "public")));
   app.use("/", viewRoutes);
   app.use("/api", apiRoutes);
-
-  // 🩺 Health check with auto restart
+  // 🩺 Health check (CHECK ONLY)
   app.get("/health", async (req, res) => {
     try {
-      if (!client || !client.connected) await initializeSession();
+      if (!client) throw new Error("Client not initialized");
+      await client.getMe(); // auth check จริง
       res.status(200).json({ status: "Healthy" });
     } catch (err: any) {
-      console.error("❌ Health check failed:", err);
-      res.status(500).json({ status: "Unhealthy", error: err.message });
-
-      const now = Date.now();
-      if (now - lastRestartTime > 3 * 60 * 1000) {
-        lastRestartTime = now;
-        console.log("🔄 Restarting service...");
-        try {
-          await restartService();
-          console.log("✅ Restart complete.");
-        } catch (restartErr) {
-          console.error("🚨 Restart failed:", restartErr);
-        }
-      } else {
-        console.warn("⚠️ Restart skipped to avoid rapid restart loop.");
-      }
+      console.error("❌ Health check failed:", err.message);
+      res.status(500).json({ status: "Unhealthy" });
+      process.exit(1); // ให้ PM2 / Docker restart
     }
   });
 
-  // 🟢 Initialize or reconnect client
-  if (!client) {
-    await initializeSession();
-  } else {
-    await initializeClient();
-    await getChatsList(client);
-  }
-
   // 🎯 Handle incoming message
   const handleIncomingMessage = async (message: string, chatId?: string) => {
-    if (!message) return;
-    const text = message.toLowerCase();
-    if (text === lastHandledMessage) return;
-    lastHandledMessage = text;
+    if (!message || !chatId) return;
+
+    // ✅ Dedup by chat + message
+    const dedupKey = `${chatId}_${message.toLowerCase()}`;
+    if (processedMessageIds.has(dedupKey)) return;
+    processedMessageIds.add(dedupKey);
+    setTimeout(() => processedMessageIds.delete(dedupKey), 60_000);
 
     const parsedCodes = parserCodeMessage(message);
     if (parsedCodes.length < 8) return;
+
     const shuffledCodes = shuffleArray(parsedCodes);
     console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
-    // 🔍 Detect site: Chat ID → keyword
-    let siteConfig = chatId ? detectSiteFromChatId(chatId) : null;
-    if (!siteConfig) siteConfig = detectSite(text);
+    // 🔍 Detect site
+    let siteConfig = detectSiteFromChatId(chatId) || detectSite(message);
     if (!siteConfig) {
       console.log("⚠️ Unrecognized message source.");
       return;
@@ -425,7 +414,6 @@ async function initializeService() {
       endpoint: apiEndPoint,
       key_free: siteConfig.key_free,
     };
-    // console.log("Site", informationSet);
 
     // 📝 Create site queue if not exists
     if (!siteQueues[site]) {
@@ -440,127 +428,44 @@ async function initializeService() {
       };
     }
 
-    // 🔄 Add unique codes to queue
+    // 🔄 Add unique codes
     const existing = new Set(siteQueues[site].remainingCodes);
     const newCodes = shuffledCodes.filter(c => !existing.has(c));
     siteQueues[site].remainingCodes.unshift(...newCodes);
 
-    // 🔁 Start processing loop if needed
+    // 🔁 Processing control
     const active = Object.values(siteQueues).find(q => q.isProcessing);
     if (active) {
       if (active.site !== site) {
         abortCurrentSite(active.site);
-        startProCodeLoop(site).catch(err => console.error(err));
-      } else {
-        console.log(`♻️ Added new codes to ${site} queue.`);
+        startProCodeLoop(site).catch(console.error);
       }
     } else {
-      startProCodeLoop(site).catch(err => console.error(err));
+      startProCodeLoop(site).catch(console.error);
     }
   };
 
   // 📩 Telegram Event Handlers
-  // const addEventHandlers = async (client: TelegramClient) => {
-  //   console.log("📡 Attaching Telegram Event Handlers...");
-
-  //   client.addEventHandler(
-  //     async (event: any) => {
-  //       const msg = event.message;
-  //       if (!msg || !msg.message || !msg.peerId) return;
-
-  //       let chatId: string | null = null;
-
-  //       if (msg.peerId.channelId) {
-  //         chatId = `-100${msg.peerId.channelId.toString()}`;
-  //       } else if (msg.peerId.chatId) {
-  //         chatId = `-${msg.peerId.chatId.toString()}`;
-  //       } else if (msg.peerId.userId) {
-  //         chatId = msg.peerId.userId.toString();
-  //       }
-
-  //       if (!chatId) return;
-
-  //       const allowChats = new Set([
-  //         "-1002292832183",
-  //         "-1002406062886",
-  //         "-1002519263985",
-  //         "-1002668963498",
-  //         "-1002142874457",
-  //         "-1002040396559",
-  //         "-1002544749433",
-  //         "-1002870022460",
-  //       ]);
-
-  //       if (!allowChats.has(chatId)) return;
-
-  //       const dedupId = `${chatId}_${msg.id}`;
-  //       if (processedMessageIds.has(dedupId)) return;
-  //       processedMessageIds.add(dedupId);
-
-  //       console.log("🔥 New Telegram Message", chatId, msg.message);
-
-  //       await handleIncomingMessage(msg.message, chatId);
-
-  //       setTimeout(() => processedMessageIds.delete(dedupId), 300_000);
-  //     },
-  //     new NewMessage({ incoming: true })
-  //   );
-
-
-  //   client.addEventHandler(
-  //     async (update: any) => {
-  //       const type = update.className || update?.constructor?.name;
-  //       if (type === "UpdateConnectionState") return;
-
-  //       if (type === "UpdateEditMessage" || type === "UpdateEditChannelMessage") {
-  //         const msg = update.message;
-  //         if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
-
-  //         const id = `${msg.peerId.toString()}_${msg.id}`;
-  //         if (processedMessageIds.has(id)) return;
-
-  //         processedMessageIds.add(id);
-  //         console.log("UpdateEditMessage")
-  //         await handleIncomingMessage(msg.message, msg.peerId.toString());
-  //         setTimeout(() => processedMessageIds.delete(id), 10_000);
-  //       }
-  //     },
-  //     new Raw({})
-  //   )
-
-  //   console.log("✅ Telegram Event Handlers READY (Channel -100 supported)");
-  // };
-
-
   const addEventHandlers = async (client: TelegramClient) => {
+    if (handlersAttached) return; // ✅ guard สำคัญมาก
+    handlersAttached = true;
+
     console.log("📡 Attaching Telegram Event Handlers...");
-    // client.addEventHandler(
-    //   (event: NewMessageEvent) => {
-    //     const message = event.message;
-    //     if (!message || !message.text || !message.peerId) return;
-    //     // console.log("event: ", event)
 
-    //     const id = `${message.peerId.toString()}_${message.id}`;
-    //     if (processedMessageIds.has(id)) return;
-
-    //     processedMessageIds.add(id);
-    //     console.log("NewMessage: ", message.text)
-
-    //     handleIncomingMessage(message.text, message.peerId.toString());
-    //     setTimeout(() => processedMessageIds.delete(id), 300_000);
-    //   },
-    //   new NewMessage({})
-    // );
-
+    // ✅ New Message
     client.addEventHandler(
       async (event: NewMessageEvent) => {
         const message = event.message;
-        if (!message || !message.text || !message.peerId) return;
+        if (!message?.text || !message.peerId) return;
 
         const chatId = getChatIdFromPeer(message.peerId);
         if (!chatId) return;
 
-        const allowChats = new Set([
+        console.log("🔥 New Message", chatId, message.text);
+        await handleIncomingMessage(message.text, chatId);
+      },
+      new NewMessage({
+        chats: [
           "-1002292832183",
           "-1002406062886",
           "-1002519263985",
@@ -568,65 +473,53 @@ async function initializeService() {
           "-1002142874457",
           "-1002040396559",
           "-1002544749433",
-          "-1002870022460",
-        ]);
-
-        if (!allowChats.has(chatId)) return;
-
-        const dedupId = `${chatId}_${message.id}`;
-        if (processedMessageIds.has(dedupId)) return;
-        processedMessageIds.add(dedupId);
-
-        console.log("🔥 New Telegram Message", chatId, message.text);
-
-        await handleIncomingMessage(message.text, chatId);
-
-        setTimeout(() => processedMessageIds.delete(dedupId), 300_000);
-      },
-      new NewMessage({})
+        ],
+      })
     );
 
-
+    // ⚠️ Raw (ใช้เท่าที่จำเป็น)
     client.addEventHandler(
       async (update: any) => {
         const type = update.className || update?.constructor?.name;
-        if (type === "UpdateConnectionState") return;
+        if (
+          type !== "UpdateEditMessage" &&
+          type !== "UpdateEditChannelMessage"
+        ) return;
 
-        if (type === "UpdateEditMessage" || type === "UpdateEditChannelMessage")
-        {
-          // console.log("update: ", update)
-          const msg = update.message;
-          if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
+        const msg = update.message;
+        if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
 
-          const id = `${msg.peerId.toString()}_${msg.id}`;
-          if (processedMessageIds.has(id)) return;
+        const chatId = getChatIdFromPeer(msg.peerId);
+        if (!chatId) return;
 
-          processedMessageIds.add(id);
-          console.log("UpdateEditMessage: ", msg.message)
-          await handleIncomingMessage(msg.message, msg.peerId.toString());
-          setTimeout(() => processedMessageIds.delete(id), 10_000);
-        }
+        const dedupKey = `${chatId}_${msg.id}`;
+        if (processedMessageIds.has(dedupKey)) return;
+
+        processedMessageIds.add(dedupKey);
+        setTimeout(() => processedMessageIds.delete(dedupKey), 10_000);
+
+        console.log("✏️ Edit Message", chatId, msg.message);
+        await handleIncomingMessage(msg.message, chatId);
       },
       new Raw({})
     );
   };
 
-  // 🔌 Ensure client connection
+  // 🔌 Ensure connected & attach handlers
   const ensureConnectedAndAddHandlers = async () => {
-    if (client && client.connected) {
-      console.log("✅ Client is connected.");
-      await addEventHandlers(client);
-    } else {
-      console.log("🔁 Reconnecting client...");
-      await initializeClient();
-      if (client && client.connected) {
-        console.log("✅ Reconnected and ready.");
-        await addEventHandlers(client);
-      } else {
-        console.log("❌ Failed to reconnect client.");
-        await restartService();
+    if (!client) throw new Error("Client not initialized");
+
+    try {
+      await client.getMe(); // auth จริง
+    } catch (e: any) {
+      if (e.errorMessage?.includes("AUTH_KEY_UNREGISTERED")) {
+        console.error("❌ Session revoked. Exiting...");
+        process.exit(1);
       }
+      throw e;
     }
+
+    await addEventHandlers(client);
   };
 
   await ensureConnectedAndAddHandlers();
@@ -640,8 +533,8 @@ async function initializeService() {
           resolve();
         })
         .on("error", (err: any) => {
-          if ((err as any).code === "EADDRINUSE") {
-            console.warn(`⚠️ Port ${port} in use. Trying port ${port + 1}...`);
+          if (err.code === "EADDRINUSE") {
+            console.warn(`⚠️ Port ${port} in use. Trying ${port + 1}...`);
             resolve(startServer(port + 1));
           } else {
             reject(err);
@@ -659,18 +552,22 @@ async function initializeService() {
   const gracefulShutdown = () => {
     console.log("🛑 Shutting down gracefully...");
     expressServer?.close(() => console.log("🪣 Express server closed."));
-    if (client) client.disconnect().then(() => process.exit(0));
-    else process.exit(0);
+    if (client) {
+      client.disconnect().then(() => process.exit(0));
+    } else {
+      process.exit(0);
+    }
   };
 
   process.on("SIGTERM", gracefulShutdown);
   process.on("SIGINT", gracefulShutdown);
 }
 
+
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 15;
+    minPoint = 18;
   } else {
     minPoint = 15;
   }
