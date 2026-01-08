@@ -1,21 +1,13 @@
 {
   "apply_code_today": {
-    "date": "2026-01-06",
+    "date": "2026-01-09",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
       "players": [],
-      "playersLock": [
-        {
-          "player": "bank0760",
-          "timelock": 1767646733741,
-          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
-          "lockTime": 1800000,
-          "lockCode": 9007
-        }
-      ]
+      "playersLock": []
     }
   }
 }
