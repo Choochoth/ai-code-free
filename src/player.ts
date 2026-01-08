@@ -9,16 +9,16 @@ const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["manus9331", "nus9331", "aroon11"],
     high:  ["manus9331", "nus9331", "aroon11", "vip0955171905", "poypy789"],
-    mid: ["manus9331", "nus9331", "poypy789", "aroon11", "vip0955171905", "Dylxndz"],
-    low: ["vip0955171905", "poypy789", "areeroon", "kootong","Dylxndz"],
-    all: ["manus9331", "poypy789", "aroon11", "vip0955171905", "nus9331", "areeroon", "Dylxndz"]
+    mid: ["manus9331", "nus9331", "poypy789", "aroon11", "vip0955171905"],
+    low: ["vip0955171905", "poypy789", "areeroon", "kootong"],
+    all: ["manus9331", "poypy789", "aroon11", "vip0955171905", "nus9331", "areeroon"]
   },
   thai_jun88k36: {
     very_high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"],
-    high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "Miw1234"],
-    mid:  ["nuschai", "ary11", "bank0760", "Miw1234"],
+    high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"],
+    mid:  ["nuschai", "ary11", "bank0760"],
     low: [],
-    all: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "Miw1234"]
+    all: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"]
   }
 };
 

@@ -336,6 +336,20 @@ function abortCurrentSite(siteName: string) {
   }
 }
 
+function getChatIdFromPeer(peerId: any): string | null {
+  if (peerId.channelId) {
+    return `-100${peerId.channelId.toString()}`;
+  }
+  if (peerId.chatId) {
+    return `-${peerId.chatId.toString()}`;
+  }
+  if (peerId.userId) {
+    return peerId.userId.toString();
+  }
+  return null;
+}
+
+
 async function initializeService() {
   // 🚀 Initialize client
   if (!client) await initializeSession();
@@ -520,23 +534,58 @@ async function initializeService() {
 
   const addEventHandlers = async (client: TelegramClient) => {
     console.log("📡 Attaching Telegram Event Handlers...");
+    // client.addEventHandler(
+    //   (event: NewMessageEvent) => {
+    //     const message = event.message;
+    //     if (!message || !message.text || !message.peerId) return;
+    //     // console.log("event: ", event)
+
+    //     const id = `${message.peerId.toString()}_${message.id}`;
+    //     if (processedMessageIds.has(id)) return;
+
+    //     processedMessageIds.add(id);
+    //     console.log("NewMessage: ", message.text)
+
+    //     handleIncomingMessage(message.text, message.peerId.toString());
+    //     setTimeout(() => processedMessageIds.delete(id), 300_000);
+    //   },
+    //   new NewMessage({})
+    // );
+
     client.addEventHandler(
-      (event: NewMessageEvent) => {
+      async (event: NewMessageEvent) => {
         const message = event.message;
         if (!message || !message.text || !message.peerId) return;
-        // console.log("event: ", event)
 
-        const id = `${message.peerId.toString()}_${message.id}`;
-        if (processedMessageIds.has(id)) return;
+        const chatId = getChatIdFromPeer(message.peerId);
+        if (!chatId) return;
 
-        processedMessageIds.add(id);
-        console.log("NewMessage: ", message.text)
+        const allowChats = new Set([
+          "-1002292832183",
+          "-1002406062886",
+          "-1002519263985",
+          "-1002668963498",
+          "-1002142874457",
+          "-1002040396559",
+          "-1002544749433",
+          "-1002870022460",
+        ]);
 
-        handleIncomingMessage(message.text, message.peerId.toString());
-        setTimeout(() => processedMessageIds.delete(id), 300_000);
+        if (!allowChats.has(chatId)) return;
+
+        const dedupId = `${chatId}_${message.id}`;
+        if (processedMessageIds.has(dedupId)) return;
+        processedMessageIds.add(dedupId);
+
+        console.log("🔥 New Telegram Message", chatId, message.text);
+
+        await handleIncomingMessage(message.text, chatId);
+
+        setTimeout(() => processedMessageIds.delete(dedupId), 300_000);
       },
       new NewMessage({})
     );
+
 
     client.addEventHandler(
       async (update: any) => {
