@@ -360,7 +360,7 @@ async function initializeService() {
   if (client) {
     await getChatsList(client);
   }
-  
+
   const app = express();
   app.use(express.json());
   app.use(express.static(path.join(__dirname, "public")));
@@ -478,6 +478,13 @@ async function initializeService() {
     );
 
     // ⚠️ Raw (ใช้เท่าที่จำเป็น)
+    const ALLOWED_CHAT_IDS = new Set([
+      "-1002292832183",
+      "-1002519263985",
+      "-1002668963498",
+      "-1002142874457",
+    ]);
+
     client.addEventHandler(
       async (update: any) => {
         const type = update.className || update?.constructor?.name;
@@ -490,9 +497,9 @@ async function initializeService() {
         if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
 
         const chatId = getChatIdFromPeer(msg.peerId);
-        if (!chatId) return;
+        if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
 
-        const dedupKey = `${chatId}_${msg.id}`;
+        const dedupKey = `edit_${chatId}_${msg.id}`;
         if (processedMessageIds.has(dedupKey)) return;
 
         processedMessageIds.add(dedupKey);
@@ -503,6 +510,7 @@ async function initializeService() {
       },
       new Raw({})
     );
+
   };
 
   // 🔌 Ensure connected & attach handlers
