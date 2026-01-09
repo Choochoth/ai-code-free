@@ -975,6 +975,10 @@ async function getChatsList(client: TelegramClient) {
     const displayName = [me.firstName, me.lastName].filter(Boolean).join(" ");
     console.log(`🤖 Signed in as: ${displayName}`);
     console.log(`🆔 Telegram ID: ${me.id.toString()}`);
+
+
+
+
   } catch (err) {
     console.error("❌ Failed to fetch Telegram user info:", err);
   }
