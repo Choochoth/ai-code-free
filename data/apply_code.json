@@ -20,15 +20,7 @@
           "point": 16.88
         }
       ],
-      "playersLock": [
-        {
-          "player": "vip0955171905",
-          "timelock": 1768153873013,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        }
-      ]
+      "playersLock": []
     },
     "thai_jun88k36": {
       "players": [],
