@@ -482,7 +482,7 @@ async function initializeService() {
   /* ---------------- POLL MODE ---------------- */
 
   const channelPollState: Record<string, number> = {};
-  const POLL_INTERVAL = 20_000;
+  const POLL_INTERVAL = 30_000;
 
   async function pollChannel(client: TelegramClient, chatId: string) {
     if (SOURCE_MODE !== "poll") return;
