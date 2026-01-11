@@ -1,9 +1,34 @@
 {
   "apply_code_today": {
-    "date": "2026-01-11",
+    "date": "2026-01-12",
     "thai_789bet": {
-      "players": [],
-      "playersLock": []
+      "players": [
+        {
+          "promo_code": "8YvqlS3t1SIg",
+          "time": 1768153804099,
+          "time_limit": 1768240204099,
+          "status": "success",
+          "player": "aroon11",
+          "point": 22.88
+        },
+        {
+          "promo_code": "5sTkkZomPG5m",
+          "time": 1768153876827,
+          "time_limit": 1768240276827,
+          "status": "success",
+          "player": "manus9331",
+          "point": 16.88
+        }
+      ],
+      "playersLock": [
+        {
+          "player": "vip0955171905",
+          "timelock": 1768153873013,
+          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
+          "lockTime": 180000,
+          "lockCode": 9004
+        }
+      ]
     },
     "thai_jun88k36": {
       "players": [],
