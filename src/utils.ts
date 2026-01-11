@@ -67,7 +67,7 @@ export function formatTelegramMessage(data: any): string {
   // กำหนด messageTitle อัตโนมัติ
   // -------------------------------
   let messageTitle = "";
-  
+
   if (rewardUsers.includes(playerId)) {
     messageTitle = "ยินดีด้วย! คุณได้รับรางวัล โค้ดฟรีสวัสดีปีใหม่ 2026 ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
   } else if (freeUsers.includes(playerId)) {
@@ -75,7 +75,6 @@ export function formatTelegramMessage(data: any): string {
   } else {
     messageTitle = "ยินดีด้วย! คุณได้รับเครดิตจากแพ็กเกจยิงโค้ด ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
   }
-
   // -------------------------------
   // TEMPLATE ใช้ร่วมกันทั้งระบบ
   // -------------------------------
