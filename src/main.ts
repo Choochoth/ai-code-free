@@ -115,16 +115,6 @@ let expressServer: any;
 let lastHandledMessage: string | null = null;
 let minPoint: number = 8;
 
-const channelPollState: Record<
-  string,
-  {
-    lastMessageId: number;
-    lastHash?: string;
-  }
-> = {};
-
-
-
 async function initializeClient() {
   if (!client) {
     client = new TelegramClient(
@@ -361,16 +351,7 @@ function getChatIdFromPeer(peerId: any): string | null {
 }
 
 
-
 async function initializeService() {
-  type SourceMode = "event" | "poll";
-  const SOURCE_MODE: SourceMode =
-    (process.env.TG_SOURCE_MODE as SourceMode) || "event";
-
-  if (SOURCE_MODE !== "event" && SOURCE_MODE !== "poll") {
-    throw new Error("Invalid TG_SOURCE_MODE");
-  }
-
   // 🚀 Initialize client (ONCE)
   if (!client) {
     await initializeSession();
@@ -380,31 +361,29 @@ async function initializeService() {
     await getChatsList(client);
   }
 
-  /* ---------------- Express ---------------- */
-
   const app = express();
   app.use(express.json());
   app.use(express.static(path.join(__dirname, "public")));
   app.use("/", viewRoutes);
   app.use("/api", apiRoutes);
-
+  // 🩺 Health check (CHECK ONLY)
   app.get("/health", async (req, res) => {
     try {
       if (!client) throw new Error("Client not initialized");
-      await client.getMe();
-      res.status(200).json({ status: "Healthy", mode: SOURCE_MODE });
+      await client.getMe(); // auth check จริง
+      res.status(200).json({ status: "Healthy" });
     } catch (err: any) {
       console.error("❌ Health check failed:", err.message);
       res.status(500).json({ status: "Unhealthy" });
-      process.exit(1);
+      process.exit(1); // ให้ PM2 / Docker restart
     }
   });
 
-  /* ---------------- Core Processor ---------------- */
-
+  // 🎯 Handle incoming message
   const handleIncomingMessage = async (message: string, chatId?: string) => {
     if (!message || !chatId) return;
 
+    // ✅ Dedup by chat + message
     const dedupKey = `${chatId}_${message.toLowerCase()}`;
     if (processedMessageIds.has(dedupKey)) return;
     processedMessageIds.add(dedupKey);
@@ -416,58 +395,87 @@ async function initializeService() {
     const shuffledCodes = shuffleArray(parsedCodes);
     console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
-    const siteConfig =
-      detectSiteFromChatId(chatId) || detectSite(message);
-    if (!siteConfig) return;
+    // 🔍 Detect site
+    let siteConfig = detectSiteFromChatId(chatId) || detectSite(message);
+    if (!siteConfig) {
+      console.log("⚠️ Unrecognized message source.");
+      return;
+    }
 
     const site = siteConfig.name;
+    const apiEndPoint = siteConfig.endpoint;
+    const players = siteConfig.players;
     const hostUrl = process.env[siteConfig.envVar] || "";
 
+    informationSet = {
+      site,
+      cskh_url: siteConfig.cskh_url,
+      cskh_home: siteConfig.cskh_url,
+      endpoint: apiEndPoint,
+      key_free: siteConfig.key_free,
+    };
+
+    // 📝 Create site queue if not exists
     if (!siteQueues[site]) {
       siteQueues[site] = {
         remainingCodes: [],
         isProcessing: false,
         abortFlag: { canceled: false },
-        players: siteConfig.players,
-        apiEndPoint: siteConfig.endpoint,
+        players,
+        apiEndPoint,
         site,
         hostUrl,
       };
     }
 
+    // 🔄 Add unique codes
     const existing = new Set(siteQueues[site].remainingCodes);
     const newCodes = shuffledCodes.filter(c => !existing.has(c));
     siteQueues[site].remainingCodes.unshift(...newCodes);
 
+    // 🔁 Processing control
     const active = Object.values(siteQueues).find(q => q.isProcessing);
-    if (active && active.site !== site) {
-      abortCurrentSite(active.site);
-    }
-
-    if (!siteQueues[site].isProcessing) {
+    if (active) {
+      if (active.site !== site) {
+        abortCurrentSite(active.site);
+        startProCodeLoop(site).catch(console.error);
+      }
+    } else {
       startProCodeLoop(site).catch(console.error);
     }
   };
 
-  /* ---------------- EVENT MODE ---------------- */
-
+  // 📩 Telegram Event Handlers
   const addEventHandlers = async (client: TelegramClient) => {
-    console.log("⚡ Telegram EVENT mode active");
+    if (handlersAttached) return; // ✅ guard สำคัญมาก
+    handlersAttached = true;
+    console.log("📡 Attaching Telegram Event Handlers...");
 
-    client.addEventHandler(
-      async (event: NewMessageEvent) => {
-        if (SOURCE_MODE !== "event") return;
+    // ✅ New Message
+    // client.addEventHandler(
+    //   async (event: NewMessageEvent) => {
+    //     const message = event.message;
+    //     if (!message?.text || !message.peerId) return;
 
-        const msg = event.message;
-        if (!msg?.text || !msg.peerId) return;
+    //     const chatId = getChatIdFromPeer(message.peerId);
+    //     if (!chatId) return;
 
-        const chatId = getChatIdFromPeer(msg.peerId);
-        if (!chatId) return;
-
-        console.log("🔥 Event Message", chatId);
-        await handleIncomingMessage(msg.text, chatId);
-      },
-      new NewMessage({ chats: [
+    //     console.log("🔥 New Message", chatId, message.text);
+    //     await handleIncomingMessage(message.text, chatId);
+    //   },
+    //   new NewMessage({
+    //     chats: [
+    //       "-1002292832183",
+    //       "-1002406062886",
+    //       "-1002519263985",
+    //       "-1002668963498",
+    //       "-1002142874457",
+    //       "-1002040396559",
+    //       "-1002544749433",
+    //     ],
+    //   })
+    // );
+    const ALLOWED_CHAT_IDS = new Set([
           "-1002292832183",
           "-1002406062886",
           "-1002519263985",
@@ -475,100 +483,120 @@ async function initializeService() {
           "-1002142874457",
           "-1002040396559",
           "-1002544749433",
-        ] })
+    ]);
+
+    client.addEventHandler(
+      async (event) => {
+        console.log("🔥 EVENT IN", event.className);
+
+        const msg = event.message;
+        if (!msg?.text || !msg.peerId) return;
+
+        const chatId = msg.chatId?.toString();
+        if (!chatId) return;
+
+        // กรองเองตรงนี้
+        if (!ALLOWED_CHAT_IDS.has(chatId)) return;
+
+        console.log("🔥 NEW MESSAGE", chatId, msg.text);
+        await handleIncomingMessage(msg.text, chatId);
+      },
+      new NewMessage({})
     );
+
+    // ⚠️ Raw (ใช้เท่าที่จำเป็น)
+    client.addEventHandler(
+      async (update: any) => {
+        console.log(
+          "🧩 RAW UPDATE:",
+          update?.className ||
+          update?.constructor?.name ||
+          update?._ ||
+          update
+        );
+        const type = update.className || update?.constructor?.name;
+        if (
+          type !== "UpdateEditMessage" &&
+          type !== "UpdateReadChannelInbox" &&
+          type !== "UpdateEditChannelMessage"
+        ) return;
+
+        const msg = update.message;
+        if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
+
+        const chatId = getChatIdFromPeer(msg.peerId);
+        if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
+
+        const dedupKey = `edit_${chatId}_${msg.id}`;
+        if (processedMessageIds.has(dedupKey)) return;
+
+        processedMessageIds.add(dedupKey);
+        setTimeout(() => processedMessageIds.delete(dedupKey), 10_000);
+
+        console.log("✏️ Edit Message", chatId, msg.message);
+        await handleIncomingMessage(msg.message, chatId);
+      },
+      new Raw({})
+    );
+
   };
 
-  /* ---------------- POLL MODE ---------------- */
-
-  const channelPollState: Record<string, number> = {};
-  const POLL_INTERVAL = 30_000;
-
-  async function pollChannel(client: TelegramClient, chatId: string) {
-    if (SOURCE_MODE !== "poll") return;
-
-    try {
-      const messages = await client.getMessages(chatId, { limit: 1 });
-      if (!messages?.length) return;
-
-      const msg = messages[0];
-      if (!msg?.id || typeof msg.message !== "string") return;
-
-      const lastId = channelPollState[chatId];
-      if (!lastId) {
-        channelPollState[chatId] = msg.id;
-        return;
-      }
-
-      if (msg.id <= lastId) return;
-
-      channelPollState[chatId] = msg.id;
-      console.log("🆕 Polled Message", chatId);
-
-      await handleIncomingMessage(msg.message, chatId);
-    } catch (err: any) {
-      console.error("❌ Poll error", chatId, err.message);
-    }
-  }
-
-  function startChannelPoller(client: TelegramClient) {
-    console.log("🔁 Telegram POLL mode active");
-    const CHANNES_ID = [
-          "-1002544749433",
-          "-1002406062886",
-          "-1002040396559",
-        ]
-    setInterval(async () => {
-      for (const chatId of CHANNES_ID) {
-        await pollChannel(client, chatId);
-      }
-    }, POLL_INTERVAL);
-  }
-
-  /* ---------------- Connect & Start ---------------- */
-
-  const ensureConnected = async () => {
+  // 🔌 Ensure connected & attach handlers
+  const ensureConnectedAndAddHandlers = async () => {
     if (!client) throw new Error("Client not initialized");
 
     try {
-      await client.getMe();
+      await client.getMe(); // auth จริง
     } catch (e: any) {
       if (e.errorMessage?.includes("AUTH_KEY_UNREGISTERED")) {
-        console.error("❌ Session revoked");
+        console.error("❌ Session revoked. Exiting...");
         process.exit(1);
       }
       throw e;
     }
-  };
 
-  await ensureConnected();
-
-  if (SOURCE_MODE === "event" && client) {
     await addEventHandlers(client);
-  }
-
-  if (SOURCE_MODE === "poll" && client) {
-    startChannelPoller(client);
-  }
-
-  /* ---------------- Server ---------------- */
-
-  expressServer = app.listen(port, () => {
-    console.log(
-      `🚀 Server running on port ${port} | MODE=${SOURCE_MODE}`
-    );
-  });
-
-  /* ---------------- Shutdown ---------------- */
-
-  const gracefulShutdown = () => {
-    console.log("🛑 Shutting down...");
-    expressServer?.close();
-    client?.disconnect().finally(() => process.exit(0));
   };
 
-  process.on("SIGINT", gracefulShutdown);
+  await ensureConnectedAndAddHandlers();
+
+  // 🌐 Start Express server
+  const startServer = (port: number) =>
+    new Promise<void>((resolve, reject) => {
+      expressServer = app
+        .listen(port, () => {
+          console.log(`🚀 Server running on port ${port}`);
+          resolve();
+        })
+        .on("error", (err: any) => {
+          if (err.code === "EADDRINUSE") {
+            console.warn(`⚠️ Port ${port} in use. Trying ${port + 1}...`);
+            resolve(startServer(port + 1));
+          } else {
+            reject(err);
+          }
+        });
+    });
+
+  try {
+    await startServer(port);
+  } catch (err) {
+    console.error("❌ Failed to start server:", err);
+  }
+
+  // 🛑 Graceful shutdown
+  const gracefulShutdown = () => {
+    console.log("🛑 Shutting down gracefully...");
+    expressServer?.close(() => console.log("🪣 Express server closed."));
+    if (client) {
+      client.disconnect().then(() => process.exit(0));
+    } else {
+      process.exit(0);
+    }
+  };
+
   process.on("SIGTERM", gracefulShutdown);
+  process.on("SIGINT", gracefulShutdown);
 }
 
 
