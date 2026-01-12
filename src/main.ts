@@ -485,38 +485,36 @@ async function initializeService() {
           "-1002544749433",
     ]);
 
-    client.addEventHandler(
-      async (event) => {
-        console.log("🔥 EVENT IN", event.className);
+    // client.addEventHandler(
+    //   async (event) => {
+    //     console.log("🔥 EVENT IN", event.className);
 
-        const msg = event.message;
-        if (!msg?.text || !msg.peerId) return;
+    //     const msg = event.message;
+    //     if (!msg?.text || !msg.peerId) return;
 
-        const chatId = msg.chatId?.toString();
-        if (!chatId) return;
+    //     const chatId = msg.chatId?.toString();
+    //     if (!chatId) return;
 
-        // กรองเองตรงนี้
-        if (!ALLOWED_CHAT_IDS.has(chatId)) return;
+    //     // กรองเองตรงนี้
+    //     if (!ALLOWED_CHAT_IDS.has(chatId)) return;
 
-        console.log("🔥 NEW MESSAGE", chatId, msg.text);
-        await handleIncomingMessage(msg.text, chatId);
-      },
-      new NewMessage({})
-    );
+    //     console.log("🔥 NEW MESSAGE", chatId, msg.text);
+    //     await handleIncomingMessage(msg.text, chatId);
+    //   },
+    //   new NewMessage({})
+    // );
 
     // ⚠️ Raw (ใช้เท่าที่จำเป็น)
     client.addEventHandler(
       async (update: any) => {
-        console.log(
-          "🧩 RAW UPDATE:",
-          update?.className ||
-          update?.constructor?.name ||
-          update?._ ||
-          update
-        );
-        const type = update.className || update?.constructor?.name;
+
+        const type = update.className || update?.constructor?.name || update?._ || update;
+        if ( type === "UpdateUserStatus" ||  type === "UpdateConnectionState") return;
+        
+        console.log("🧩 RAW UPDATE:", type);
         if (
           type !== "UpdateEditMessage" &&
+          type !== "UpdateNewChannelMessage" &&
           type !== "UpdateReadChannelInbox" &&
           type !== "UpdateEditChannelMessage"
         ) return;
