@@ -218,13 +218,13 @@ export async function sendResultToTelegram(
   };
 
   // ส่งให้ user ก่อน
-  if (typeof usertelegram === "number" && usertelegram > 0) {
-    try {
-      await bot.telegram.sendMessage(usertelegram, message, options);
-    } catch (error) {
-      console.error(`❌ Failed to send result to user ${usertelegram}:`, error);
-    }
-  }
+  // if (typeof usertelegram === "number" && usertelegram > 0) {
+  //   try {
+  //     await bot.telegram.sendMessage(usertelegram, message, options);
+  //   } catch (error) {
+  //     console.error(`❌ Failed to send result to user ${usertelegram}:`, error);
+  //   }
+  // }
 
   // Broadcast to admins
   for (const adminId of ADMIN_IDS) {
