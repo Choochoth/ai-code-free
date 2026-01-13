@@ -1084,19 +1084,19 @@ async function startClient() {
     await initializeService();
 
     // ✅ กัน setInterval ซ้อน
-    // if (!pollInterval) {
-    //   pollInterval = setInterval(async () => {
-    //     if (!client) return;
+    if (!pollInterval) {
+      pollInterval = setInterval(async () => {
+        if (!client) return;
 
-    //     for (const target of POLL_TARGETS) {
-    //       await pollMessageById(client, target.channelId, target.messageId);
-    //       await delay(1500);
-    //     }
+        for (const target of POLL_TARGETS) {
+          await pollMessageById(client, target.channelId, target.messageId);
+          await delay(1500);
+        }
 
-    //   }, 10_000);
+      }, 10_000);
 
-    //   console.log("🟢 Polling started");
-    // }
+      console.log("🟢 Polling started");
+    }
 
   } catch (error: any) {
     console.error("💥 Error during startup:", error.message);
