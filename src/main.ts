@@ -47,7 +47,7 @@ import {
   detectSiteFromChatId,
 } from "./siteDetector";
 
-import { SiteQueue } from "./types/siteConfigs";
+import { SiteQueue, ChannelMessageResult } from "./types/siteConfigs";
 
 dotenv.config();
 
@@ -89,13 +89,16 @@ type MessageSnapshot = {
 };
 
 const messageCache = new Map<string, MessageSnapshot>();
-
 const POLL_TARGETS = [
-  { channelId: "-1002519263985", messageId: 3860 },
-  { channelId: "-1002142874457", messageId: 4911 },
-  //{ channelId: "-1002668963498", messageId: 2944 },
+  {},
+] as { channelId: string; messageId: number }[];
 
-];
+// const POLL_TARGETS = [
+//   { channelId: "-1002519263985", messageId: 3860 },
+//   { channelId: "-1002142874457", messageId: 4911 },
+//   { channelId: "-1002668963498", messageId: 2944 },
+
+// ];
 
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
@@ -1087,20 +1090,19 @@ async function startClient() {
     console.log("Client Connected:", client!.connected);
     await initializeService();
 
-    // ✅ กัน setInterval ซ้อน
-    if (!pollInterval) {
-      pollInterval = setInterval(async () => {
-        if (!client) return;
+      // ✅ กัน setInterval ซ้อน
+      if (!pollInterval) {
+        pollInterval = setInterval(async () => {
+          if (!client) return;
 
-        for (const target of POLL_TARGETS) {
-          await pollMessageById(client, target.channelId, target.messageId);
-          await delay(1500);
-        }
+          for (const target of POLL_TARGETS as any[]) {
+            await pollMessageById(client, target.channelId, target.messageId);
+          }
 
-      }, 10_000);
+        }, 10_000);
 
-      console.log("🟢 Polling started");
-    }
+        console.log("🟢 Polling started");
+      }
 
   } catch (error: any) {
     console.error("💥 Error during startup:", error.message);
@@ -1138,7 +1140,36 @@ async function getChatsList(client: TelegramClient) {
     console.log(`🆔 Telegram ID: ${me.id.toString()}`);
 
 
+    const results: ChannelMessageResult[] = [];
 
+    const channelIds = [
+      "-1002519263985",
+      "-1002668963498",
+      "-1002142874457",
+    ];
+
+    for (const channelId of channelIds) {
+      try {
+        const msgs = await client!.getMessages(channelId, { limit: 2 });
+        if (!msgs.length) continue;
+
+        for (const msg of msgs) {
+          if (!msg?.message) continue;
+
+          results.push({
+            channelId,
+            channelName: msg.chat?.title || msg.peerId?.channelId?.toString() || "unknown",
+            messageId: msg.id,
+            message: msg.message,
+          });
+        }
+
+        await delay(1200); // 🔥 กัน FLOOD
+      } catch (e: any) {
+        console.error("❌ getMessages error", channelId, e.message);
+      }
+    }
+    console.log(results)
 
   } catch (err) {
     console.error("❌ Failed to fetch Telegram user info:", err);
