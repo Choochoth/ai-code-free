@@ -417,6 +417,13 @@ async function handleIncomingMessageJ88 (message: string, chatId?: string){
     }
 };
 
+type MessageSnapshot = {
+  text: string;
+  editDate?: number;
+};
+
+const messageCache = new Map<string, MessageSnapshot>();
+
 async function pollMessageById(
   client: TelegramClient,
   channelId: string,
@@ -429,11 +436,37 @@ async function pollMessageById(
     const msg = messages[0];
     if (!msg?.message) return;
 
-
     const chatId = getChatIdFromPeer(msg.peerId);
     if (!chatId) return;
 
-    console.log("📥 POLLED MESSAGE", channelId, msg.id);
+    const cacheKey = `${channelId}:${messageId}`;
+    const prev = messageCache.get(cacheKey);
+
+    const current: MessageSnapshot = {
+      text: msg.message,
+      editDate: msg.editDate,
+    };
+
+    // 🟡 ครั้งแรก → บันทึกเฉย ๆ
+    if (!prev) {
+      messageCache.set(cacheKey, current);
+      console.log("🆕 FIRST SEEN", channelId, msg.id);
+      return;
+    }
+
+    // 🟢 ตรวจว่ามีการเปลี่ยนแปลง
+    const changed =
+      prev.text !== current.text ||
+      prev.editDate !== current.editDate;
+
+    if (!changed) {
+      return; // ❌ ไม่เปลี่ยน ไม่ต้องทำอะไร
+    }
+
+    // 🔥 มีการเปลี่ยน
+    messageCache.set(cacheKey, current);
+
+    console.log("✏️ MESSAGE UPDATED", channelId, msg.id);
     await handleIncomingMessageJ88(msg.message, chatId);
 
   } catch (err: any) {
@@ -1051,19 +1084,19 @@ async function startClient() {
     await initializeService();
 
     // ✅ กัน setInterval ซ้อน
-    if (!pollInterval) {
-      pollInterval = setInterval(async () => {
-        if (!client) return;
+    // if (!pollInterval) {
+    //   pollInterval = setInterval(async () => {
+    //     if (!client) return;
 
-        for (const target of POLL_TARGETS) {
-          await pollMessageById(client, target.channelId, target.messageId);
-          await delay(1500);
-        }
+    //     for (const target of POLL_TARGETS) {
+    //       await pollMessageById(client, target.channelId, target.messageId);
+    //       await delay(1500);
+    //     }
 
-      }, 10_000);
+    //   }, 10_000);
 
-      console.log("🟢 Polling started");
-    }
+    //   console.log("🟢 Polling started");
+    // }
 
   } catch (error: any) {
     console.error("💥 Error during startup:", error.message);
