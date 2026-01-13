@@ -331,8 +331,9 @@ async function sendCaptchaProCode(
 
 const POLL_TARGETS = [
   { channelId: "-1002519263985", messageId: 3860 },
-  { channelId: "-1002668963498", messageId: 2944 },
   { channelId: "-1002142874457", messageId: 4911 },
+  //{ channelId: "-1002668963498", messageId: 2944 },
+
 ];
 
 function abortCurrentSite(siteName: string) {
@@ -460,6 +461,7 @@ async function pollMessageById(
       prev.editDate !== current.editDate;
 
     if (!changed) {
+      console.log("message ไม่เปลี่ยน ไม่ต้องทำอะไร")
       return; // ❌ ไม่เปลี่ยน ไม่ต้องทำอะไร
     }
 
