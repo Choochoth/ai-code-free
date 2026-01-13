@@ -133,6 +133,23 @@ let expressServer: any;
 let lastHandledMessage: string | null = null;
 let minPoint: number = 8;
 
+function stopPolling() {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+  }
+
+  if (latestPollInterval) {
+    clearInterval(latestPollInterval);
+    latestPollInterval = null;
+  }
+
+  isPollingById = false;
+  isPollingLatest = false;
+
+  console.log("🛑 Polling stopped");
+}
+
 async function initializeClient() {
   if (!client) {
     client = new TelegramClient(
@@ -743,6 +760,8 @@ async function initializeService() {
     await startServer(port);
   } catch (err) {
     console.error("❌ Failed to start server:", err);
+    stopPolling();
+    
   }
 
   // 🛑 Graceful shutdown
@@ -1130,23 +1149,6 @@ async function applyCodeToPlayers(
   }
 
   return false;
-}
-
-function stopPolling() {
-  if (pollInterval) {
-    clearInterval(pollInterval);
-    pollInterval = null;
-  }
-
-  if (latestPollInterval) {
-    clearInterval(latestPollInterval);
-    latestPollInterval = null;
-  }
-
-  isPollingById = false;
-  isPollingLatest = false;
-
-  console.log("🛑 Polling stopped");
 }
 
 async function startClient() {
