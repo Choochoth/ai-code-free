@@ -83,6 +83,20 @@ const lockDurations: Record<number, number> = {
   4044: 30 * 24 * 60 * 60 * 1000,
 };
 
+type MessageSnapshot = {
+  text: string;
+  editDate?: number;
+};
+
+const messageCache = new Map<string, MessageSnapshot>();
+
+const POLL_TARGETS = [
+  { channelId: "-1002519263985", messageId: 3860 },
+  { channelId: "-1002142874457", messageId: 4911 },
+  //{ channelId: "-1002668963498", messageId: 2944 },
+
+];
+
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
@@ -329,12 +343,6 @@ async function sendCaptchaProCode(
   });
 }
 
-const POLL_TARGETS = [
-  { channelId: "-1002519263985", messageId: 3860 },
-  { channelId: "-1002142874457", messageId: 4911 },
-  //{ channelId: "-1002668963498", messageId: 2944 },
-
-];
 
 function abortCurrentSite(siteName: string) {
   const queue = siteQueues[siteName];
@@ -418,13 +426,6 @@ async function handleIncomingMessageJ88 (message: string, chatId?: string){
     }
 };
 
-type MessageSnapshot = {
-  text: string;
-  editDate?: number;
-};
-
-const messageCache = new Map<string, MessageSnapshot>();
-
 async function pollMessageById(
   client: TelegramClient,
   channelId: string,
@@ -507,69 +508,70 @@ async function initializeService() {
 
   // 🎯 Handle incoming message
   const handleIncomingMessage = async (message: string, chatId?: string) => {
-    if (!message || !chatId) return;
+      if (!message || !chatId) return;
 
-    // ✅ Dedup by chat + message
-    const dedupKey = `${chatId}_${message.toLowerCase()}`;
-    if (processedMessageIds.has(dedupKey)) return;
-    processedMessageIds.add(dedupKey);
-    setTimeout(() => processedMessageIds.delete(dedupKey), 60_000);
+      // ✅ Dedup by chat + message
+      const dedupKey = `${chatId}_${message.toLowerCase()}`;
+      if (processedMessageIds.has(dedupKey)) return;
+      processedMessageIds.add(dedupKey);
+      setTimeout(() => processedMessageIds.delete(dedupKey), 60_000);
 
-    const parsedCodes = parserCodeMessage(message);
-    if (parsedCodes.length < 8) return;
+      const parsedCodes = parserCodeMessage(message);
+      if (parsedCodes.length < 8) return;
 
-    const shuffledCodes = shuffleArray(parsedCodes);
-    console.log("🎯 Valid Bonus Codes:", parsedCodes);
+      const shuffledCodes = shuffleArray(parsedCodes);
+      console.log("🎯 Valid Bonus Codes:", parsedCodes);
 
-    // 🔍 Detect site
-    let siteConfig = detectSiteFromChatId(chatId) || detectSite(message);
-    if (!siteConfig) {
-      console.log("⚠️ Unrecognized message source.");
-      return;
-    }
+      // 🔍 Detect site
+      let siteConfig = detectSiteFromChatId(chatId) || detectSite(message);
+      if (!siteConfig) {
+        console.log("⚠️ Unrecognized message source.");
+        return;
+      }
 
-    const site = siteConfig.name;
-    const apiEndPoint = siteConfig.endpoint;
-    const players = siteConfig.players;
-    const hostUrl = process.env[siteConfig.envVar] || "";
+      const site = siteConfig.name;
+      const apiEndPoint = siteConfig.endpoint;
+      const players = siteConfig.players;
+      const hostUrl = process.env[siteConfig.envVar] || "";
 
-    informationSet = {
-      site,
-      cskh_url: siteConfig.cskh_url,
-      cskh_home: siteConfig.cskh_url,
-      endpoint: apiEndPoint,
-      key_free: siteConfig.key_free,
-    };
-
-    // 📝 Create site queue if not exists
-    if (!siteQueues[site]) {
-      siteQueues[site] = {
-        remainingCodes: [],
-        isProcessing: false,
-        abortFlag: { canceled: false },
-        players,
-        apiEndPoint,
+      informationSet = {
         site,
-        hostUrl,
+        cskh_url: siteConfig.cskh_url,
+        cskh_home: siteConfig.cskh_url,
+        endpoint: apiEndPoint,
+        key_free: siteConfig.key_free,
       };
-    }
 
-    // 🔄 Add unique codes
-    const existing = new Set(siteQueues[site].remainingCodes);
-    const newCodes = shuffledCodes.filter(c => !existing.has(c));
-    siteQueues[site].remainingCodes.unshift(...newCodes);
+      // 📝 Create site queue if not exists
+      if (!siteQueues[site]) {
+        siteQueues[site] = {
+          remainingCodes: [],
+          isProcessing: false,
+          abortFlag: { canceled: false },
+          players,
+          apiEndPoint,
+          site,
+          hostUrl,
+        };
+      }
 
-    // 🔁 Processing control
-    const active = Object.values(siteQueues).find(q => q.isProcessing);
-    if (active) {
-      if (active.site !== site) {
-        abortCurrentSite(active.site);
+      // 🔄 Add unique codes
+      const existing = new Set(siteQueues[site].remainingCodes);
+      const newCodes = shuffledCodes.filter(c => !existing.has(c));
+      siteQueues[site].remainingCodes.unshift(...newCodes);
+
+      // 🔁 Processing control
+      const active = Object.values(siteQueues).find(q => q.isProcessing);
+      if (active) {
+        if (active.site !== site) {
+          abortCurrentSite(active.site);
+          startProCodeLoop(site).catch(console.error);
+        }
+      } else {
         startProCodeLoop(site).catch(console.error);
       }
-    } else {
-      startProCodeLoop(site).catch(console.error);
-    }
   };
+
 
   // 📩 Telegram Event Handlers
   const addEventHandlers = async (client: TelegramClient) => {
@@ -612,36 +614,36 @@ async function initializeService() {
 
 
     // ⚠️ Raw (ใช้เท่าที่จำเป็น)
-    client.addEventHandler(
-      async (update: any) => {
+    // client.addEventHandler(
+    //   async (update: any) => {
 
-        const type = update.className || update?.constructor?.name || update?._ || update;
-        if ( type === "UpdateUserStatus" ||  type === "UpdateConnectionState") return;
+    //     const type = update.className || update?.constructor?.name || update?._ || update;
+    //     if ( type === "UpdateUserStatus" ||  type === "UpdateConnectionState") return;
         
-        // console.log("🧩 RAW UPDATE:", type);
-        if (
-          type !== "UpdateEditMessage" &&
-          type !== "UpdateNewChannelMessage" &&
-          type !== "UpdateEditChannelMessage"
-        ) return;
+    //     // console.log("🧩 RAW UPDATE:", type);
+    //     if (
+    //       type !== "UpdateEditMessage" &&
+    //       type !== "UpdateNewChannelMessage" &&
+    //       type !== "UpdateEditChannelMessage"
+    //     ) return;
 
-        const msg = update.message;
-        if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
+    //     const msg = update.message;
+    //     if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
 
-        const chatId = getChatIdFromPeer(msg.peerId);
-        if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
+    //     const chatId = getChatIdFromPeer(msg.peerId);
+    //     if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
 
-        const dedupKey = `edit_${chatId}_${msg.id}`;
-        if (processedMessageIds.has(dedupKey)) return;
+    //     const dedupKey = `edit_${chatId}_${msg.id}`;
+    //     if (processedMessageIds.has(dedupKey)) return;
 
-        processedMessageIds.add(dedupKey);
-        setTimeout(() => processedMessageIds.delete(dedupKey), 10_000);
+    //     processedMessageIds.add(dedupKey);
+    //     setTimeout(() => processedMessageIds.delete(dedupKey), 10_000);
 
-        console.log("✏️ Edit Message", chatId, msg.message);
-        // await handleIncomingMessage(msg.message, chatId);
-      },
-      new Raw({})
-    );
+    //     console.log("✏️ Edit Message", chatId, msg.message);
+    //     // await handleIncomingMessage(msg.message, chatId);
+    //   },
+    //   new Raw({})
+    // );
 
   };
 
