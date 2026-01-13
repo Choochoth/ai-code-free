@@ -92,6 +92,7 @@ const messageCache = new Map<string, MessageSnapshot>();
 const POLL_TARGETS = [
   {},
 ] as { channelId: string; messageId: number }[];
+// const POLL_TARGETS: PollTarget[] = loadPollTargetsFromEnv();
 
 // const POLL_TARGETS = [
 //   { channelId: "-1002519263985", messageId: 3860 },

@@ -185,3 +185,26 @@ export function getTelegramId(user: string) {
   );
   return found ? found.TelegramId : null;
 }
+
+// export function loadPollTargetsFromEnv(): PollTarget[] {
+//   const raw = process.env.POLL_TARGETS;
+//   if (!raw) return [];
+
+//   try {
+//     const parsed = JSON.parse(raw);
+
+//     if (!Array.isArray(parsed)) {
+//       throw new Error("POLL_TARGETS is not an array");
+//     }
+
+//     return parsed.filter(
+//       (t): t is PollTarget =>
+//         typeof t?.channelId === "string" &&
+//         typeof t?.messageId === "number"
+//     );
+
+//   } catch (err) {
+//     console.error("❌ Invalid POLL_TARGETS in env:", err);
+//     return [];
+//   }
+// }

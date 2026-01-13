@@ -18,3 +18,8 @@ export interface  ChannelMessageResult {
   messageId: number;
   message: string;
 };
+
+// export interface PollTarget {
+//   channelId: string;
+//   messageId: number;
+// };
