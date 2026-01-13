@@ -89,14 +89,12 @@ type MessageSnapshot = {
 };
 
 const messageCache = new Map<string, MessageSnapshot>();
-const POLL_TARGETS: PollTarget[] = [];
 
-
-// const POLL_TARGETS = [
-//   { channelId: "-1002519263985", messageId: 3860 },
-//   { channelId: "-1002142874457", messageId: 4911 },
-//   { channelId: "-1002668963498", messageId: 2944 },
-// ];
+const POLL_TARGETS: PollTarget[] = [
+  { channelId: "-1002142874457", messageId: 4914 },
+  { channelId: "-1002519263985", messageId: 3863 },
+  { channelId: "-1002668963498", messageId: 2947 },
+];
 
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
@@ -712,9 +710,9 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 13;
+    minPoint = 20;
   } else {
-    minPoint = 13;
+    minPoint = 15;
   }
 
   const siteQueue = siteQueues[siteName];
