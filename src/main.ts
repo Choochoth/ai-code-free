@@ -47,7 +47,7 @@ import {
   detectSiteFromChatId,
 } from "./siteDetector";
 
-import { SiteQueue, ChannelMessageResult } from "./types/siteConfigs";
+import { SiteQueue, ChannelMessageResult, PollTarget } from "./types/siteConfigs";
 
 dotenv.config();
 
@@ -89,16 +89,13 @@ type MessageSnapshot = {
 };
 
 const messageCache = new Map<string, MessageSnapshot>();
-const POLL_TARGETS = [
-  {},
-] as { channelId: string; messageId: number }[];
-// const POLL_TARGETS: PollTarget[] = loadPollTargetsFromEnv();
+const POLL_TARGETS: PollTarget[] = [];
+
 
 // const POLL_TARGETS = [
 //   { channelId: "-1002519263985", messageId: 3860 },
 //   { channelId: "-1002142874457", messageId: 4911 },
 //   { channelId: "-1002668963498", messageId: 2944 },
-
 // ];
 
 const baseDir = __dirname;
@@ -1091,19 +1088,25 @@ async function startClient() {
     console.log("Client Connected:", client!.connected);
     await initializeService();
 
+
       // ✅ กัน setInterval ซ้อน
       if (!pollInterval) {
         pollInterval = setInterval(async () => {
           if (!client) return;
 
-          for (const target of POLL_TARGETS as any[]) {
+          // ✅ ไม่มี target → ไม่ต้องทำอะไร
+          if (POLL_TARGETS.length === 0) return;
+
+          for (const target of POLL_TARGETS) {
             await pollMessageById(client, target.channelId, target.messageId);
+            await delay(1500); // กัน FLOOD
           }
 
         }, 10_000);
 
         console.log("🟢 Polling started");
       }
+
 
   } catch (error: any) {
     console.error("💥 Error during startup:", error.message);

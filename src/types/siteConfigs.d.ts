@@ -19,7 +19,7 @@ export interface  ChannelMessageResult {
   message: string;
 };
 
-// export interface PollTarget {
-//   channelId: string;
-//   messageId: number;
-// };
+export interface PollTarget {
+  channelId: string;
+  messageId: number;
+};
