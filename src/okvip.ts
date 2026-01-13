@@ -25,6 +25,7 @@ const execAsync = promisify(exec);
 const baseDir = __dirname;  // Current directory of this script
 const dataDir = path.join(baseDir, "data");
 const captchaDirectory = path.join(dataDir, "images", "captchas");
+const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8002";
 
 try {
   if (!fs.existsSync(captchaDirectory)) {
@@ -69,81 +70,8 @@ async function encryptText(text: string, key_free: string) {
     }
   };
 
-// ฟังก์ชันสำหรับส่งภาพพร้อม label ไปยัง /api/train
-async function sendImageRecognizeText(imagePath: string) {
-  try {
-    const formData = new FormData();  // Create instance using the correct constructor
-    const fileStream = fs.createReadStream(imagePath);
 
-    // ใช้ path.basename เพื่อดึงชื่อไฟล์จากเส้นทาง
-    const filename = path.basename(imagePath);
-
-    formData.append('file', fileStream, filename);  // ส่งไฟล์และชื่อไฟล์ไป
-
-    // ส่งคำขอ POST โดยใช้ axios และ formData
-    const response = await axios.post('http://localhost:8000/api/predict', formData, {
-      headers: {
-        ...formData.getHeaders(),  // ใช้ getHeaders() จาก form-data
-      },
-    });
-
-    console.log('Response from API:', response.data);
-    return response.data.text;
-  } catch (error) {
-    console.error('Error sending image for training:', error);
-  }
-}
-
-// ฟังก์ชันสำหรับส่งภาพพร้อม label ไปยัง /api/train
-async function sendImageForTraining(imagePath: string, label: string) {
-  try {
-    const formData = new FormData();  // Create instance using the correct constructor
-    const fileStream = fs.createReadStream(imagePath);
-
-    // ใช้ path.basename เพื่อดึงชื่อไฟล์จากเส้นทาง
-    const filename = path.basename(imagePath);
-
-    formData.append('file', fileStream, filename);  // ส่งไฟล์และชื่อไฟล์ไป
-    formData.append('label', label);  // เพิ่ม label
-
-    // ส่งคำขอ POST โดยใช้ axios และ formData
-    const response = await axios.post('http://localhost:8000/api/train', formData, {
-      headers: {
-        ...formData.getHeaders(),  // ใช้ getHeaders() จาก form-data
-      },
-    });
-
-    console.log('Response from API:', response.data);
-  } catch (error) {
-    console.error('Error sending image for training:', error);
-  }
-}
-/**
- * Resets and renews the IP address on Windows using ipconfig.
- * Requires administrative privileges to work correctly.
- */
-async function resetAndRenewIP_Windows(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    console.log("🔄 Releasing IP address...");
-    const batPath = path.join(__dirname, '../resetnet/reset_network.bat');
-
-    exec(`start "" "${batPath}"`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`เกิดข้อผิดพลาด: ${error.message}`);
-        return reject(error);
-      }
-      if (stderr) {
-        console.error(`stderr: ${stderr}`);
-        // สามารถเลือก resolve หรือ reject ตามกรณี
-        return reject(new Error(stderr));
-      }
-      console.log(`stdout: ${stdout}`);
-      return resolve();
-    });
-  });
-}
-
-async function getInputCaptcha(imageUrl: string): Promise<{ captchaCode: string, captchaPath: string }> {
+async function getInputCaptcha(imageUrl: string, site:string): Promise<{ captchaCode: string, captchaPath: string }> {
   await fs.promises.mkdir(captchaDirectory, { recursive: true });
 
   const buffer = imageUrl.startsWith('data:image/svg+xml')
@@ -169,12 +97,12 @@ async function getInputCaptcha(imageUrl: string): Promise<{ captchaCode: string,
     await fs.promises.writeFile(tempPath, processedBuffer);
     // console.log('✅ CAPTCHA image saved to:', tempPath);
 
-    const captchas = await ocr(tempPath);
-    // console.log(`✅Before OCR Result: ${captchas.text}`);
-    // console.log(`📊 Confidence: ${captchas.confidence}% (ความมั่นใจเฉลี่ยของทั้ง 4 ตัว)`);
+    const captchas = await ocr(tempPath, site);
+    console.log(`✅Before OCR Result: ${captchas.text}`);
+    console.log(`📊 Confidence: ${captchas.confidence}% (ความมั่นใจเฉลี่ยของทั้ง 4 ตัว)`);
     let captchaCode: string = captchas.text.trim();
     // let captchaCode: string;
-    // if (captchas.confidence >= 100) {
+    // if (captchas.confidence >= 91) {
     //   captchaCode = captchas.text;
     // } else {
     //   console.warn("⚠️ IrfanView check removed, using default viewer...");
@@ -187,7 +115,7 @@ async function getInputCaptcha(imageUrl: string): Promise<{ captchaCode: string,
     //         setTimeout(() => {
     //           console.warn("⏰ Timeout - using OCR result instead");
     //           resolve(captchas.text);
-    //         }, 20000)
+    //         }, 15000)
     //       ),
     //     ]);
     //   } catch (error) {
@@ -196,18 +124,18 @@ async function getInputCaptcha(imageUrl: string): Promise<{ captchaCode: string,
     //   }
     // }
 
-    if (!captchaCode || captchaCode.trim().length < 4) {
-      console.warn(`❗️Invalid CAPTCHA input. Skipping. Input: ${captchaCode}`);
-      await removeImage(tempPath);
-      throw new Error("Invalid CAPTCHA input");
-    }
+    // if (!captchaCode || captchaCode.trim().length < 4) {
+    //   console.warn(`❗️Invalid CAPTCHA input. Skipping. Input: ${captchaCode}`);
+    //   await removeImage(tempPath);
+    //   throw new Error("Invalid CAPTCHA input");
+    // }
 
-    const finalPath = path.join(captchaDirectory, `${captchaCode.toUpperCase()}_${timestamp}.png`);
+    const finalPath = path.join(captchaDirectory, `${captchaCode}_${timestamp}.png`);
     await fs.promises.rename(tempPath, finalPath);
     // console.log('📦 Image renamed to:', finalPath);
     // await addTemplate(finalPath, captchaCode.toUpperCase())
     return {
-      captchaCode: captchaCode.toUpperCase(),
+      captchaCode: captchaCode,
       captchaPath: finalPath,
     };
 
@@ -308,7 +236,8 @@ function parserCodeMessage(message: string): string[] {
     !token.startsWith("789") &&
     !token.startsWith("Twitter") &&
     !token.startsWith("ติดตาม") &&
-    !/^("🫠🤫🤭🫡🥺🤥Bigger|Frenzy|Official|คาสโน|สลอต|แจก|เกม|โปรโมท|ราย|ได|การ|เงน|facebook|promotion|telegarm|instagram|twitter|789betthailand|https|freecode.06789bet.com|m.99789bet.vip|88Talk|789BET|JUN88|LiveChat|Bounty|Google|Chrome|Youtude|TELEGRAM|Scatter|SCATTER)$/i.test(token)
+    !token.startsWith("เพื่มความรวด") &&
+    !/^("🫠🤫🤭🫡🥺🤥Bigger|Frenzy|88OKPAY|Official|คาสโน|สลอต|แจก|เกม|โปรโมท|ราย|ได|การ|เงน|facebook|promotion|telegarm|instagram|twitter|789betthailand|https|freecode.06789bet.com|m.99789bet.vip|88Talk|789BET|JUN88|LiveChat|Bounty|Google|Chrome|Youtude|TELEGRAM|Scatter|SCATTER|MINITERE|88OKPAY|BIRTHDAY|YouTube|IPHONE)$/i.test(token)
   );
 
   const cleanedCodes = codes
@@ -321,16 +250,31 @@ function parserCodeMessage(message: string): string[] {
   return cleanedCodes;
 }
 
-function openImage(path: string) {
-  const platform = process.platform;
-  if (platform === "win32") {
-    return execAsync(`start "" "${path}"`);
-  } else if (platform === "darwin") {
-    return execAsync(`open "${path}"`);
-  } else {
-    return execAsync(`xdg-open "${path}"`);
+async function openImage(captchaPath: string, ocrResult: string): Promise<string> {
+  let captchaCode: string = ocrResult; // default fallback จาก OCR
+
+  // เปิดรูป (Windows)
+  await execAsync(`start "" "${captchaPath.replace(/\\/g, '\\\\')}"`).catch(() => {
+    console.warn("⚠️ ไม่สามารถเปิดรูปอัตโนมัติได้ กรุณาเปิดเอง:", captchaPath);
+  });
+
+  try {
+    captchaCode = await Promise.race([
+      promptInput("🔤 Enter CAPTCHA code from image (within 30s): "), // user input
+      new Promise<string>((resolve) =>
+        setTimeout(() => {
+          console.warn("⏰ Timeout - ใช้ค่า OCR แทน");
+          resolve(ocrResult); // fallback
+        }, 30000)
+      ),
+    ]);
+  } catch (error) {
+    console.warn("⚠️ Error หรือ exception, ใช้ค่า OCR แทน");
+    captchaCode = ocrResult;
   }
+
+  return captchaCode || ocrResult;
 }
 
-export { encryptText, decryptText, sendImageForTraining, resetAndRenewIP_Windows, sendImageRecognizeText, getInputCaptcha, parserCodeMessage, getCaptchaMessage, openImage};
+export { encryptText, decryptText,  getInputCaptcha, parserCodeMessage, getCaptchaMessage, openImage};
   

@@ -2,40 +2,25 @@ import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
-
-// const playerPools: Record<string, PlayerPool> = {
-//   thai_789bet: {
-//     very_high: ["kootong", "Preechar"],
-//     high: ["kootong", "Preechar"],
-//     mid: ["kootong", "Preechar"],
-//     low: ["kootong", "Preechar"],
-//     all: ["kootong", "Preechar"]
-//   },
-//   thai_jun88k36: {
-//     very_high:["nus9331", "manus9331", "tata5511", "goft22"],
-//     high: ["aroon11" ,"aroon2511", "nus9331", "manus9331", "goft22", "tong234", "tata5511"],
-//     mid: ["goft22", "tong234", "tata5511", "poiy88", "wat3366", "aroon11" ,"aroon2511"],
-//     low: ["tong234", "tata5511", "poiy88", "wat3366", "koonogk"],
-//     all: ["goft22", "tong234", "tata5511", "poiy88", "wat3366", "koonogk"]
-//   }
-// };
+import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["kootong", "Preechar"],
-    high: ["kootong", "Preechar"],
-    mid: ["kootong", "Preechar"],
-    low: ["kootong", "Preechar"],
-    all: ["kootong", "Preechar"]
+    very_high: ["manus9331", "nus9331", "aroon11"],
+    high:  ["nus9331", "aroon11", "manus9331"],
+    mid: ["manus9331", "nus9331", "aroon11"],
+    low: ["vip0955171905", "poypy789", "areeroon", "kootong"],
+    all: ["manus9331", "poypy789", "aroon11", "vip0955171905", "nus9331", "areeroon"]
   },
   thai_jun88k36: {
-    very_high:["manus9331", "goft22"],
-    high: ["manus9331", "goft22"],
-    mid: ["goft22"],
-    low: ["tong234", "tata5511", "poiy88", "wat3366", "koonogk"],
-    all: ["goft22", "tong234", "tata5511", "poiy88", "wat3366", "koonogk"]
+    very_high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"],
+    high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"],
+    mid:  ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"],
+    low: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"],
+    all: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"]
   }
 };
+
 
 export type Site = keyof typeof playerPools;
 
@@ -99,10 +84,12 @@ function isPlayerLocked(lock: PlayerLock): boolean {
 
 async function getPlayerPool(point: number, site: string): Promise<string[]> {
   await resetIfNeeded();
+  cleanupExpiredBlocks();
+
   const applyCodeToday = await loadApplyCodeToday();
 
   const pool = playerPools[site];
-  const fallbackPool = playerPools["thai_jun88k36"].all;
+  const fallbackPool = playerPools["thai_jun88k36"]?.all ?? [];
   if (!pool) return fallbackPool;
 
   const siteData = applyCodeToday[site];
@@ -114,28 +101,26 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
   if (siteData && typeof siteData === "object") {
     for (const p of siteData.players ?? []) {
       const expireTime = p.time_limit ?? (p.time + APPLY_CODE_EXPIRE_MS);
-      if (now < expireTime) {
-        usedPlayers.add(p.player);
-      }
+      if (now < expireTime) usedPlayers.add(p.player);
     }
 
     const activeLocks = (siteData.playersLock ?? []).filter(isPlayerLocked);
-    for (const lock of activeLocks) {
-      lockedPlayers.add(lock.player);
-    }
+    for (const lock of activeLocks) lockedPlayers.add(lock.player);
 
     siteData.playersLock = activeLocks;
   }
 
   const filterEligible = (list?: string[]) =>
-    (list ?? []).filter(p => !usedPlayers.has(p) && !lockedPlayers.has(p));
+    (list ?? []).filter(
+      p => !usedPlayers.has(p) && !lockedPlayers.has(p) && !isPlayerBlocked(site, p)
+    );
 
   const strictFallback = (...lists: (string[] | undefined)[]): string[] => {
     for (const list of lists) {
       const eligible = filterEligible(list);
       if (eligible.length > 0) return eligible;
     }
-    return [];
+    return filterEligible(pool.all);
   };
 
   if (!Number.isFinite(point) || point < 0) {
@@ -147,6 +132,9 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
   if (point >= 20) {
     return strictFallback(pool.high, pool.very_high, pool.mid);
   }
+  if (point >= 18) {
+    return strictFallback(pool.mid, pool.high);
+  }
   if (point >= 15) {
     return strictFallback(pool.mid, pool.low);
   }
@@ -156,6 +144,7 @@ async function getPlayerPool(point: number, site: string): Promise<string[]> {
 
   return strictFallback(pool.all);
 }
+
 
 async function getSinglePlayer(point: number, site: string): Promise<string> {
   const eligiblePlayers = await getPlayerPool(point, site);
@@ -169,7 +158,7 @@ async function getSinglePlayer(point: number, site: string): Promise<string> {
   return fallback[Math.floor(Math.random() * fallback.length)];
 }
 
-async function updatePlayersLock(site: string, playerId: string, lockMessage: string, lockTime: number) {
+async function updatePlayersLock(site: string, playerId: string, lockMessage: string, lockTime: number , lockCode: number) {
   const applyCodeToday = await loadApplyCodeToday();
   const now = Date.now();
 
@@ -182,7 +171,8 @@ async function updatePlayersLock(site: string, playerId: string, lockMessage: st
     player: playerId,
     timelock: now,
     lockMessage,
-    lockTime
+    lockTime,
+    lockCode
   });
 
   siteData.playersLock = locks;
