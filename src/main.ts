@@ -451,30 +451,6 @@ async function initializeService() {
     handlersAttached = true;
     console.log("📡 Attaching Telegram Event Handlers...");
 
-    // ✅ New Message
-    // client.addEventHandler(
-    //   async (event: NewMessageEvent) => {
-    //     const message = event.message;
-    //     if (!message?.text || !message.peerId) return;
-
-    //     const chatId = getChatIdFromPeer(message.peerId);
-    //     if (!chatId) return;
-
-    //     console.log("🔥 New Message", chatId, message.text);
-    //     await handleIncomingMessage(message.text, chatId);
-    //   },
-    //   new NewMessage({
-    //     chats: [
-    //       "-1002292832183",
-    //       "-1002406062886",
-    //       "-1002519263985",
-    //       "-1002668963498",
-    //       "-1002142874457",
-    //       "-1002040396559",
-    //       "-1002544749433",
-    //     ],
-    //   })
-    // );
     const ALLOWED_CHAT_IDS = new Set([
           "-1002292832183",
           "-1002406062886",
@@ -485,24 +461,29 @@ async function initializeService() {
           "-1002544749433",
     ]);
 
-    // client.addEventHandler(
-    //   async (event) => {
-    //     console.log("🔥 EVENT IN", event.className);
+    client.addEventHandler(
+      async (event: NewMessageEvent) => {
+        const msg = event.message;
+        if (!msg?.text) return;
 
-    //     const msg = event.message;
-    //     if (!msg?.text || !msg.peerId) return;
+        const chatId = msg.chatId?.toString();
+        if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
 
-    //     const chatId = msg.chatId?.toString();
-    //     if (!chatId) return;
+        const isEdited = !!msg.editDate;
 
-    //     // กรองเองตรงนี้
-    //     if (!ALLOWED_CHAT_IDS.has(chatId)) return;
+        if (isEdited) {
+          console.log("✏️ EDIT MESSAGE", chatId, msg.text);
+        } else {
+          console.log("🔥 NEW MESSAGE", chatId, msg.text);
+        }
 
-    //     console.log("🔥 NEW MESSAGE", chatId, msg.text);
-    //     await handleIncomingMessage(msg.text, chatId);
-    //   },
-    //   new NewMessage({})
-    // );
+        await handleIncomingMessage(msg.text, chatId);
+      },
+      new NewMessage({
+        chats: Array.from(ALLOWED_CHAT_IDS),
+      })
+    );
+
 
     // ⚠️ Raw (ใช้เท่าที่จำเป็น)
     client.addEventHandler(
@@ -511,11 +492,10 @@ async function initializeService() {
         const type = update.className || update?.constructor?.name || update?._ || update;
         if ( type === "UpdateUserStatus" ||  type === "UpdateConnectionState") return;
         
-        console.log("🧩 RAW UPDATE:", type);
+        // console.log("🧩 RAW UPDATE:", type);
         if (
           type !== "UpdateEditMessage" &&
           type !== "UpdateNewChannelMessage" &&
-          type !== "UpdateReadChannelInbox" &&
           type !== "UpdateEditChannelMessage"
         ) return;
 
@@ -532,7 +512,7 @@ async function initializeService() {
         setTimeout(() => processedMessageIds.delete(dedupKey), 10_000);
 
         console.log("✏️ Edit Message", chatId, msg.message);
-        await handleIncomingMessage(msg.message, chatId);
+        // await handleIncomingMessage(msg.message, chatId);
       },
       new Raw({})
     );
