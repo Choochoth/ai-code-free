@@ -12,3 +12,9 @@ export interface SiteQueue {
   hostUrl: string;
 }
 
+export interface  ChannelMessageResult {
+  channelId: string;
+  channelName: string;
+  messageId: number;
+  message: string;
+};

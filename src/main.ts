@@ -47,7 +47,7 @@ import {
   detectSiteFromChatId,
 } from "./siteDetector";
 
-import { SiteQueue } from "./types/siteConfigs";
+import { SiteQueue, ChannelMessageResult } from "./types/siteConfigs";
 
 dotenv.config();
 
@@ -83,12 +83,30 @@ const lockDurations: Record<number, number> = {
   4044: 30 * 24 * 60 * 60 * 1000,
 };
 
+type MessageSnapshot = {
+  text: string;
+  editDate?: number;
+};
+
+const messageCache = new Map<string, MessageSnapshot>();
+const POLL_TARGETS = [
+  {},
+] as { channelId: string; messageId: number }[];
+
+// const POLL_TARGETS = [
+//   { channelId: "-1002519263985", messageId: 3860 },
+//   { channelId: "-1002142874457", messageId: 4911 },
+//   { channelId: "-1002668963498", messageId: 2944 },
+
+// ];
+
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
 const applyCodePath = path.join(dataDir, "apply_code.json");
 const packagePath = path.join(dataDir, "package.json");
 let handlersAttached = false;
+let pollInterval: NodeJS.Timeout | null = null;
 
 try {
   if (!fs.existsSync(sessionDir)) {
@@ -350,47 +368,13 @@ function getChatIdFromPeer(peerId: any): string | null {
   return null;
 }
 
-
-async function initializeService() {
-  // 🚀 Initialize client (ONCE)
-  if (!client) {
-    await initializeSession();
-  }
-
-  if (client) {
-    await getChatsList(client);
-  }
-
-  const app = express();
-  app.use(express.json());
-  app.use(express.static(path.join(__dirname, "public")));
-  app.use("/", viewRoutes);
-  app.use("/api", apiRoutes);
-  // 🩺 Health check (CHECK ONLY)
-  app.get("/health", async (req, res) => {
-    try {
-      if (!client) throw new Error("Client not initialized");
-      await client.getMe(); // auth check จริง
-      res.status(200).json({ status: "Healthy" });
-    } catch (err: any) {
-      console.error("❌ Health check failed:", err.message);
-      res.status(500).json({ status: "Unhealthy" });
-      process.exit(1); // ให้ PM2 / Docker restart
-    }
-  });
-
-  // 🎯 Handle incoming message
-  const handleIncomingMessage = async (message: string, chatId?: string) => {
+// 🎯 Jun88 incoming message
+async function handleIncomingMessageJ88 (message: string, chatId?: string){
     if (!message || !chatId) return;
-
-    // ✅ Dedup by chat + message
-    const dedupKey = `${chatId}_${message.toLowerCase()}`;
-    if (processedMessageIds.has(dedupKey)) return;
-    processedMessageIds.add(dedupKey);
-    setTimeout(() => processedMessageIds.delete(dedupKey), 60_000);
+    console.log("chatId:", chatId);
 
     const parsedCodes = parserCodeMessage(message);
-    if (parsedCodes.length < 8) return;
+    if (parsedCodes.length < 10) return;
 
     const shuffledCodes = shuffleArray(parsedCodes);
     console.log("🎯 Valid Bonus Codes:", parsedCodes);
@@ -443,7 +427,154 @@ async function initializeService() {
     } else {
       startProCodeLoop(site).catch(console.error);
     }
+};
+
+async function pollMessageById(
+  client: TelegramClient,
+  channelId: string,
+  messageId: number
+) {
+  try {
+    const messages = await client.getMessages(channelId, { ids: [messageId] });
+    if (!messages.length) return;
+
+    const msg = messages[0];
+    if (!msg?.message) return;
+
+    const chatId = getChatIdFromPeer(msg.peerId);
+    if (!chatId) return;
+
+    const cacheKey = `${channelId}:${messageId}`;
+    const prev = messageCache.get(cacheKey);
+
+    const current: MessageSnapshot = {
+      text: msg.message,
+      editDate: msg.editDate,
+    };
+
+    // 🟡 ครั้งแรก → บันทึกเฉย ๆ
+    if (!prev) {
+      messageCache.set(cacheKey, current);
+      console.log("🆕 FIRST SEEN", channelId, msg.id);
+      return;
+    }
+
+    // 🟢 ตรวจว่ามีการเปลี่ยนแปลง
+    const changed =
+      prev.text !== current.text ||
+      prev.editDate !== current.editDate;
+
+    if (!changed) {
+      console.log("message ไม่เปลี่ยน ไม่ต้องทำอะไร")
+      return; // ❌ ไม่เปลี่ยน ไม่ต้องทำอะไร
+    }
+
+    // 🔥 มีการเปลี่ยน
+    messageCache.set(cacheKey, current);
+
+    console.log("✏️ MESSAGE UPDATED", channelId, msg.id);
+    await handleIncomingMessageJ88(msg.message, chatId);
+
+  } catch (err: any) {
+    console.error("❌ pollMessageById error:", channelId, err.message);
+  }
+}
+
+
+async function initializeService() {
+  // 🚀 Initialize client (ONCE)
+  if (!client) {
+    await initializeSession();
+  }
+
+  if (client) {
+    await getChatsList(client);
+  }
+
+  const app = express();
+  app.use(express.json());
+  app.use(express.static(path.join(__dirname, "public")));
+  app.use("/", viewRoutes);
+  app.use("/api", apiRoutes);
+  // 🩺 Health check (CHECK ONLY)
+  app.get("/health", async (req, res) => {
+    try {
+      if (!client) throw new Error("Client not initialized");
+      await client.getMe(); // auth check จริง
+      res.status(200).json({ status: "Healthy" });
+    } catch (err: any) {
+      console.error("❌ Health check failed:", err.message);
+      res.status(500).json({ status: "Unhealthy" });
+      process.exit(1); // ให้ PM2 / Docker restart
+    }
+  });
+
+  // 🎯 Handle incoming message
+  const handleIncomingMessage = async (message: string, chatId?: string) => {
+      if (!message || !chatId) return;
+
+      // ✅ Dedup by chat + message
+      const dedupKey = `${chatId}_${message.toLowerCase()}`;
+      if (processedMessageIds.has(dedupKey)) return;
+      processedMessageIds.add(dedupKey);
+      setTimeout(() => processedMessageIds.delete(dedupKey), 60_000);
+
+      const parsedCodes = parserCodeMessage(message);
+      if (parsedCodes.length < 8) return;
+
+      const shuffledCodes = shuffleArray(parsedCodes);
+      console.log("🎯 Valid Bonus Codes:", parsedCodes);
+
+      // 🔍 Detect site
+      let siteConfig = detectSiteFromChatId(chatId) || detectSite(message);
+      if (!siteConfig) {
+        console.log("⚠️ Unrecognized message source.");
+        return;
+      }
+
+      const site = siteConfig.name;
+      const apiEndPoint = siteConfig.endpoint;
+      const players = siteConfig.players;
+      const hostUrl = process.env[siteConfig.envVar] || "";
+
+      informationSet = {
+        site,
+        cskh_url: siteConfig.cskh_url,
+        cskh_home: siteConfig.cskh_url,
+        endpoint: apiEndPoint,
+        key_free: siteConfig.key_free,
+      };
+
+      // 📝 Create site queue if not exists
+      if (!siteQueues[site]) {
+        siteQueues[site] = {
+          remainingCodes: [],
+          isProcessing: false,
+          abortFlag: { canceled: false },
+          players,
+          apiEndPoint,
+          site,
+          hostUrl,
+        };
+      }
+
+      // 🔄 Add unique codes
+      const existing = new Set(siteQueues[site].remainingCodes);
+      const newCodes = shuffledCodes.filter(c => !existing.has(c));
+      siteQueues[site].remainingCodes.unshift(...newCodes);
+
+      // 🔁 Processing control
+      const active = Object.values(siteQueues).find(q => q.isProcessing);
+      if (active) {
+        if (active.site !== site) {
+          abortCurrentSite(active.site);
+          startProCodeLoop(site).catch(console.error);
+        }
+      } else {
+        startProCodeLoop(site).catch(console.error);
+      }
   };
+
 
   // 📩 Telegram Event Handlers
   const addEventHandlers = async (client: TelegramClient) => {
@@ -486,38 +617,40 @@ async function initializeService() {
 
 
     // ⚠️ Raw (ใช้เท่าที่จำเป็น)
-    client.addEventHandler(
-      async (update: any) => {
+    // client.addEventHandler(
+    //   async (update: any) => {
 
-        const type = update.className || update?.constructor?.name || update?._ || update;
-        if ( type === "UpdateUserStatus" ||  type === "UpdateConnectionState") return;
+    //     const type = update.className || update?.constructor?.name || update?._ || update;
+    //     if ( type === "UpdateUserStatus" ||  type === "UpdateConnectionState") return;
         
-        // console.log("🧩 RAW UPDATE:", type);
-        if (
-          type !== "UpdateEditMessage" &&
-          type !== "UpdateNewChannelMessage" &&
-          type !== "UpdateEditChannelMessage"
-        ) return;
+    //     // console.log("🧩 RAW UPDATE:", type);
+    //     if (
+    //       type !== "UpdateEditMessage" &&
+    //       type !== "UpdateNewChannelMessage" &&
+    //       type !== "UpdateEditChannelMessage"
+    //     ) return;
 
-        const msg = update.message;
-        if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
+    //     const msg = update.message;
+    //     if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
 
-        const chatId = getChatIdFromPeer(msg.peerId);
-        if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
+    //     const chatId = getChatIdFromPeer(msg.peerId);
+    //     if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
 
-        const dedupKey = `edit_${chatId}_${msg.id}`;
-        if (processedMessageIds.has(dedupKey)) return;
+    //     const dedupKey = `edit_${chatId}_${msg.id}`;
+    //     if (processedMessageIds.has(dedupKey)) return;
 
-        processedMessageIds.add(dedupKey);
-        setTimeout(() => processedMessageIds.delete(dedupKey), 10_000);
+    //     processedMessageIds.add(dedupKey);
+    //     setTimeout(() => processedMessageIds.delete(dedupKey), 10_000);
 
-        console.log("✏️ Edit Message", chatId, msg.message);
-        // await handleIncomingMessage(msg.message, chatId);
-      },
-      new Raw({})
-    );
+    //     console.log("✏️ Edit Message", chatId, msg.message);
+    //     // await handleIncomingMessage(msg.message, chatId);
+    //   },
+    //   new Raw({})
+    // );
 
   };
+
+
 
   // 🔌 Ensure connected & attach handlers
   const ensureConnectedAndAddHandlers = async () => {
@@ -554,7 +687,7 @@ async function initializeService() {
             reject(err);
           }
         });
-    });
+  });
 
   try {
     await startServer(port);
@@ -953,13 +1086,37 @@ async function applyCodeToPlayers(
 async function startClient() {
   try {
     if (!client) await initializeClient();
+
     console.log("Client Connected:", client!.connected);
     await initializeService();
+
+      // ✅ กัน setInterval ซ้อน
+      if (!pollInterval) {
+        pollInterval = setInterval(async () => {
+          if (!client) return;
+
+          for (const target of POLL_TARGETS as any[]) {
+            await pollMessageById(client, target.channelId, target.messageId);
+          }
+
+        }, 10_000);
+
+        console.log("🟢 Polling started");
+      }
+
   } catch (error: any) {
     console.error("💥 Error during startup:", error.message);
+
+    // ❌ อย่าสร้าง interval ซ้อน
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      pollInterval = null;
+    }
+
     setTimeout(startClient, 3000);
   }
 }
+
 
 async function getChatsList(client: TelegramClient) {
   try {
@@ -981,6 +1138,39 @@ async function getChatsList(client: TelegramClient) {
     const displayName = [me.firstName, me.lastName].filter(Boolean).join(" ");
     console.log(`🤖 Signed in as: ${displayName}`);
     console.log(`🆔 Telegram ID: ${me.id.toString()}`);
+
+
+    const results: ChannelMessageResult[] = [];
+
+    const channelIds = [
+      "-1002519263985",
+      "-1002668963498",
+      "-1002142874457",
+    ];
+
+    for (const channelId of channelIds) {
+      try {
+        const msgs = await client!.getMessages(channelId, { limit: 2 });
+        if (!msgs.length) continue;
+
+        for (const msg of msgs) {
+          if (!msg?.message) continue;
+
+          results.push({
+            channelId,
+            channelName: msg.chat?.title || msg.peerId?.channelId?.toString() || "unknown",
+            messageId: msg.id,
+            message: msg.message,
+          });
+        }
+
+        await delay(1200); // 🔥 กัน FLOOD
+      } catch (e: any) {
+        console.error("❌ getMessages error", channelId, e.message);
+      }
+    }
+    console.log(results)
+
   } catch (err) {
     console.error("❌ Failed to fetch Telegram user info:", err);
   }
