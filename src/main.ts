@@ -89,6 +89,7 @@ const sessionDir = path.join(dataDir, "session");
 const applyCodePath = path.join(dataDir, "apply_code.json");
 const packagePath = path.join(dataDir, "package.json");
 let handlersAttached = false;
+let pollInterval: NodeJS.Timeout | null = null;
 
 try {
   if (!fs.existsSync(sessionDir)) {
@@ -328,6 +329,11 @@ async function sendCaptchaProCode(
   });
 }
 
+const POLL_TARGETS = [
+  { channelId: "-1002519263985", messageId: 3860 },
+  { channelId: "-1002668963498", messageId: 2944 },
+  { channelId: "-1002142874457", messageId: 4911 },
+];
 
 function abortCurrentSite(siteName: string) {
   const queue = siteQueues[siteName];
@@ -348,6 +354,91 @@ function getChatIdFromPeer(peerId: any): string | null {
     return peerId.userId.toString();
   }
   return null;
+}
+
+// 🎯 Jun88 incoming message
+async function handleIncomingMessageJ88 (message: string, chatId?: string){
+    if (!message || !chatId) return;
+    console.log("chatId:", chatId);
+
+    const parsedCodes = parserCodeMessage(message);
+    if (parsedCodes.length < 10) return;
+
+    const shuffledCodes = shuffleArray(parsedCodes);
+    console.log("🎯 Valid Bonus Codes:", parsedCodes);
+
+    // 🔍 Detect site
+    let siteConfig = detectSiteFromChatId(chatId) || detectSite(message);
+    if (!siteConfig) {
+      console.log("⚠️ Unrecognized message source.");
+      return;
+    }
+
+    const site = siteConfig.name;
+    const apiEndPoint = siteConfig.endpoint;
+    const players = siteConfig.players;
+    const hostUrl = process.env[siteConfig.envVar] || "";
+
+    informationSet = {
+      site,
+      cskh_url: siteConfig.cskh_url,
+      cskh_home: siteConfig.cskh_url,
+      endpoint: apiEndPoint,
+      key_free: siteConfig.key_free,
+    };
+
+    // 📝 Create site queue if not exists
+    if (!siteQueues[site]) {
+      siteQueues[site] = {
+        remainingCodes: [],
+        isProcessing: false,
+        abortFlag: { canceled: false },
+        players,
+        apiEndPoint,
+        site,
+        hostUrl,
+      };
+    }
+
+    // 🔄 Add unique codes
+    const existing = new Set(siteQueues[site].remainingCodes);
+    const newCodes = shuffledCodes.filter(c => !existing.has(c));
+    siteQueues[site].remainingCodes.unshift(...newCodes);
+
+    // 🔁 Processing control
+    const active = Object.values(siteQueues).find(q => q.isProcessing);
+    if (active) {
+      if (active.site !== site) {
+        abortCurrentSite(active.site);
+        startProCodeLoop(site).catch(console.error);
+      }
+    } else {
+      startProCodeLoop(site).catch(console.error);
+    }
+};
+
+async function pollMessageById(
+  client: TelegramClient,
+  channelId: string,
+  messageId: number
+) {
+  try {
+    const messages = await client.getMessages(channelId, { ids: [messageId] });
+    if (!messages.length) return;
+
+    const msg = messages[0];
+    if (!msg?.message) return;
+
+
+    const chatId = getChatIdFromPeer(msg.peerId);
+    if (!chatId) return;
+
+    console.log("📥 POLLED MESSAGE", channelId, msg.id);
+    await handleIncomingMessageJ88(msg.message, chatId);
+
+  } catch (err: any) {
+    console.error("❌ pollMessageById error:", channelId, err.message);
+  }
 }
 
 
@@ -519,6 +610,8 @@ async function initializeService() {
 
   };
 
+
+
   // 🔌 Ensure connected & attach handlers
   const ensureConnectedAndAddHandlers = async () => {
     if (!client) throw new Error("Client not initialized");
@@ -554,7 +647,7 @@ async function initializeService() {
             reject(err);
           }
         });
-    });
+  });
 
   try {
     await startServer(port);
@@ -953,13 +1046,38 @@ async function applyCodeToPlayers(
 async function startClient() {
   try {
     if (!client) await initializeClient();
+
     console.log("Client Connected:", client!.connected);
     await initializeService();
+
+    // ✅ กัน setInterval ซ้อน
+    if (!pollInterval) {
+      pollInterval = setInterval(async () => {
+        if (!client) return;
+
+        for (const target of POLL_TARGETS) {
+          await pollMessageById(client, target.channelId, target.messageId);
+          await delay(1500);
+        }
+
+      }, 10_000);
+
+      console.log("🟢 Polling started");
+    }
+
   } catch (error: any) {
     console.error("💥 Error during startup:", error.message);
+
+    // ❌ อย่าสร้าง interval ซ้อน
+    if (pollInterval) {
+      clearInterval(pollInterval);
+      pollInterval = null;
+    }
+
     setTimeout(startClient, 3000);
   }
 }
+
 
 async function getChatsList(client: TelegramClient) {
   try {
