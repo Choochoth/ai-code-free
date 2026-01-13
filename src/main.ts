@@ -47,7 +47,7 @@ import {
   detectSiteFromChatId,
 } from "./siteDetector";
 
-import { SiteQueue, ChannelMessageResult, PollTarget } from "./types/siteConfigs";
+import { SiteQueue, ChannelMessageResult, PollTarget, ChannelSnapshot } from "./types/siteConfigs";
 
 dotenv.config();
 
@@ -89,6 +89,11 @@ type MessageSnapshot = {
 };
 
 const messageCache = new Map<string, MessageSnapshot>();
+const latestMessageCache = new Map<string, ChannelSnapshot>();
+let pollInterval: NodeJS.Timeout | null = null;
+let latestPollInterval: NodeJS.Timeout | null = null;
+let isPollingById = false;
+let isPollingLatest = false;
 
 const POLL_TARGETS: PollTarget[] = [
   { channelId: "-1002142874457", messageId: 4914 },
@@ -102,7 +107,6 @@ const sessionDir = path.join(dataDir, "session");
 const applyCodePath = path.join(dataDir, "apply_code.json");
 const packagePath = path.join(dataDir, "package.json");
 let handlersAttached = false;
-let pollInterval: NodeJS.Timeout | null = null;
 
 try {
   if (!fs.existsSync(sessionDir)) {
@@ -461,7 +465,6 @@ async function pollMessageById(
       prev.editDate !== current.editDate;
 
     if (!changed) {
-      console.log("message ไม่เปลี่ยน ไม่ต้องทำอะไร")
       return; // ❌ ไม่เปลี่ยน ไม่ต้องทำอะไร
     }
 
@@ -473,6 +476,57 @@ async function pollMessageById(
 
   } catch (err: any) {
     console.error("❌ pollMessageById error:", channelId, err.message);
+  }
+}
+
+async function pollLatestMessageByChannel(
+  client: TelegramClient,
+  channelId: string
+) {
+  try {
+    // 🔥 เอา message ล่าสุด
+    const messages = await client.getMessages(channelId, { limit: 1 });
+    if (!messages.length) return;
+
+    const msg = messages[0];
+    if (!msg?.message) return;
+
+    const chatId = getChatIdFromPeer(msg.peerId);
+    if (!chatId) return;
+
+    const prev = latestMessageCache.get(channelId);
+
+    const current: ChannelSnapshot = {
+      messageId: msg.id,
+      text: msg.message,
+      editDate: msg.editDate ?? 0,
+    };
+
+    // 🟡 ครั้งแรก → แค่จำไว้
+    if (!prev) {
+      latestMessageCache.set(channelId, current);
+      console.log("🆕 FIRST SEEN", channelId, msg.id);
+      return;
+    }
+
+    // 🟢 ตรวจการเปลี่ยนแปลง
+    const changed =
+      prev.messageId !== current.messageId ||
+      prev.text !== current.text ||
+      prev.editDate !== current.editDate;
+
+    if (!changed) {
+      return; // ❌ message เดิม → ไม่ต้องทำอะไร
+    }
+
+    // 🔥 มีการเปลี่ยน (message ใหม่ หรือ edit)
+    latestMessageCache.set(channelId, current);
+
+    console.log("🔥 NEW / UPDATED MESSAGE", channelId, msg.id);
+    await handleIncomingMessageJ88(msg.message, chatId);
+
+  } catch (err: any) {
+    console.error("❌ pollLatestMessageByChannel error:", channelId, err.message);
   }
 }
 
@@ -705,7 +759,6 @@ async function initializeService() {
   process.on("SIGTERM", gracefulShutdown);
   process.on("SIGINT", gracefulShutdown);
 }
-
 
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
@@ -1079,6 +1132,23 @@ async function applyCodeToPlayers(
   return false;
 }
 
+function stopPolling() {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+  }
+
+  if (latestPollInterval) {
+    clearInterval(latestPollInterval);
+    latestPollInterval = null;
+  }
+
+  isPollingById = false;
+  isPollingLatest = false;
+
+  console.log("🛑 Polling stopped");
+}
+
 async function startClient() {
   try {
     if (!client) await initializeClient();
@@ -1086,39 +1156,65 @@ async function startClient() {
     console.log("Client Connected:", client!.connected);
     await initializeService();
 
+    // ===============================
+    // 🔁 POLL BY MESSAGE ID
+    // ===============================
+    if (!pollInterval) {
+      pollInterval = setInterval(async () => {
+        if (!client || isPollingById) return;
+        if (POLL_TARGETS.length === 0) return;
 
-      // ✅ กัน setInterval ซ้อน
-      if (!pollInterval) {
-        pollInterval = setInterval(async () => {
-          if (!client) return;
-
-          // ✅ ไม่มี target → ไม่ต้องทำอะไร
-          if (POLL_TARGETS.length === 0) return;
-
+        isPollingById = true;
+        try {
           for (const target of POLL_TARGETS) {
-            await pollMessageById(client, target.channelId, target.messageId);
-            await delay(1500); // กัน FLOOD
+            await pollMessageById(
+              client,
+              target.channelId,
+              target.messageId
+            );
+            await delay(1500);
           }
+        } finally {
+          isPollingById = false;
+        }
+      }, 10_000);
 
-        }, 10_000);
+      console.log("🟢 Polling by messageId started");
+    }
 
-        console.log("🟢 Polling started");
-      }
+    // ===============================
+    // 🔁 POLL LATEST MESSAGE BY CHANNEL
+    // ===============================
+    const channel789Ids = [
+      "-1002040396559",
+      "-1002406062886",
+      "-1002544749433",
+    ];
 
+    if (!latestPollInterval) {
+      latestPollInterval = setInterval(async () => {
+        if (!client || isPollingLatest) return;
+
+        isPollingLatest = true;
+        try {
+          for (const channelId of channel789Ids) {
+            await pollLatestMessageByChannel(client, channelId);
+            await delay(1500);
+          }
+        } finally {
+          isPollingLatest = false;
+        }
+      }, 10_000);
+
+      console.log("🟢 Polling latest messages started");
+    }
 
   } catch (error: any) {
     console.error("💥 Error during startup:", error.message);
-
-    // ❌ อย่าสร้าง interval ซ้อน
-    if (pollInterval) {
-      clearInterval(pollInterval);
-      pollInterval = null;
-    }
-
+    stopPolling();
     setTimeout(startClient, 3000);
   }
 }
-
 
 async function getChatsList(client: TelegramClient) {
   try {
@@ -1142,35 +1238,35 @@ async function getChatsList(client: TelegramClient) {
     console.log(`🆔 Telegram ID: ${me.id.toString()}`);
 
 
-    // const results: ChannelMessageResult[] = [];
+    const results: ChannelMessageResult[] = [];
 
-    // const channelIds = [
-    //   "-1002519263985",
-    //   "-1002668963498",
-    //   "-1002142874457",
-    // ];
+    const channelJun88Ids = [
+      "-1002519263985",
+      "-1002668963498",
+      "-1002142874457",
+    ];
 
-    // for (const channelId of channelIds) {
-    //   try {
-    //     const msgs = await client!.getMessages(channelId, { limit: 2 });
-    //     if (!msgs.length) continue;
+    for (const channelId of channelJun88Ids) {
+      try {
+        const msgs = await client!.getMessages(channelId, { limit: 1 });
+        if (!msgs.length) continue;
 
-    //     for (const msg of msgs) {
-    //       if (!msg?.message) continue;
+        for (const msg of msgs) {
+          if (!msg?.message) continue;
 
-    //       results.push({
-    //         channelId,
-    //         channelName: msg.chat?.title || msg.peerId?.channelId?.toString() || "unknown",
-    //         messageId: msg.id,
-    //         message: msg.message,
-    //       });
-    //     }
+          results.push({
+            channelId,
+            channelName: msg.chat?.title || msg.peerId?.channelId?.toString() || "unknown",
+            messageId: msg.id,
+            message: msg.message,
+          });
+        }
 
-    //     await delay(1200); // 🔥 กัน FLOOD
-    //   } catch (e: any) {
-    //     console.error("❌ getMessages error", channelId, e.message);
-    //   }
-    // }
+        await delay(1200); // 🔥 กัน FLOOD
+      } catch (e: any) {
+        console.error("❌ getMessages error", channelId, e.message);
+      }
+    }
     // console.log(results)
 
   } catch (err) {
