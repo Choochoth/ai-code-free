@@ -23,3 +23,10 @@ export interface PollTarget {
   channelId: string;
   messageId: number;
 };
+
+export interface  ChannelSnapshot {
+  messageId: number;
+  text: string;
+  editDate?: number;
+};
+
