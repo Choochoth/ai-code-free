@@ -89,14 +89,14 @@ type MessageSnapshot = {
 };
 
 const messageCache = new Map<string, MessageSnapshot>();
-const POLL_TARGETS: PollTarget[] = [];
+// const POLL_TARGETS: PollTarget[] = [];
 
 
-// const POLL_TARGETS = [
-//   { channelId: "-1002519263985", messageId: 3860 },
-//   { channelId: "-1002142874457", messageId: 4911 },
-//   { channelId: "-1002668963498", messageId: 2944 },
-// ];
+const POLL_TARGETS: PollTarget[] = [
+  { channelId: "-1002142874457", messageId: 4914 },
+  { channelId: "-1002519263985", messageId: 3863 },
+  { channelId: "-1002668963498", messageId: 2947 },
+];
 
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
@@ -463,7 +463,6 @@ async function pollMessageById(
       prev.editDate !== current.editDate;
 
     if (!changed) {
-      console.log("message ไม่เปลี่ยน ไม่ต้องทำอะไร")
       return; // ❌ ไม่เปลี่ยน ไม่ต้องทำอะไร
     }
 
@@ -478,6 +477,55 @@ async function pollMessageById(
   }
 }
 
+async function pollMessageByChannels(
+  client: TelegramClient,
+  channelId: string,
+  messageId: number
+) {
+  try {
+    const messages = await client.getMessages(channelId, { ids: [messageId] });
+    if (!messages.length) return;
+
+    const msg = messages[0];
+    if (!msg?.message) return;
+
+    const chatId = getChatIdFromPeer(msg.peerId);
+    if (!chatId) return;
+
+    const cacheKey = `${channelId}:${messageId}`;
+    const prev = messageCache.get(cacheKey);
+
+    const current: MessageSnapshot = {
+      text: msg.message,
+      editDate: msg.editDate,
+    };
+
+    // 🟡 ครั้งแรก → บันทึกเฉย ๆ
+    if (!prev) {
+      messageCache.set(cacheKey, current);
+      console.log("🆕 FIRST SEEN", channelId, msg.id);
+      return;
+    }
+
+    // 🟢 ตรวจว่ามีการเปลี่ยนแปลง
+    const changed =
+      prev.text !== current.text ||
+      prev.editDate !== current.editDate;
+
+    if (!changed) {
+      return; // ❌ ไม่เปลี่ยน ไม่ต้องทำอะไร
+    }
+
+    // 🔥 มีการเปลี่ยน
+    messageCache.set(cacheKey, current);
+
+    console.log("✏️ MESSAGE UPDATED", channelId, msg.id);
+    await handleIncomingMessageJ88(msg.message, chatId);
+
+  } catch (err: any) {
+    console.error("❌ pollMessageById error:", channelId, err.message);
+  }
+}
 
 async function initializeService() {
   // 🚀 Initialize client (ONCE)
@@ -712,9 +760,9 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 13;
+    minPoint = 20;
   } else {
-    minPoint = 13;
+    minPoint = 15;
   }
 
   const siteQueue = siteQueues[siteName];
@@ -1154,7 +1202,7 @@ async function getChatsList(client: TelegramClient) {
 
     for (const channelId of channelIds) {
       try {
-        const msgs = await client!.getMessages(channelId, { limit: 2 });
+        const msgs = await client!.getMessages(channelId, { limit: 1 });
         if (!msgs.length) continue;
 
         for (const msg of msgs) {
@@ -1173,7 +1221,7 @@ async function getChatsList(client: TelegramClient) {
         console.error("❌ getMessages error", channelId, e.message);
       }
     }
-    console.log(results)
+    // console.log(results)
 
   } catch (err) {
     console.error("❌ Failed to fetch Telegram user info:", err);
