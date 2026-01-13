@@ -97,7 +97,6 @@ const POLL_TARGETS = [
 //   { channelId: "-1002519263985", messageId: 3860 },
 //   { channelId: "-1002142874457", messageId: 4911 },
 //   { channelId: "-1002668963498", messageId: 2944 },
-
 // ];
 
 const baseDir = __dirname;
