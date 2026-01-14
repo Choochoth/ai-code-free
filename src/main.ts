@@ -96,9 +96,9 @@ let isPollingById = false;
 let isPollingLatest = false;
 
 const POLL_TARGETS: PollTarget[] = [
-  { channelId: "-1002142874457", messageId: 4914 },
-  { channelId: "-1002519263985", messageId: 3863 },
-  { channelId: "-1002668963498", messageId: 2947 },
+  { channelId: "-1002142874457", messageId: 4918 },
+  { channelId: "-1002519263985", messageId: 3868 },
+  { channelId: "-1002668963498", messageId: 2950 },
 ];
 
 const baseDir = __dirname;
@@ -488,7 +488,7 @@ async function pollMessageById(
     // 🔥 มีการเปลี่ยน
     messageCache.set(cacheKey, current);
 
-    console.log("✏️ MESSAGE UPDATED", channelId, msg.id);
+    console.log("✏️Pool MESSAGE UPDATED", channelId, msg.id);
     await handleIncomingMessageJ88(msg.message, chatId);
 
   } catch (err: any) {
@@ -760,8 +760,6 @@ async function initializeService() {
     await startServer(port);
   } catch (err) {
     console.error("❌ Failed to start server:", err);
-    stopPolling();
-    
   }
 
   // 🛑 Graceful shutdown
