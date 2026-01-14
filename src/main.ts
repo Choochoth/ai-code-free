@@ -96,9 +96,9 @@ let isPollingById = false;
 let isPollingLatest = false;
 
 const POLL_TARGETS: PollTarget[] = [
-  { channelId: "-1002142874457", messageId: 4927 },
-  { channelId: "-1002519263985", messageId: 3878 },
-  { channelId: "-1002668963498", messageId: 2959 },
+  {"channelId":"-1002519263985","messageId":3880},
+  {"channelId":"-1002142874457","messageId":4930},
+  {"channelId":"-1002668963498","messageId":2962},
 ];
 
 const channel789Ids = [
@@ -144,6 +144,29 @@ let client: TelegramClient | null = null;
 let expressServer: any;
 let lastHandledMessage: string | null = null;
 let minPoint: number = 8;
+
+// function loadPollTargetsFromEnv(): PollTarget[] {
+//   const raw = process.env.POLL_TARGETS;
+//   if (!raw) return [];
+
+//   try {
+//     const parsed = JSON.parse(raw);
+
+//     if (!Array.isArray(parsed)) {
+//       throw new Error("POLL_TARGETS is not an array");
+//     }
+
+//     return parsed.filter(
+//       (t): t is PollTarget =>
+//         typeof t?.channelId === "string" &&
+//         typeof t?.messageId === "number"
+//     );
+
+//   } catch (err) {
+//     console.error("❌ Invalid POLL_TARGETS in env:", err);
+//     return [];
+//   }
+// }
 
 function stopPolling() {
   if (pollInterval) {
@@ -1153,6 +1176,7 @@ async function startClient() {
     // ===============================
     // 🔁 POLL BY MESSAGE ID
     // ===============================
+    // const POLL_TARGETS = loadPollTargetsFromEnv();
     if (!pollInterval) {
       pollInterval = setInterval(async () => {
         if (!client || isPollingById) return;

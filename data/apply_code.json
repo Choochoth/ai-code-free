@@ -38,9 +38,18 @@
           "status": "success",
           "player": "ary11",
           "point": 23.88
+        },
+        {
+          "promo_code": "VMOMULUT",
+          "time": 1768410825476,
+          "time_limit": 1768497225476,
+          "status": "success",
+          "player": "aroon11",
+          "point": 18.88
         }
       ],
       "playersLock": []
+
     }
   }
 }
