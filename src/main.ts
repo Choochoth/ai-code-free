@@ -96,9 +96,9 @@ let isPollingById = false;
 let isPollingLatest = false;
 
 const POLL_TARGETS: PollTarget[] = [
-  { channelId: "-1002142874457", messageId: 4918 },
-  { channelId: "-1002519263985", messageId: 3868 },
-  { channelId: "-1002668963498", messageId: 2950 },
+  { channelId: "-1002142874457", messageId: 4922 },
+  { channelId: "-1002519263985", messageId: 3873 },
+  { channelId: "-1002668963498", messageId: 2954 },
 ];
 
 const channel789Ids = [
@@ -1249,7 +1249,7 @@ async function getChatsList(client: TelegramClient) {
 
     for (const channelId of channelJun88Ids) {
       try {
-        const msgs = await client!.getMessages(channelId, { limit: 1 });
+        const msgs = await client!.getMessages(channelId, { limit: 2 });
         if (!msgs.length) continue;
 
         for (const msg of msgs) {
