@@ -468,7 +468,7 @@ async function pollMessageById(
     if (!messages.length) return;
 
     const msg = messages[0];
-    if (!msg?.message) return;
+    if (!msg.message || !msg.message.trim()) return;
 
     const chatId = getChatIdFromPeer(msg.peerId);
     if (!chatId) return;
@@ -518,7 +518,7 @@ async function pollLatestMessageByChannel(
     if (!messages.length) return;
 
     const msg = messages[0];
-    if (!msg?.message) return;
+    if (!msg.message || !msg.message.trim()) return;
 
     const chatId = getChatIdFromPeer(msg.peerId);
     if (!chatId) return;
@@ -575,6 +575,7 @@ async function initializeService() {
   app.use(express.static(path.join(__dirname, "public")));
   app.use("/", viewRoutes);
   app.use("/api", apiRoutes);
+  
   // 🩺 Health check (CHECK ONLY)
   app.get("/health", async (req, res) => {
     try {
@@ -829,7 +830,7 @@ async function startProCodeLoop(siteName: string) {
     const playersSkip = new Set<string>();
     cleanupExpiredBlocks();
 
-    console.log("Start Loop Code in site : ",siteName)
+    console.log("Start Loop Code in site : ", siteName)
     while (true) {
       if (abortFlag?.canceled) {
         console.log(`⏹️ Processing for ${site} aborted.`);
@@ -867,25 +868,6 @@ async function startProCodeLoop(siteName: string) {
 
           const statusCode = result.status_code ?? result?.ststus_code ?? 0;
           const message = result?.text_mess?.th || "";
-
-          // if (siteName === "thai_f168") {
-          //   console.log(result);
-          //   return false;
-          //   // thai_168: ถ้าไม่ใช่ข้อความผิดแคปต์ชา → addTemplate
-          //   const isCaptchaError = result.message.includes("แคปต์ชาไม่ถูกต้องจ้า ลองพิมพ์ใหม่อีกครั้งนะ 💕");
-          //   if (!isCaptchaError) {
-          //     addTemplate(captchaPath, captchaCode, site);
-          //   } else {
-          //     console.log("แคปต์ชาไม่ถูกต้องจ้า ไม่เพิ่ม addTemplates");
-          //   }
-          // } else {
-          //   // site อื่นๆ: ถ้า status 400 และข้อความบอก captcha ผิด → ไม่ add
-          //   const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
-          //   if (!isCaptchaError) {
-          //     addTemplate(captchaPath, captchaCode, site);
-          //   }
-          // }
-
 
         // const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
         // if (!isCaptchaError) {
@@ -1243,6 +1225,17 @@ async function getChatsList(client: TelegramClient) {
     const displayName = [me.firstName, me.lastName].filter(Boolean).join(" ");
     console.log(`🤖 Signed in as: ${displayName}`);
     console.log(`🆔 Telegram ID: ${me.id.toString()}`);
+
+    // const msgs789 = await client!.getMessages("-1002406062886", { limit: 5 });
+
+    // if (msgs789.length > 0) {
+    //   console.log("message:", msgs789);
+
+    //   // const msg = msgs789[0];
+    //   // console.log("last message id:", msg.id);
+    //   // console.log("message:", msg);
+    // }
+
 
 
     const results: ChannelMessageResult[] = [];
