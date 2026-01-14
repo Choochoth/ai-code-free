@@ -101,6 +101,18 @@ const POLL_TARGETS: PollTarget[] = [
   { channelId: "-1002668963498", messageId: 2950 },
 ];
 
+const channel789Ids = [
+  "-1002040396559",
+  "-1002406062886",
+  "-1002544749433",
+];
+
+const channelJun88Ids = [
+  "-1002519263985",
+  "-1002668963498",
+  "-1002142874457",
+];
+
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
@@ -1185,11 +1197,6 @@ async function startClient() {
     // ===============================
     // 🔁 POLL LATEST MESSAGE BY CHANNEL
     // ===============================
-    const channel789Ids = [
-      "-1002040396559",
-      "-1002406062886",
-      "-1002544749433",
-    ];
 
     if (!latestPollInterval) {
       latestPollInterval = setInterval(async () => {
@@ -1239,12 +1246,6 @@ async function getChatsList(client: TelegramClient) {
 
 
     const results: ChannelMessageResult[] = [];
-
-    const channelJun88Ids = [
-      "-1002519263985",
-      "-1002668963498",
-      "-1002142874457",
-    ];
 
     for (const channelId of channelJun88Ids) {
       try {
