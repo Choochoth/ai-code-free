@@ -96,9 +96,21 @@ let isPollingById = false;
 let isPollingLatest = false;
 
 const POLL_TARGETS: PollTarget[] = [
-  { channelId: "-1002142874457", messageId: 4918 },
-  { channelId: "-1002519263985", messageId: 3868 },
-  { channelId: "-1002668963498", messageId: 2950 },
+  { channelId: "-1002142874457", messageId: 4922 },
+  { channelId: "-1002519263985", messageId: 3873 },
+  { channelId: "-1002668963498", messageId: 2954 },
+];
+
+const channel789Ids = [
+  "-1002040396559",
+  "-1002406062886",
+  "-1002544749433",
+];
+
+const channelJun88Ids = [
+  "-1002519263985",
+  "-1002668963498",
+  "-1002142874457",
 ];
 
 const baseDir = __dirname;
@@ -780,7 +792,7 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 20;
+    minPoint = 15;
   } else {
     minPoint = 15;
   }
@@ -1185,11 +1197,6 @@ async function startClient() {
     // ===============================
     // 🔁 POLL LATEST MESSAGE BY CHANNEL
     // ===============================
-    const channel789Ids = [
-      "-1002040396559",
-      "-1002406062886",
-      "-1002544749433",
-    ];
 
     if (!latestPollInterval) {
       latestPollInterval = setInterval(async () => {
@@ -1240,15 +1247,9 @@ async function getChatsList(client: TelegramClient) {
 
     const results: ChannelMessageResult[] = [];
 
-    const channelJun88Ids = [
-      "-1002519263985",
-      "-1002668963498",
-      "-1002142874457",
-    ];
-
     for (const channelId of channelJun88Ids) {
       try {
-        const msgs = await client!.getMessages(channelId, { limit: 1 });
+        const msgs = await client!.getMessages(channelId, { limit: 2 });
         if (!msgs.length) continue;
 
         for (const msg of msgs) {
