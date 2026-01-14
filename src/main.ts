@@ -96,9 +96,9 @@ let isPollingById = false;
 let isPollingLatest = false;
 
 const POLL_TARGETS: PollTarget[] = [
-  { channelId: "-1002142874457", messageId: 4914 },
-  { channelId: "-1002519263985", messageId: 3863 },
-  { channelId: "-1002668963498", messageId: 2947 },
+  { channelId: "-1002142874457", messageId: 4918 },
+  { channelId: "-1002519263985", messageId: 3868 },
+  { channelId: "-1002668963498", messageId: 2950 },
 ];
 
 const baseDir = __dirname;
