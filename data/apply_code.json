@@ -30,6 +30,14 @@
           "status": "success",
           "player": "nuschai",
           "point": 24.88
+        },
+        {
+          "promo_code": "TD977X8M",
+          "time": 1768410463297,
+          "time_limit": 1768496863297,
+          "status": "success",
+          "player": "ary11",
+          "point": 23.88
         }
       ],
       "playersLock": []
