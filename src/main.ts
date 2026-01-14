@@ -96,9 +96,9 @@ let isPollingById = false;
 let isPollingLatest = false;
 
 const POLL_TARGETS: PollTarget[] = [
-  { channelId: "-1002142874457", messageId: 4922 },
-  { channelId: "-1002519263985", messageId: 3873 },
-  { channelId: "-1002668963498", messageId: 2954 },
+  { channelId: "-1002142874457", messageId: 4927 },
+  { channelId: "-1002519263985", messageId: 3877 },
+  { channelId: "-1002668963498", messageId: 2959 },
 ];
 
 const channel789Ids = [
@@ -792,7 +792,7 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 15;
+    minPoint = 18;
   } else {
     minPoint = 15;
   }
