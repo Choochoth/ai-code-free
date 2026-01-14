@@ -34,29 +34,54 @@ const pendingCaptchas = new Map<
   }
 >();
 
+
 // =======================
-// 📌 Listener Reply CAPTCHA
+// 📩 Listener Forwarded Message
 // =======================
-bot.on(
-  "text",
-  async (ctx: Context<Update.MessageUpdate<Message.TextMessage>>) => {
-    const message = ctx.message;
-    if (!message.reply_to_message) return;
+bot.on("message", async (ctx) => {
+  const msg = ctx.message;
+  if (!msg) return;
 
-    const replyToId = message.reply_to_message.message_id;
-    const entry = pendingCaptchas.get(replyToId);
-    if (!entry) return;
+  const isForwarded =
+    "forward_from" in msg ||
+    "forward_from_chat" in msg ||
+    "forward_sender_name" in msg;
 
-    const code = message.text?.trim();
-    if (!code || code.length < 4) return;
+  if (!isForwarded) return;
 
-    console.log(`🔤 Received CAPTCHA: ${code}`);
+  const chatId = msg.chat.id;
+  const messageId = msg.message_id;
 
-    clearTimeout(entry.timeout);
-    pendingCaptchas.delete(replyToId);
-    entry.resolve(code);
+  const fromChat =
+    "forward_from_chat" in msg
+      ? (msg.forward_from_chat as { id: number })
+      : null;
+
+  const fromMessageId =
+    "forward_from_message_id" in msg
+      ? msg.forward_from_message_id
+      : null;
+
+  let text = `📩 *Forward Message Detected*\n\n`;
+  text += `📌 Chat ID: \`${chatId}\`\n`;
+  text += `🆔 Message ID: \`${messageId}\`\n`;
+
+  if (fromChat) {
+    text += `\n🔁 *Original Source*\n`;
+    text += `📢 From Chat ID: \`${fromChat.id}\`\n`;
+    text += `📄 From Message ID: \`${fromMessageId ?? "unknown"}\`\n`;
   }
-);
+
+await ctx.telegram.sendMessage(chatId, text, {
+  parse_mode: "Markdown",
+  reply_parameters: {
+    message_id: messageId,
+  },
+});
+
+});
+
+
 
 // =======================
 // 📌 ส่ง CAPTCHA ให้แอดมิน
@@ -218,13 +243,13 @@ export async function sendResultToTelegram(
   };
 
   // ส่งให้ user ก่อน
-  if (typeof usertelegram === "number" && usertelegram > 0) {
-    try {
-      await bot.telegram.sendMessage(usertelegram, message, options);
-    } catch (error) {
-      console.error(`❌ Failed to send result to user ${usertelegram}:`, error);
-    }
-  }
+  // if (typeof usertelegram === "number" && usertelegram > 0) {
+  //   try {
+  //     await bot.telegram.sendMessage(usertelegram, message, options);
+  //   } catch (error) {
+  //     console.error(`❌ Failed to send result to user ${usertelegram}:`, error);
+  //   }
+  // }
 
   // Broadcast to admins
   for (const adminId of ADMIN_IDS) {
