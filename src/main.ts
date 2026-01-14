@@ -95,9 +95,9 @@ let latestPollInterval: NodeJS.Timeout | null = null;
 let isPollingById = false;
 let isPollingLatest = false;
 
-const POLL_TARGETS: PollTarget[] = [
-  {"channelId":"-1002519263985","messageId":3880},
+const POLL_TARGETS: PollTarget[] = [  
   {"channelId":"-1002142874457","messageId":4930},
+  {"channelId":"-1002519263985","messageId":3880},
   {"channelId":"-1002668963498","messageId":2962},
 ];
 
@@ -623,7 +623,7 @@ async function initializeService() {
       setTimeout(() => processedMessageIds.delete(dedupKey), 60_000);
 
       const parsedCodes = parserCodeMessage(message);
-      if (parsedCodes.length < 8) return;
+      if (parsedCodes.length < 10) return;
 
       const shuffledCodes = shuffleArray(parsedCodes);
       console.log("🎯 Valid Bonus Codes:", parsedCodes);
