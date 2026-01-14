@@ -488,7 +488,7 @@ async function pollMessageById(
     // 🔥 มีการเปลี่ยน
     messageCache.set(cacheKey, current);
 
-    console.log("✏️ MESSAGE UPDATED", channelId, msg.id);
+    console.log("✏️Pool MESSAGE UPDATED", channelId, msg.id);
     await handleIncomingMessageJ88(msg.message, chatId);
 
   } catch (err: any) {
@@ -760,8 +760,6 @@ async function initializeService() {
     await startServer(port);
   } catch (err) {
     console.error("❌ Failed to start server:", err);
-    stopPolling();
-    
   }
 
   // 🛑 Graceful shutdown
