@@ -30,6 +30,22 @@
           "status": "success",
           "player": "nuschai",
           "point": 24.88
+        },
+        {
+          "promo_code": "2UD2XD83",
+          "time": 1768513215385,
+          "time_limit": 1768599615385,
+          "status": "success",
+          "player": "manus9331",
+          "point": 24.88
+        },        
+        {
+          "promo_code": "ATFY878Z",
+          "time": 1768514500160,
+          "time_limit": 1768600900160,
+          "status": "success",
+          "player": "nus9331",
+          "point": 22.88
         }
       ],
       "playersLock": []
