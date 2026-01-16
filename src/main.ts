@@ -8,7 +8,6 @@ import { StringSession } from "telegram/sessions";
 import { Api } from "telegram/tl";
 import { NewMessage } from 'telegram/events';  // Import the correct events
 import { NewMessageEvent } from "telegram/events/NewMessage";
-import { Raw } from "telegram/events/Raw";
 import Bottleneck from "bottleneck";
 import cron from 'node-cron';
 import axios from "axios";
@@ -31,15 +30,13 @@ import { SiteSentPlayers } from "./types/player";
 
 
 import {
-  checkNetworkConnectivity,
   promptInput,
   delay,
   shuffleArray,
-  removeImage
 } from "./utils";
 
 import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
-import { sendApplyCodeDataToTelegram } from "./telegramBot";
+// import { sendApplyCodeDataToTelegram } from "./telegramBot";
 
 
 import {
@@ -59,7 +56,6 @@ const userPassword = process.env.APP_YOUR_PWD || "";
 const port = Number(process.env.PORT) || 5300;
 const MAX_RETRIES = 3;
 let retryInterval = 6000;
-let lastRestartTime = 0;
 let isRestarting: boolean = false;
 const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
 const appSession = process.env.APP_SESSION;
@@ -111,8 +107,6 @@ const channel789Ids = [
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
-const applyCodePath = path.join(dataDir, "apply_code.json");
-const packagePath = path.join(dataDir, "package.json");
 let handlersAttached = false;
 
 try {
