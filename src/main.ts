@@ -95,23 +95,18 @@ let latestPollInterval: NodeJS.Timeout | null = null;
 let isPollingById = false;
 let isPollingLatest = false;
 
-const POLL_TARGETS: PollTarget[] = [
- {"channelId":"-1002668963498","messageId":2979},
- {"channelId":"-1002519263985","messageId":3902},
- {"channelId":"-1002142874457","messageId":4957},
+const POLL_TARGETS: PollTarget[] = [ 
+  {"channelId":"-1002142874457","messageId":4970},
+  {"channelId":"-1002668963498","messageId":2990}, 
+  {"channelId":"-1002519263985","messageId":3918},
 ];
 
 const channel789Ids = [
-  "-1002040396559",
   "-1002406062886",
+  "-1002040396559",
   "-1002544749433",
 ];
 
-const channelJun88Ids = [
-  "-1002519263985",
-  "-1002668963498",
-  "-1002142874457",
-];
 
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
@@ -144,6 +139,29 @@ let client: TelegramClient | null = null;
 let expressServer: any;
 let lastHandledMessage: string | null = null;
 let minPoint: number = 8;
+
+// function loadPollTargetsFromEnv(): PollTarget[] {
+//   const raw = process.env.POLL_TARGETS;
+//   if (!raw) return [];
+
+//   try {
+//     const parsed = JSON.parse(raw);
+
+//     if (!Array.isArray(parsed)) {
+//       throw new Error("POLL_TARGETS is not an array");
+//     }
+
+//     return parsed.filter(
+//       (t): t is PollTarget =>
+//         typeof t?.channelId === "string" &&
+//         typeof t?.messageId === "number"
+//     );
+
+//   } catch (err) {
+//     console.error("❌ Invalid POLL_TARGETS in env:", err);
+//     return [];
+//   }
+// }
 
 function stopPolling() {
   if (pollInterval) {
@@ -468,7 +486,7 @@ async function pollMessageById(
     if (!messages.length) return;
 
     const msg = messages[0];
-    if (!msg?.message) return;
+    if (!msg.message || !msg.message.trim()) return;
 
     const chatId = getChatIdFromPeer(msg.peerId);
     if (!chatId) return;
@@ -513,12 +531,17 @@ async function pollLatestMessageByChannel(
   channelId: string
 ) {
   try {
-    // 🔥 เอา message ล่าสุด
-    const messages = await client.getMessages(channelId, { limit: 1 });
+    const messages: (Api.Message | Api.MessageService)[] = await client.getMessages(channelId, { limit: 5 });
     if (!messages.length) return;
 
-    const msg = messages[0];
-    if (!msg?.message) return;
+    // ✅ type guard: เอาเฉพาะ text message จริง
+    const msg = messages.find(
+      (m): m is Api.Message =>
+        m instanceof Api.Message &&
+        typeof m.message === "string" &&
+        m.message.trim().length > 0
+    );
+    if (!msg) return;
 
     const chatId = getChatIdFromPeer(msg.peerId);
     if (!chatId) return;
@@ -531,34 +554,33 @@ async function pollLatestMessageByChannel(
       editDate: msg.editDate ?? 0,
     };
 
-    // 🟡 ครั้งแรก → แค่จำไว้
+    // 🟡 ครั้งแรก
     if (!prev) {
       latestMessageCache.set(channelId, current);
       console.log("🆕 FIRST SEEN", channelId, msg.id);
       return;
     }
 
-    // 🟢 ตรวจการเปลี่ยนแปลง
     const changed =
       prev.messageId !== current.messageId ||
       prev.text !== current.text ||
       prev.editDate !== current.editDate;
 
-    if (!changed) {
-      return; // ❌ message เดิม → ไม่ต้องทำอะไร
-    }
+    if (!changed) return;
 
-    // 🔥 มีการเปลี่ยน (message ใหม่ หรือ edit)
     latestMessageCache.set(channelId, current);
 
     console.log("🔥 NEW / UPDATED MESSAGE", channelId, msg.id);
     await handleIncomingMessageJ88(msg.message, chatId);
 
   } catch (err: any) {
-    console.error("❌ pollLatestMessageByChannel error:", channelId, err.message);
+    console.error(
+      "❌ pollLatestMessageByChannel error:",
+      channelId,
+      err.message
+    );
   }
 }
-
 
 async function initializeService() {
   // 🚀 Initialize client (ONCE)
@@ -575,6 +597,7 @@ async function initializeService() {
   app.use(express.static(path.join(__dirname, "public")));
   app.use("/", viewRoutes);
   app.use("/api", apiRoutes);
+  
   // 🩺 Health check (CHECK ONLY)
   app.get("/health", async (req, res) => {
     try {
@@ -599,7 +622,7 @@ async function initializeService() {
       setTimeout(() => processedMessageIds.delete(dedupKey), 60_000);
 
       const parsedCodes = parserCodeMessage(message);
-      if (parsedCodes.length < 8) return;
+      if (parsedCodes.length < 10) return;
 
       const shuffledCodes = shuffleArray(parsedCodes);
       console.log("🎯 Valid Bonus Codes:", parsedCodes);
@@ -829,7 +852,7 @@ async function startProCodeLoop(siteName: string) {
     const playersSkip = new Set<string>();
     cleanupExpiredBlocks();
 
-    console.log("Start Loop Code in site : ",siteName)
+    console.log("Start Loop Code in site : ", siteName)
     while (true) {
       if (abortFlag?.canceled) {
         console.log(`⏹️ Processing for ${site} aborted.`);
@@ -867,25 +890,6 @@ async function startProCodeLoop(siteName: string) {
 
           const statusCode = result.status_code ?? result?.ststus_code ?? 0;
           const message = result?.text_mess?.th || "";
-
-          // if (siteName === "thai_f168") {
-          //   console.log(result);
-          //   return false;
-          //   // thai_168: ถ้าไม่ใช่ข้อความผิดแคปต์ชา → addTemplate
-          //   const isCaptchaError = result.message.includes("แคปต์ชาไม่ถูกต้องจ้า ลองพิมพ์ใหม่อีกครั้งนะ 💕");
-          //   if (!isCaptchaError) {
-          //     addTemplate(captchaPath, captchaCode, site);
-          //   } else {
-          //     console.log("แคปต์ชาไม่ถูกต้องจ้า ไม่เพิ่ม addTemplates");
-          //   }
-          // } else {
-          //   // site อื่นๆ: ถ้า status 400 และข้อความบอก captcha ผิด → ไม่ add
-          //   const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
-          //   if (!isCaptchaError) {
-          //     addTemplate(captchaPath, captchaCode, site);
-          //   }
-          // }
-
 
         // const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
         // if (!isCaptchaError) {
@@ -1171,6 +1175,7 @@ async function startClient() {
     // ===============================
     // 🔁 POLL BY MESSAGE ID
     // ===============================
+    // const POLL_TARGETS = loadPollTargetsFromEnv();
     if (!pollInterval) {
       pollInterval = setInterval(async () => {
         if (!client || isPollingById) return;
@@ -1244,30 +1249,41 @@ async function getChatsList(client: TelegramClient) {
     console.log(`🤖 Signed in as: ${displayName}`);
     console.log(`🆔 Telegram ID: ${me.id.toString()}`);
 
+    // const msgs789 = await client!.getMessages("-1002406062886", { limit: 5 });
 
-    const results: ChannelMessageResult[] = [];
+    // if (msgs789.length > 0) {
+    //   console.log("message:", msgs789);
 
-    for (const channelId of channelJun88Ids) {
-      try {
-        const msgs = await client!.getMessages(channelId, { limit: 2 });
-        if (!msgs.length) continue;
+    //   // const msg = msgs789[0];
+    //   // console.log("last message id:", msg.id);
+    //   // console.log("message:", msg);
+    // }
 
-        for (const msg of msgs) {
-          if (!msg?.message) continue;
 
-          results.push({
-            channelId,
-            channelName: msg.chat?.title || msg.peerId?.channelId?.toString() || "unknown",
-            messageId: msg.id,
-            message: msg.message,
-          });
-        }
 
-        await delay(1200); // 🔥 กัน FLOOD
-      } catch (e: any) {
-        console.error("❌ getMessages error", channelId, e.message);
-      }
-    }
+    // const results: ChannelMessageResult[] = [];
+
+    // for (const channelId of channelJun88Ids) {
+    //   try {
+    //     const msgs = await client!.getMessages(channelId, { limit: 2 });
+    //     if (!msgs.length) continue;
+
+    //     for (const msg of msgs) {
+    //       if (!msg?.message) continue;
+
+    //       results.push({
+    //         channelId,
+    //         channelName: msg.chat?.title || msg.peerId?.channelId?.toString() || "unknown",
+    //         messageId: msg.id,
+    //         message: msg.message,
+    //       });
+    //     }
+
+    //     await delay(1200); // 🔥 กัน FLOOD
+    //   } catch (e: any) {
+    //     console.error("❌ getMessages error", channelId, e.message);
+    //   }
+    // }
     // console.log(results)
 
   } catch (err) {
