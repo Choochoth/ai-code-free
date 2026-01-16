@@ -96,9 +96,9 @@ let isPollingById = false;
 let isPollingLatest = false;
 
 const POLL_TARGETS: PollTarget[] = [ 
-  {"channelId":"-1002142874457","messageId":4957},
-  {"channelId":"-1002668963498","messageId":2979}, 
-  {"channelId":"-1002519263985","messageId":3902},
+  {"channelId":"-1002142874457","messageId":4970},
+  {"channelId":"-1002668963498","messageId":2990}, 
+  {"channelId":"-1002519263985","messageId":3918},
 ];
 
 const channel789Ids = [
@@ -107,11 +107,6 @@ const channel789Ids = [
   "-1002544749433",
 ];
 
-const channelJun88Ids = [
-  "-1002519263985",
-  "-1002668963498",
-  "-1002142874457",
-];
 
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
@@ -536,12 +531,17 @@ async function pollLatestMessageByChannel(
   channelId: string
 ) {
   try {
-    // 🔥 เอา message ล่าสุด
-    const messages = await client.getMessages(channelId, { limit: 1 });
+    const messages: (Api.Message | Api.MessageService)[] = await client.getMessages(channelId, { limit: 5 });
     if (!messages.length) return;
 
-    const msg = messages[0];
-    if (!msg.message || !msg.message.trim()) return;
+    // ✅ type guard: เอาเฉพาะ text message จริง
+    const msg = messages.find(
+      (m): m is Api.Message =>
+        m instanceof Api.Message &&
+        typeof m.message === "string" &&
+        m.message.trim().length > 0
+    );
+    if (!msg) return;
 
     const chatId = getChatIdFromPeer(msg.peerId);
     if (!chatId) return;
@@ -554,34 +554,33 @@ async function pollLatestMessageByChannel(
       editDate: msg.editDate ?? 0,
     };
 
-    // 🟡 ครั้งแรก → แค่จำไว้
+    // 🟡 ครั้งแรก
     if (!prev) {
       latestMessageCache.set(channelId, current);
       console.log("🆕 FIRST SEEN", channelId, msg.id);
       return;
     }
 
-    // 🟢 ตรวจการเปลี่ยนแปลง
     const changed =
       prev.messageId !== current.messageId ||
       prev.text !== current.text ||
       prev.editDate !== current.editDate;
 
-    if (!changed) {
-      return; // ❌ message เดิม → ไม่ต้องทำอะไร
-    }
+    if (!changed) return;
 
-    // 🔥 มีการเปลี่ยน (message ใหม่ หรือ edit)
     latestMessageCache.set(channelId, current);
 
     console.log("🔥 NEW / UPDATED MESSAGE", channelId, msg.id);
     await handleIncomingMessageJ88(msg.message, chatId);
 
   } catch (err: any) {
-    console.error("❌ pollLatestMessageByChannel error:", channelId, err.message);
+    console.error(
+      "❌ pollLatestMessageByChannel error:",
+      channelId,
+      err.message
+    );
   }
 }
-
 
 async function initializeService() {
   // 🚀 Initialize client (ONCE)
@@ -1262,29 +1261,29 @@ async function getChatsList(client: TelegramClient) {
 
 
 
-    const results: ChannelMessageResult[] = [];
+    // const results: ChannelMessageResult[] = [];
 
-    for (const channelId of channelJun88Ids) {
-      try {
-        const msgs = await client!.getMessages(channelId, { limit: 2 });
-        if (!msgs.length) continue;
+    // for (const channelId of channelJun88Ids) {
+    //   try {
+    //     const msgs = await client!.getMessages(channelId, { limit: 2 });
+    //     if (!msgs.length) continue;
 
-        for (const msg of msgs) {
-          if (!msg?.message) continue;
+    //     for (const msg of msgs) {
+    //       if (!msg?.message) continue;
 
-          results.push({
-            channelId,
-            channelName: msg.chat?.title || msg.peerId?.channelId?.toString() || "unknown",
-            messageId: msg.id,
-            message: msg.message,
-          });
-        }
+    //       results.push({
+    //         channelId,
+    //         channelName: msg.chat?.title || msg.peerId?.channelId?.toString() || "unknown",
+    //         messageId: msg.id,
+    //         message: msg.message,
+    //       });
+    //     }
 
-        await delay(1200); // 🔥 กัน FLOOD
-      } catch (e: any) {
-        console.error("❌ getMessages error", channelId, e.message);
-      }
-    }
+    //     await delay(1200); // 🔥 กัน FLOOD
+    //   } catch (e: any) {
+    //     console.error("❌ getMessages error", channelId, e.message);
+    //   }
+    // }
     // console.log(results)
 
   } catch (err) {
