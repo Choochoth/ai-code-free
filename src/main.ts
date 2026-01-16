@@ -31,15 +31,13 @@ import { SiteSentPlayers } from "./types/player";
 
 
 import {
-  checkNetworkConnectivity,
   promptInput,
   delay,
   shuffleArray,
-  removeImage
 } from "./utils";
 
 import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
-import { sendApplyCodeDataToTelegram } from "./telegramBot";
+// import { sendApplyCodeDataToTelegram } from "./telegramBot";
 
 
 import {
@@ -59,7 +57,6 @@ const userPassword = process.env.APP_YOUR_PWD || "";
 const port = Number(process.env.PORT) || 5300;
 const MAX_RETRIES = 3;
 let retryInterval = 6000;
-let lastRestartTime = 0;
 let isRestarting: boolean = false;
 const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
 const appSession = process.env.APP_SESSION;
@@ -111,8 +108,6 @@ const channel789Ids = [
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
-const applyCodePath = path.join(dataDir, "apply_code.json");
-const packagePath = path.join(dataDir, "package.json");
 let handlersAttached = false;
 
 try {
@@ -815,7 +810,7 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 18;
+    minPoint = 20;
   } else {
     minPoint = 15;
   }
