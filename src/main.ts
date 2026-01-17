@@ -101,8 +101,6 @@ const POLL_TARGETS: PollTarget[] = [
 ];
 
 
-
-
 const channel789Ids = [
   "-1002040396559",
   "-1002544749433",
