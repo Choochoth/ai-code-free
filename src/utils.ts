@@ -192,9 +192,22 @@ export function loadPollTargetsFromEnv(): PollTarget[] {
   if (!raw) return [];
 
   try {
-    let parsed = JSON.parse(raw);
+    let value = raw.trim();
 
-    // 🔥 Railway case: parsed ยังเป็น string
+    // 🧹 ตัด quote ครอบนอก ถ้ามี
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    // 🧹 แก้ escape ซ้อน
+    value = value.replace(/\\"/g, '"');
+
+    let parsed = JSON.parse(value);
+
+    // 🧯 กรณี parse แล้วได้ string (Railway บางเคส)
     if (typeof parsed === "string") {
       parsed = JSON.parse(parsed);
     }
@@ -210,7 +223,9 @@ export function loadPollTargetsFromEnv(): PollTarget[] {
     );
   } catch (err) {
     console.error("❌ Invalid POLL_TARGETS in env:", err);
+    console.error("❌ RAW POLL_TARGETS =", raw);
     return [];
   }
 }
+
 
