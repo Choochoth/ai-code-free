@@ -692,39 +692,6 @@ async function initializeService() {
       })
     );
 
-
-    // ⚠️ Raw (ใช้เท่าที่จำเป็น)
-    // client.addEventHandler(
-    //   async (update: any) => {
-
-    //     const type = update.className || update?.constructor?.name || update?._ || update;
-    //     if ( type === "UpdateUserStatus" ||  type === "UpdateConnectionState") return;
-        
-    //     // console.log("🧩 RAW UPDATE:", type);
-    //     if (
-    //       type !== "UpdateEditMessage" &&
-    //       type !== "UpdateNewChannelMessage" &&
-    //       type !== "UpdateEditChannelMessage"
-    //     ) return;
-
-    //     const msg = update.message;
-    //     if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
-
-    //     const chatId = getChatIdFromPeer(msg.peerId);
-    //     if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
-
-    //     const dedupKey = `edit_${chatId}_${msg.id}`;
-    //     if (processedMessageIds.has(dedupKey)) return;
-
-    //     processedMessageIds.add(dedupKey);
-    //     setTimeout(() => processedMessageIds.delete(dedupKey), 10_000);
-
-    //     console.log("✏️ Edit Message", chatId, msg.message);
-    //     // await handleIncomingMessage(msg.message, chatId);
-    //   },
-    //   new Raw({})
-    // );
-
   };
 
 
@@ -790,7 +757,7 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 18;
+    minPoint = 21;
   } else {
     minPoint = 15;
   }
