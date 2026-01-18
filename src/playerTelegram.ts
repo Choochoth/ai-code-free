@@ -28,6 +28,6 @@
 
 
   const freeUsers:any = [];
-  const rewardUsers:any = [];  
+  const rewardUsers:any = [];
   export {playerTelegram, freeUsers, rewardUsers}
   

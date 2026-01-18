@@ -8,7 +8,6 @@ import { StringSession } from "telegram/sessions";
 import { Api } from "telegram/tl";
 import { NewMessage } from 'telegram/events';  // Import the correct events
 import { NewMessageEvent } from "telegram/events/NewMessage";
-import { Raw } from "telegram/events/Raw";
 import Bottleneck from "bottleneck";
 import cron from 'node-cron';
 import axios from "axios";
@@ -34,6 +33,7 @@ import {
   promptInput,
   delay,
   shuffleArray,
+  loadPollTargetsFromEnv
 } from "./utils";
 
 import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
@@ -92,18 +92,11 @@ let latestPollInterval: NodeJS.Timeout | null = null;
 let isPollingById = false;
 let isPollingLatest = false;
 
-const POLL_TARGETS: PollTarget[] = [ 
-  {"channelId":"-1002519263985","messageId":3960},
-  {"channelId":"-1002142874457","messageId":5023},
-  {"channelId":"-1002668963498","messageId":3026}, 
-];
-
-
 
 const channel789Ids = [
-  "-1002544749433",
   "-1002406062886",
   "-1002040396559",
+  "-1002544749433",
 ];
 
 
@@ -134,8 +127,32 @@ try {
 
 let client: TelegramClient | null = null;
 let expressServer: any;
-let lastHandledMessage: string | null = null;
 let minPoint: number = 8;
+// const POLL_TARGETS: PollTarget[] = [ 
+//   {"channelId":"-1002142874457","messageId":5023},
+//   {"channelId":"-1002668963498","messageId":3026}, 
+//   {"channelId":"-1002519263985","messageId":3960},
+// ];
+
+
+const POLL_TARGETS: PollTarget[] = loadPollTargetsFromEnv();
+
+function stopPolling() {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+  }
+
+  if (latestPollInterval) {
+    clearInterval(latestPollInterval);
+    latestPollInterval = null;
+  }
+
+  isPollingById = false;
+  isPollingLatest = false;
+
+  console.log("🛑 Polling stopped");
+}
 
 // function loadPollTargetsFromEnv(): PollTarget[] {
 //   const raw = process.env.POLL_TARGETS;
