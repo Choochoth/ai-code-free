@@ -95,9 +95,9 @@ let isPollingById = false;
 let isPollingLatest = false;
 
 const POLL_TARGETS: PollTarget[] = [ 
-  {"channelId":"-1002668963498","messageId":3024}, 
-  {"channelId":"-1002519263985","messageId":3956},
-  {"channelId":"-1002142874457","messageId":5016},
+  {"channelId":"-1002668963498","messageId":3026}, 
+  {"channelId":"-1002519263985","messageId":3960},
+  {"channelId":"-1002142874457","messageId":5023},
 ];
 
 
