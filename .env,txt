@@ -1,19 +1,18 @@
-API_ID="26550297"
-API_HASH="fb04c08eb3461b4ffc7d0148737a081f"
-APP_YOUR_PHONE="+66645451284"
-
-APP_SESSION="session-okvip-code01"
-SITES_SERVICE="okvip-code01"
-TELEGRAM_BOT_TOKEN="8214973405:AAEFfj3alfIy2vGUGrVPW506_CodV5_u5h4"
-
-
-ADMIN_IDS="8253154458, 7551758092, -1002870022460"
+ADMIN_IDS="8253154458, 7551758092"
+ADMIN_ID="7551758092"
 API_CODE_789="https://api-code-thai789bet.freecodevip.org/"
 API_CODE_J88="https://api-thai-jun88k36.freecodevip.org/"
 API_ENDPOINT_789="https://freecode.06789bet.com"
 API_ENDPOINT_J88="https://freecode.8878388.com"
-BASE_URL="https://okvip-3206-app-production.up.railway.app"
-SHOT_BASE_URL="https://shorturl.asia/2zqts"
-NODE_ENV="production"
-OCR_API_BASE="https://okvip-3206-api-production.up.railway.app"
-PORT="5005"
+API_HASH="fb04c08eb3461b4ffc7d0148737a081f"
+API_ID="26550297"
+APP_YOUR_PHONE="+66645451284"
+BASE_URL="http://localhost:5300"
+NODE_ENV="develop"
+OCR_API_BASE="http://localhost:8002"
+PORT="5300"
+TELEGRAM_BOT_TOKEN="8214973405:AAEFfj3alfIy2vGUGrVPW506_CodV5_u5h4"
+APP_SESSION="session-codeattack-s1"
+SITES_SERVICE="codeattack-s1"
+POLL_TARGETS=[{"channelId":"-1002142874457","messageId":5023},{"channelId":"-1002668963498","messageId":3026},{"channelId":"-1002519263985","messageId":3960}]
+

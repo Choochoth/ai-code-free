@@ -33,6 +33,7 @@ import {
   promptInput,
   delay,
   shuffleArray,
+  loadPollTargetsFromEnv
 } from "./utils";
 
 import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
@@ -91,12 +92,6 @@ let latestPollInterval: NodeJS.Timeout | null = null;
 let isPollingById = false;
 let isPollingLatest = false;
 
-const POLL_TARGETS: PollTarget[] = [ 
-  {"channelId":"-1002142874457","messageId":5023},
-  {"channelId":"-1002668963498","messageId":3026}, 
-  {"channelId":"-1002519263985","messageId":3960},
-];
-
 
 const channel789Ids = [
   "-1002406062886",
@@ -132,31 +127,15 @@ try {
 
 let client: TelegramClient | null = null;
 let expressServer: any;
-let lastHandledMessage: string | null = null;
 let minPoint: number = 8;
+// const POLL_TARGETS: PollTarget[] = [ 
+//   {"channelId":"-1002142874457","messageId":5023},
+//   {"channelId":"-1002668963498","messageId":3026}, 
+//   {"channelId":"-1002519263985","messageId":3960},
+// ];
 
-// function loadPollTargetsFromEnv(): PollTarget[] {
-//   const raw = process.env.POLL_TARGETS;
-//   if (!raw) return [];
 
-//   try {
-//     const parsed = JSON.parse(raw);
-
-//     if (!Array.isArray(parsed)) {
-//       throw new Error("POLL_TARGETS is not an array");
-//     }
-
-//     return parsed.filter(
-//       (t): t is PollTarget =>
-//         typeof t?.channelId === "string" &&
-//         typeof t?.messageId === "number"
-//     );
-
-//   } catch (err) {
-//     console.error("❌ Invalid POLL_TARGETS in env:", err);
-//     return [];
-//   }
-// }
+const POLL_TARGETS: PollTarget[] = loadPollTargetsFromEnv();
 
 function stopPolling() {
   if (pollInterval) {
