@@ -40,43 +40,7 @@
           "point": 22.88
         }
       ],
-      "playersLock": [
-        {
-          "player": "nuschai",
-          "timelock": 1768728903546,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        },
-        {
-          "player": "aroon11",
-          "timelock": 1768728905376,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        },
-        {
-          "player": "bank0760",
-          "timelock": 1768728907137,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        },
-        {
-          "player": "ary11",
-          "timelock": 1768728908900,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        },
-        {
-          "player": "nus9331",
-          "timelock": 1768728917207,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        }
-      ]
+      "playersLock": []
     }
   }
 }
