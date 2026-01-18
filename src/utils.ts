@@ -189,13 +189,15 @@ export function getTelegramId(user: string) {
 
 export function loadPollTargetsFromEnv(): PollTarget[] {
   const raw = process.env.POLL_TARGETS;
-  if (!raw) {
-    console.warn("⚠️ POLL_TARGETS not found in env");
-    return [];
-  }
+  if (!raw) return [];
 
   try {
-    const parsed = JSON.parse(raw);
+    let parsed = JSON.parse(raw);
+
+    // 🔥 Railway case: parsed ยังเป็น string
+    if (typeof parsed === "string") {
+      parsed = JSON.parse(parsed);
+    }
 
     if (!Array.isArray(parsed)) {
       throw new Error("POLL_TARGETS is not an array");
@@ -206,9 +208,9 @@ export function loadPollTargetsFromEnv(): PollTarget[] {
         typeof t?.channelId === "string" &&
         typeof t?.messageId === "number"
     );
-
   } catch (err) {
     console.error("❌ Invalid POLL_TARGETS in env:", err);
     return [];
   }
 }
+
