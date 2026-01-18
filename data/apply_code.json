@@ -7,7 +7,15 @@
     },
     "thai_jun88k36": {
       "players": [],
-      "playersLock": []
+      "playersLock": [
+        {
+          "player": "ary11",
+          "timelock": 1768771654334,
+          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
+          "lockTime": 180000,
+          "lockCode": 9004
+        }
+      ]
     }
   }
 }
