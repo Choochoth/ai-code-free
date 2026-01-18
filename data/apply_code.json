@@ -6,8 +6,77 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
-      "playersLock": []
+      "players": [
+        {
+          "promo_code": "TMW6N3E8",
+          "time": 1768728816232,
+          "time_limit": 1768815216232,
+          "status": "success",
+          "player": "nuschai",
+          "point": 22.88
+        },
+        {
+          "promo_code": "BOS52305",
+          "time": 1768728845913,
+          "time_limit": 1768815245913,
+          "status": "success",
+          "player": "aroon11",
+          "point": 23.88
+        },
+        {
+          "promo_code": "6HLRBHN5",
+          "time": 1768728854246,
+          "time_limit": 1768815254246,
+          "status": "success",
+          "player": "ary11",
+          "point": 24.88
+        },
+        {
+          "promo_code": "IA3UE66F",
+          "time": 1768728859182,
+          "time_limit": 1768815259182,
+          "status": "success",
+          "player": "bank0760",
+          "point": 22.88
+        }
+      ],
+      "playersLock": [
+        {
+          "player": "nuschai",
+          "timelock": 1768728903546,
+          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
+          "lockTime": 180000,
+          "lockCode": 9004
+        },
+        {
+          "player": "aroon11",
+          "timelock": 1768728905376,
+          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
+          "lockTime": 180000,
+          "lockCode": 9004
+        },
+        {
+          "player": "bank0760",
+          "timelock": 1768728907137,
+          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
+          "lockTime": 180000,
+          "lockCode": 9004
+        },
+        {
+          "player": "ary11",
+          "timelock": 1768728908900,
+          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
+          "lockTime": 180000,
+          "lockCode": 9004
+        },
+        {
+          "player": "nus9331",
+          "timelock": 1768728917207,
+          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
+          "lockTime": 180000,
+          "lockCode": 9004
+        }
+      ]
     }
   }
 }
