@@ -129,7 +129,14 @@ let client: TelegramClient | null = null;
 let expressServer: any;
 let minPoint: number = 8;
 
-const POLL_TARGETS: PollTarget[] = loadPollTargetsFromEnv();
+const POLL_TARGETS: PollTarget[] = (() => {
+  const t = loadPollTargetsFromEnv();
+  return t.length ? t : [
+    { channelId: "-1002142874457", messageId: 5023 },
+    { channelId: "-1002668963498", messageId: 3026 },
+    { channelId: "-1002519263985", messageId: 3960 },
+  ];
+})();
 
 function stopPolling() {
   if (pollInterval) {
