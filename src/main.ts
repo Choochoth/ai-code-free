@@ -8,7 +8,6 @@ import { StringSession } from "telegram/sessions";
 import { Api } from "telegram/tl";
 import { NewMessage } from 'telegram/events';  // Import the correct events
 import { NewMessageEvent } from "telegram/events/NewMessage";
-import { Raw } from "telegram/events/Raw";
 import Bottleneck from "bottleneck";
 import cron from 'node-cron';
 import axios from "axios";
@@ -31,11 +30,10 @@ import { SiteSentPlayers } from "./types/player";
 
 
 import {
-  checkNetworkConnectivity,
   promptInput,
   delay,
   shuffleArray,
-  removeImage
+  loadPollTargetsFromEnv
 } from "./utils";
 
 import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
@@ -94,17 +92,11 @@ let latestPollInterval: NodeJS.Timeout | null = null;
 let isPollingById = false;
 let isPollingLatest = false;
 
-const POLL_TARGETS: PollTarget[] = [ 
-  {"channelId":"-1002668963498","messageId":3026}, 
-  {"channelId":"-1002519263985","messageId":3960},
-  {"channelId":"-1002142874457","messageId":5023},
-];
-
 
 const channel789Ids = [
+  "-1002406062886",
   "-1002040396559",
   "-1002544749433",
-  "-1002406062886",
 ];
 
 
@@ -135,31 +127,15 @@ try {
 
 let client: TelegramClient | null = null;
 let expressServer: any;
-let lastHandledMessage: string | null = null;
 let minPoint: number = 8;
+// const POLL_TARGETS: PollTarget[] = [ 
+//   {"channelId":"-1002142874457","messageId":5023},
+//   {"channelId":"-1002668963498","messageId":3026}, 
+//   {"channelId":"-1002519263985","messageId":3960},
+// ];
 
-// function loadPollTargetsFromEnv(): PollTarget[] {
-//   const raw = process.env.POLL_TARGETS;
-//   if (!raw) return [];
 
-//   try {
-//     const parsed = JSON.parse(raw);
-
-//     if (!Array.isArray(parsed)) {
-//       throw new Error("POLL_TARGETS is not an array");
-//     }
-
-//     return parsed.filter(
-//       (t): t is PollTarget =>
-//         typeof t?.channelId === "string" &&
-//         typeof t?.messageId === "number"
-//     );
-
-//   } catch (err) {
-//     console.error("❌ Invalid POLL_TARGETS in env:", err);
-//     return [];
-//   }
-// }
+const POLL_TARGETS: PollTarget[] = loadPollTargetsFromEnv();
 
 function stopPolling() {
   if (pollInterval) {
@@ -177,6 +153,7 @@ function stopPolling() {
 
   console.log("🛑 Polling stopped");
 }
+
 
 async function initializeClient() {
   if (!client) {

@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import 'dotenv/config';
 import { playerTelegram, rewardUsers, freeUsers} from "./playerTelegram";
+import { PollTarget } from "./types/siteConfigs";
 
 const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8002";
 const BASE_URL = process.env.BASE_URL || "http://localhost:5300";
@@ -73,7 +74,7 @@ export function formatTelegramMessage(data: any): string {
   } else if (freeUsers.includes(playerId)) {
     messageTitle = "ยินดีด้วย! คุณได้รับรางวัล ทดลองใช้ AI ยิงโค้ดฟรีโปรทดลองใช้ ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
   } else {
-    messageTitle =  "ยินดีด้วย! คุณได้รับเครดิตจากแพ็กเกจยิงโค้ด V.2026 ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
+    messageTitle = "ยินดีด้วย! คุณได้รับเครดิตจากแพ็กเกจยิงโค้ด V.2026 ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
   }
   // -------------------------------
   // TEMPLATE ใช้ร่วมกันทั้งระบบ
@@ -184,4 +185,30 @@ export function getTelegramId(user: string) {
     item.users.includes(user)
   );
   return found ? found.TelegramId : null;
+}
+
+export function loadPollTargetsFromEnv(): PollTarget[] {
+  const raw = process.env.POLL_TARGETS;
+  if (!raw) {
+    console.warn("⚠️ POLL_TARGETS not found in env");
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+
+    if (!Array.isArray(parsed)) {
+      throw new Error("POLL_TARGETS is not an array");
+    }
+
+    return parsed.filter(
+      (t): t is PollTarget =>
+        typeof t?.channelId === "string" &&
+        typeof t?.messageId === "number"
+    );
+
+  } catch (err) {
+    console.error("❌ Invalid POLL_TARGETS in env:", err);
+    return [];
+  }
 }

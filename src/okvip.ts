@@ -237,7 +237,8 @@ function parserCodeMessage(message: string): string[] {
     !token.startsWith("Twitter") &&
     !token.startsWith("ติดตาม") &&
     !token.startsWith("เพื่มความรวด") &&
-    !/^("🫠🤫🤭🫡🥺🤥Bigger|Frenzy|88OKPAY|Official|คาสโน|สลอต|แจก|เกม|โปรโมท|ราย|ได|การ|เงน|facebook|promotion|telegarm|instagram|twitter|789betthailand|https|freecode.06789bet.com|m.99789bet.vip|88Talk|789BET|JUN88|LiveChat|Bounty|Google|Chrome|Youtude|TELEGRAM|Scatter|SCATTER|MINITERE|88OKPAY|BIRTHDAY|YouTube|IPHONE)$/i.test(token)
+    !token.startsWith("SEAGAME2025") &&
+    !/^("🫠🤫🤭🫡🥺🤥Bigger|Frenzy|88OKPAY|Official|คาสโน|สลอต|แจก|เกม|โปรโมท|ราย|ได|การ|เงน|facebook|promotion|telegarm|instagram|twitter|789betthailand|https|freecode.06789bet.com|m.99789bet.vip|88Talk|789BET|JUN88|LiveChat|Bounty|Google|Chrome|Youtude|TELEGRAM|Scatter|SCATTER|MINITERE|88OKPAY|BIRTHDAY|YouTube|IPHONE|TOP500|BN2026)$/i.test(token)
   );
 
   const cleanedCodes = codes
