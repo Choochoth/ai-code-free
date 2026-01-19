@@ -70,7 +70,7 @@ export function formatTelegramMessage(data: any): string {
   let messageTitle = "";
 
   if (rewardUsers.includes(playerId)) {
-    messageTitle = "ยินดีด้วย! คุณได้รับรางวัล โค้ดฟรีสวัสดีปีใหม่ 2026 ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
+    messageTitle = "ยินดีด้วย! คุณได้รับรางวัล โค้ดฟรีสุ่มแจกฉลองขึ้นระบบใหม่ 2026 ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
   } else if (freeUsers.includes(playerId)) {
     messageTitle = "ยินดีด้วย! คุณได้รับรางวัล ทดลองใช้ AI ยิงโค้ดฟรีโปรทดลองใช้ ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
   } else {
