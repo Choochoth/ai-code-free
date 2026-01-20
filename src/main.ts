@@ -127,7 +127,7 @@ try {
 
 let client: TelegramClient | null = null;
 let expressServer: any;
-let minPoint: number = 8;
+let minPoint: number = 10;
 
 const POLL_TARGETS: PollTarget[] = (() => {
   const t = loadPollTargetsFromEnv();
