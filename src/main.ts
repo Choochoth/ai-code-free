@@ -131,7 +131,7 @@ let minPoint: number = 10;
 
 const POLL_TARGETS: PollTarget[] = (() => {
   const t = loadPollTargetsFromEnv();
-  return t.length ? t : [{"channelId":"-1002142874457","messageId":5086},{"channelId":"-1002668963498","messageId":3062},{"channelId":"-1002519263985","messageId":3999}];
+  return t.length ? t : [{"channelId":"-1002142874457","messageId":5105},{"channelId":"-1002668963498","messageId":3075},{"channelId":"-1002519263985","messageId":4014}];
 })();
 
 
