@@ -131,7 +131,7 @@ let minPoint: number = 8;
 
 const POLL_TARGETS: PollTarget[] = (() => {
   const t = loadPollTargetsFromEnv();
-  return t.length ? t : [{"channelId":"-1002142874457","messageId":5086},{"channelId":"-1002668963498","messageId":3062},{"channelId":"-1002519263985","messageId":3999}];
+  return t.length ? t : [{"channelId":"-1002142874457","messageId":5105},{"channelId":"-1002668963498","messageId":3075},{"channelId":"-1002519263985","messageId":4014}];
 })();
 
 
@@ -689,39 +689,6 @@ async function initializeService() {
       })
     );
 
-
-    // ⚠️ Raw (ใช้เท่าที่จำเป็น)
-    // client.addEventHandler(
-    //   async (update: any) => {
-
-    //     const type = update.className || update?.constructor?.name || update?._ || update;
-    //     if ( type === "UpdateUserStatus" ||  type === "UpdateConnectionState") return;
-        
-    //     // console.log("🧩 RAW UPDATE:", type);
-    //     if (
-    //       type !== "UpdateEditMessage" &&
-    //       type !== "UpdateNewChannelMessage" &&
-    //       type !== "UpdateEditChannelMessage"
-    //     ) return;
-
-    //     const msg = update.message;
-    //     if (!msg || typeof msg.message !== "string" || !msg.peerId) return;
-
-    //     const chatId = getChatIdFromPeer(msg.peerId);
-    //     if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
-
-    //     const dedupKey = `edit_${chatId}_${msg.id}`;
-    //     if (processedMessageIds.has(dedupKey)) return;
-
-    //     processedMessageIds.add(dedupKey);
-    //     setTimeout(() => processedMessageIds.delete(dedupKey), 10_000);
-
-    //     console.log("✏️ Edit Message", chatId, msg.message);
-    //     // await handleIncomingMessage(msg.message, chatId);
-    //   },
-    //   new Raw({})
-    // );
-
   };
 
 
@@ -787,7 +754,7 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 15;
+    minPoint = 20;
   } else {
     minPoint = 15;
   }
