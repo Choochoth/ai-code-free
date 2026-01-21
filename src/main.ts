@@ -132,7 +132,7 @@ let minPoint: number = 10;
 
 const POLL_TARGETS: PollTarget[] = (() => {
   const t = loadPollTargetsFromEnv();
-  return t.length ? t : [{"channelId":"-1002142874457","messageId":5105},{"channelId":"-1002668963498","messageId":3075},{"channelId":"-1002519263985","messageId":4014}];
+  return t.length ? t : [{"channelId":"-1002142874457","messageId":5111},{"channelId":"-1002668963498","messageId":3083},{"channelId":"-1002519263985","messageId":4017}];
 })();
 
 function stopPolling() {
