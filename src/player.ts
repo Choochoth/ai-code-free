@@ -21,8 +21,6 @@ const playerPools: Record<string, PlayerPool> = {
   }
 };
 
-
-
 export type Site = keyof typeof playerPools;
 
 const baseDir = __dirname;
