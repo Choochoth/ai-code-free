@@ -201,6 +201,16 @@ async function startPolling() {
   }
 }
 
+export async function reloadPollingTargets() {
+  console.log("🔄 Reloading poll targets...");
+
+  await stopPolling();        // 🛑 หยุด interval เดิม
+  await startPolling();       // ▶️ โหลด POLL_TARGETS ใหม่ + start ใหม่
+
+  console.log("✅ Poll targets reloaded");
+}
+
+
 async function initializeClient() {
   if (!client) {
     client = new TelegramClient(

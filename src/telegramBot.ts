@@ -3,7 +3,9 @@ import path from "path";
 import { Telegraf, Context, Telegram } from "telegraf";
 import { Message, Update } from "telegraf/typings/core/types/typegram";
 import dotenv from "dotenv";
-
+import {
+updatePollTarget
+} from "./services/promoCodeApi";
 dotenv.config();
 
 const botToken = process.env.TELEGRAM_BOT_TOKEN || "";
@@ -35,8 +37,25 @@ const pendingCaptchas = new Map<
 >();
 
 
+function getForwardMessageId(msg: any): number | null {
+  return typeof msg.forward_from_message_id === "number"
+    ? msg.forward_from_message_id
+    : null;
+}
+
+function getForwardFromChat(msg: any): { id: number } | null {
+  if (
+    msg.forward_from_chat &&
+    typeof msg.forward_from_chat.id === "number"
+  ) {
+    return msg.forward_from_chat;
+  }
+  return null;
+}
+
+
 // =======================
-// 📩 Listener Forwarded Message
+// 📩 Listener: Forwarded Message
 // =======================
 bot.on("message", async (ctx) => {
   const msg = ctx.message;
@@ -51,34 +70,50 @@ bot.on("message", async (ctx) => {
 
   const chatId = msg.chat.id;
   const messageId = msg.message_id;
+  const msgAny = ctx.message as any;
 
-  const fromChat =
-    "forward_from_chat" in msg
-      ? (msg.forward_from_chat as { id: number })
-      : null;
+  const fromChat = getForwardFromChat(msgAny);
+  const fromMessageId = getForwardMessageId(msgAny);
 
-  const fromMessageId =
-    "forward_from_message_id" in msg
-      ? msg.forward_from_message_id
-      : null;
+  if (fromChat && fromMessageId !== null) {
+    await updatePollTarget(
+      fromChat.id.toString(),
+      fromMessageId
+    );
+  }
+
 
   let text = `📩 *Forward Message Detected*\n\n`;
   text += `📌 Chat ID: \`${chatId}\`\n`;
   text += `🆔 Message ID: \`${messageId}\`\n`;
 
-  if (fromChat) {
+  if (fromChat && fromMessageId !== null) {
     text += `\n🔁 *Original Source*\n`;
     text += `📢 From Chat ID: \`${fromChat.id}\`\n`;
-    text += `📄 From Message ID: \`${fromMessageId ?? "unknown"}\`\n`;
+    text += `📄 From Message ID: \`${fromMessageId}\`\n`;
+
+    try {
+      await updatePollTarget(fromChat.id.toString(), fromMessageId);
+      text += `\n✅ Poll target updated`;
+      console.log(
+        "✅ poll-update",
+        fromChat.id,
+        fromMessageId
+      );
+    } catch (err) {
+      console.error("❌ updatePollTarget failed:", err);
+      text += `\n❌ Failed to update poll target`;
+    }
+  } else {
+    text += `\n⚠️ Forward source unavailable (copy / protected content)`;
   }
 
-await ctx.telegram.sendMessage(chatId, text, {
-  parse_mode: "Markdown",
-  reply_parameters: {
-    message_id: messageId,
-  },
-});
-
+  await ctx.telegram.sendMessage(chatId, text, {
+    parse_mode: "Markdown",
+    reply_parameters: {
+      message_id: messageId,
+    },
+  });
 });
 
 

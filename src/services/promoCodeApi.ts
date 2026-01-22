@@ -7,6 +7,7 @@ import Bottleneck from "bottleneck";
 import { generateMockSiteHeaders } from "../device";
 import { sendResultToTelegram } from "../telegramBot";
 import { formatTelegramMessage, getTelegramId } from "../utils";
+import { reloadPollingTargets } from "../main";
 
 const agent = new https.Agent({
   keepAlive: true,
@@ -274,6 +275,8 @@ export async function updatePollTarget(
     });
 
     console.log("✅ poll-update:", response.data);
+    await reloadPollingTargets();
+
     return response.data;
   } catch (error: any) {
     console.error(
