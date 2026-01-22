@@ -17,6 +17,7 @@ const agent = new https.Agent({
 const OCR_API_BASE = process.env.OCR_API_BASE || "";
 const baseUrl = process.env.BASE_URL || "";
 let reloading = false;
+let reloadTimer: NodeJS.Timeout | null = null;
 
 // ---------------- Axios + Bottleneck ----------------
 const api: AxiosInstance = axios.create({
@@ -67,6 +68,15 @@ async function safeReload() {
   } finally {
     reloading = false;
   }
+}
+
+function triggerReload() {
+  if (reloadTimer) return;
+
+  reloadTimer = setTimeout(async () => {
+    reloadTimer = null;
+    await safeReload();
+  }, 1000); // reload สูงสุด 1 ครั้ง/วินาที
 }
 
 // ---------------- API Functions ----------------
@@ -253,34 +263,31 @@ export async function jun88PollTarget() {
   const url = `${OCR_API_BASE}/api/poll-targets`;
 
   try {
-    const response = await axios.get(url, {
-      timeout: 15000,    // แนะนำให้ใส่ timeout
+    const response = await limitedGet(url, {
+      timeout: 5000, // 🔥 ไม่ต้อง 15s
     });
 
     console.log("✅ poll-targets:", response.data);
     return response.data;
   } catch (error: any) {
     console.error(
-      "❌ ocr poll-targets error:",
-      error?.response?.status,
-      error?.response?.data || error.message
+      "❌ load-poll-targets error:",
+      error?.message || error
     );
     throw error;
   }
 }
-
 
 export async function updatePollTarget(
   channelId: string,
   messageId: number
 ) {
   const url = `${OCR_API_BASE}/api/poll-update`;
-
   const payload = { channelId, messageId };
 
   try {
-    const response = await axios.post(url, payload, {
-      timeout: 15000,
+    const response = await limitedPost(url, payload, {
+      timeout: 3000, // 👈 พอ
       headers: {
         "Content-Type": "application/json",
       },
@@ -288,18 +295,16 @@ export async function updatePollTarget(
 
     console.log("✅ poll-update:", response.data);
 
-    // ✅ reload แบบไม่ block
     setImmediate(() => {
-      safeReload().catch(console.error);
+      triggerReload();
     });
 
     return response.data;
   } catch (error: any) {
     console.error(
-      "❌ ocr poll-update error:",
-      error?.response?.status,
-      error?.response?.data || error.message
+      "❌ poll-update error:",
+      error?.code || error?.message
     );
-    throw error;
+    return null; // ⬅️ สำคัญ: อย่า throw
   }
 }
