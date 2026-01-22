@@ -3,9 +3,6 @@ import path from "path";
 import { Telegraf, Context, Telegram } from "telegraf";
 import { Message, Update } from "telegraf/typings/core/types/typegram";
 import dotenv from "dotenv";
-import {
-  updatePollTarget
-} from "./services/promoCodeApi";
 
 dotenv.config();
 
@@ -38,7 +35,6 @@ const pendingCaptchas = new Map<
 >();
 
 
-
 // =======================
 // 📩 Listener Forwarded Message
 // =======================
@@ -61,44 +57,29 @@ bot.on("message", async (ctx) => {
       ? (msg.forward_from_chat as { id: number })
       : null;
 
-
   const fromMessageId =
-    "forward_from_message_id" in msg &&
-    typeof msg.forward_from_message_id === "number"
+    "forward_from_message_id" in msg
       ? msg.forward_from_message_id
       : null;
-
 
   let text = `📩 *Forward Message Detected*\n\n`;
   text += `📌 Chat ID: \`${chatId}\`\n`;
   text += `🆔 Message ID: \`${messageId}\`\n`;
 
-  if (fromChat && fromMessageId) {
+  if (fromChat) {
     text += `\n🔁 *Original Source*\n`;
     text += `📢 From Chat ID: \`${fromChat.id}\`\n`;
-    text += `📄 From Message ID: \`${fromMessageId}\`\n`;
-
-    try {
-      if (fromChat && fromMessageId !== null) {
-        await updatePollTarget(fromChat.id.toString(), fromMessageId);
-      }
-      text += `\n✅ Poll target updated`;
-    } catch (err) {
-      console.error("❌ updatePollTarget failed:", err);
-      text += `\n❌ Failed to update poll target`;
-    }
-  } else {
-    text += `\n⚠️ Forward source unavailable (copy / protected content)`;
+    text += `📄 From Message ID: \`${fromMessageId ?? "unknown"}\`\n`;
   }
 
-  await ctx.telegram.sendMessage(chatId, text, {
-    parse_mode: "Markdown",
-    reply_parameters: {
-      message_id: messageId,
-    },
-  });
+await ctx.telegram.sendMessage(chatId, text, {
+  parse_mode: "Markdown",
+  reply_parameters: {
+    message_id: messageId,
+  },
 });
 
+});
 
 
 

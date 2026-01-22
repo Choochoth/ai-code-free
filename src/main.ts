@@ -45,7 +45,7 @@ import {
   detectSiteFromChatId,
 } from "./siteDetector";
 
-import { SiteQueue, ChannelMessageResult, PollTarget, ChannelSnapshot } from "./types/siteConfigs";
+import { SiteQueue, ChannelMessageResult, PollTarget, MessageSnapshot,  ChannelSnapshot } from "./types/siteConfigs";
 
 dotenv.config();
 
@@ -80,10 +80,7 @@ const lockDurations: Record<number, number> = {
   4044: 30 * 24 * 60 * 60 * 1000,
 };
 
-type MessageSnapshot = {
-  text: string;
-  editDate?: number;
-};
+
 
 const messageCache = new Map<string, MessageSnapshot>();
 const latestMessageCache = new Map<string, ChannelSnapshot>();
@@ -759,7 +756,7 @@ async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
     minPoint = 20;
   } else {
-    minPoint = 20;
+    minPoint = 15;
   }
 
   const siteQueue = siteQueues[siteName];
