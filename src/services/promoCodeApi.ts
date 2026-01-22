@@ -261,10 +261,7 @@ export async function updatePollTarget(
 ) {
   const url = `${OCR_API_BASE}/api/poll-update`;
 
-  const payload = {
-    channelId,
-    messageId,
-  };
+  const payload = { channelId, messageId };
 
   try {
     const response = await axios.post(url, payload, {
@@ -275,7 +272,13 @@ export async function updatePollTarget(
     });
 
     console.log("✅ poll-update:", response.data);
-    await reloadPollingTargets();
+
+    // ✅ reload แบบไม่ block
+    setImmediate(() => {
+      reloadPollingTargets().catch(err => {
+        console.error("❌ reloadPollingTargets error:", err);
+      });
+    });
 
     return response.data;
   } catch (error: any) {
@@ -287,6 +290,7 @@ export async function updatePollTarget(
     throw error;
   }
 }
+
 
 
 
