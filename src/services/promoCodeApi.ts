@@ -232,22 +232,58 @@ export async function ocr(filePath: string, site: string) {
   }
 }
 
-// export async function ocr(filePath: string, site: string) {
-//   try {
-//     const form = new FormData();
-//     form.append("file", fs.createReadStream(filePath));
 
-//     const url = `https://api-okvip-code-ai-production.up.railway.app/api/ocr`;
-//     const response = await limitedPost(url, form, {
-//       headers: { ...form.getHeaders() },
-//       httpsAgent: agent,
-//     });
+export async function jun88PollTarget() {
+  const url = `${OCR_API_BASE}/api/poll-targets`;
 
-//     console.log(response.data);
-//     return response.data;
-//   } catch (error: any) {
-//     console.error("❌ ocr error:", error.message || error);
-//     throw error;
-//   }
-// }
+  try {
+    const response = await axios.get(url, {
+      timeout: 15000,    // แนะนำให้ใส่ timeout
+    });
+
+    console.log("✅ poll-targets:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      "❌ ocr poll-targets error:",
+      error?.response?.status,
+      error?.response?.data || error.message
+    );
+    throw error;
+  }
+}
+
+
+export async function updatePollTarget(
+  channelId: string,
+  messageId: number
+) {
+  const url = `${OCR_API_BASE}/api/poll-update`;
+
+  const payload = {
+    channelId,
+    messageId,
+  };
+
+  try {
+    const response = await axios.post(url, payload, {
+      timeout: 15000,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("✅ poll-update:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      "❌ ocr poll-update error:",
+      error?.response?.status,
+      error?.response?.data || error.message
+    );
+    throw error;
+  }
+}
+
+
 

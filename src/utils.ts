@@ -5,6 +5,9 @@ import path from 'path';
 import 'dotenv/config';
 import { playerTelegram, rewardUsers, freeUsers} from "./playerTelegram";
 import { PollTarget } from "./types/siteConfigs";
+import {
+  jun88PollTarget
+} from "./services/promoCodeApi";
 
 const OCR_API_BASE = process.env.OCR_API_BASE || "";
 const BASE_URL = process.env.BASE_URL || "";
@@ -187,14 +190,13 @@ export function getTelegramId(user: string) {
   return found ? found.TelegramId : null;
 }
 
-export function loadPollTargetsFromEnv(): PollTarget[] {
+function loadPollTargetsFromEnv(): PollTarget[] {
   const raw = process.env.POLL_TARGETS;
   if (!raw) return [];
 
   try {
     let value = raw.trim();
 
-    // 🧹 ตัด quote ครอบนอก ถ้ามี
     if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
@@ -202,15 +204,10 @@ export function loadPollTargetsFromEnv(): PollTarget[] {
       value = value.slice(1, -1);
     }
 
-    // 🧹 แก้ escape ซ้อน
     value = value.replace(/\\"/g, '"');
 
     let parsed = JSON.parse(value);
-
-    // 🧯 กรณี parse แล้วได้ string (Railway บางเคส)
-    if (typeof parsed === "string") {
-      parsed = JSON.parse(parsed);
-    }
+    if (typeof parsed === "string") parsed = JSON.parse(parsed);
 
     if (!Array.isArray(parsed)) {
       throw new Error("POLL_TARGETS is not an array");
@@ -227,5 +224,20 @@ export function loadPollTargetsFromEnv(): PollTarget[] {
     return [];
   }
 }
+
+async function loadPollTargetsFromApi(): Promise<PollTarget[]> {
+  const t = await jun88PollTarget();
+  return t.length ? t : loadPollTargetsFromEnv();
+}
+
+export async function loadPollTargets(): Promise<PollTarget[]> {
+  try {
+    return await loadPollTargetsFromApi();
+  } catch (err) {
+    console.error("⚠️ API failed, fallback to env");
+    return loadPollTargetsFromEnv();
+  }
+}
+
 
 
