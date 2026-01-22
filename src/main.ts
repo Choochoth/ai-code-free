@@ -81,7 +81,7 @@ const lockDurations: Record<number, number> = {
 };
 
 
-
+let serviceInitialized = false;
 const messageCache = new Map<string, MessageSnapshot>();
 const latestMessageCache = new Map<string, ChannelSnapshot>();
 let pollInterval: NodeJS.Timeout | null = null;
@@ -127,15 +127,10 @@ let expressServer: any;
 let minPoint: number = 8;
 let POLL_TARGETS: PollTarget[] = [];
 
-// const POLL_TARGETS: PollTarget[] = (() => {
-//   const t = loadPollTargetsFromEnv();
-//   return t.length ? t : [{"channelId":"-1002142874457","messageId":5111},{"channelId":"-1002668963498","messageId":3083},{"channelId":"-1002519263985","messageId":4017}];
-// })();
-
-
-
-
-function stopPolling() {
+// =======================
+// 🛑 Stop Polling
+// =======================
+async function stopPolling() {
   if (pollInterval) {
     clearInterval(pollInterval);
     pollInterval = null;
@@ -150,6 +145,61 @@ function stopPolling() {
   isPollingLatest = false;
 
   console.log("🛑 Polling stopped");
+}
+
+// =======================
+// ▶️ Start Polling
+// =======================
+async function startPolling() {
+  if (!client) {
+    console.warn("⚠️ startPolling called without client");
+    return;
+  }
+
+  POLL_TARGETS = await loadPollTargets();
+  
+  // 🔁 POLL BY MESSAGE ID
+  if (!pollInterval) {
+    pollInterval = setInterval(async () => {
+      if (isPollingById || !client) return;
+      if (POLL_TARGETS.length === 0) return;
+
+      isPollingById = true;
+      try {
+        for (const target of POLL_TARGETS) {
+          await pollMessageById(
+            client,
+            target.channelId,
+            target.messageId
+          );
+          await delay(1500);
+        }
+      } finally {
+        isPollingById = false;
+      }
+    }, 10_000);
+
+    console.log("🟢 Polling by messageId started");
+  }
+
+  // 🔁 POLL LATEST MESSAGE
+  if (!latestPollInterval) {
+    latestPollInterval = setInterval(async () => {
+      if (isPollingLatest || !client) return;
+
+      isPollingLatest = true;
+      try {
+        for (const channelId of channel789Ids) {
+          await pollLatestMessageByChannel(client, channelId);
+          await delay(1500);
+        }
+      } finally {
+        isPollingLatest = false;
+      }
+    }, 10_000);
+
+    console.log("🟢 Polling latest messages started");
+  }
 }
 
 async function initializeClient() {
@@ -999,7 +1049,8 @@ async function startProCodeLoop(siteName: string) {
       });
     }
     
-    // sendApplyCodeDataToTelegram();
+    await stopPolling();   // กันซ้อน
+    await startPolling();  // เริ่มใหม่ด้วย target ล่าสุด
 
   }
 
@@ -1108,61 +1159,19 @@ async function startClient() {
   try {
     if (!client) await initializeClient();
 
+    if (!serviceInitialized) {
+      await initializeService();
+      serviceInitialized = true;
+    }
+
     console.log("Client Connected:", client!.connected);
-    await initializeService();
 
-    // ===============================
-    // 🔁 POLL BY MESSAGE ID
-    // ===============================
-    // const POLL_TARGETS = loadPollTargetsFromEnv();
-    if (!pollInterval) {
-      pollInterval = setInterval(async () => {
-        if (!client || isPollingById) return;
-        if (POLL_TARGETS.length === 0) return;
-
-        isPollingById = true;
-        try {
-          for (const target of POLL_TARGETS) {
-            await pollMessageById(
-              client,
-              target.channelId,
-              target.messageId
-            );
-            await delay(1500);
-          }
-        } finally {
-          isPollingById = false;
-        }
-      }, 10_000);
-
-      console.log("🟢 Polling by messageId started");
-    }
-
-    // ===============================
-    // 🔁 POLL LATEST MESSAGE BY CHANNEL
-    // ===============================
-
-    if (!latestPollInterval) {
-      latestPollInterval = setInterval(async () => {
-        if (!client || isPollingLatest) return;
-
-        isPollingLatest = true;
-        try {
-          for (const channelId of channel789Ids) {
-            await pollLatestMessageByChannel(client, channelId);
-            await delay(1500);
-          }
-        } finally {
-          isPollingLatest = false;
-        }
-      }, 10_000);
-
-      console.log("🟢 Polling latest messages started");
-    }
+    await stopPolling();
+    await startPolling();
 
   } catch (error: any) {
     console.error("💥 Error during startup:", error.message);
-    stopPolling();
+    await stopPolling();
     setTimeout(startClient, 3000);
   }
 }
@@ -1180,7 +1189,6 @@ async function getChatsList(client: TelegramClient) {
 }
 
 (async () => {
-  POLL_TARGETS = await loadPollTargets();
   await startClient();
 
   try {
