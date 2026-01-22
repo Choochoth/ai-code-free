@@ -16,6 +16,7 @@ const agent = new https.Agent({
 
 const OCR_API_BASE = process.env.OCR_API_BASE || "";
 const baseUrl = process.env.BASE_URL || "";
+let reloading = false;
 
 // ---------------- Axios + Bottleneck ----------------
 const api: AxiosInstance = axios.create({
@@ -52,6 +53,20 @@ function getAxiosConfig(headers: any) {
     validateStatus: () => true,
     httpsAgent: agent,
   };
+}
+
+async function safeReload() {
+  if (reloading) {
+    console.log("⏭️ Reload already running, skip");
+    return;
+  }
+
+  reloading = true;
+  try {
+    await reloadPollingTargets();
+  } finally {
+    reloading = false;
+  }
 }
 
 // ---------------- API Functions ----------------
@@ -261,10 +276,7 @@ export async function updatePollTarget(
 ) {
   const url = `${OCR_API_BASE}/api/poll-update`;
 
-  const payload = {
-    channelId,
-    messageId,
-  };
+  const payload = { channelId, messageId };
 
   try {
     const response = await axios.post(url, payload, {
@@ -275,7 +287,11 @@ export async function updatePollTarget(
     });
 
     console.log("✅ poll-update:", response.data);
-    await reloadPollingTargets();
+
+    // ✅ reload แบบไม่ block
+    setImmediate(() => {
+      safeReload().catch(console.error);
+    });
 
     return response.data;
   } catch (error: any) {
@@ -287,6 +303,3 @@ export async function updatePollTarget(
     throw error;
   }
 }
-
-
-
