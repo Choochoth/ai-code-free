@@ -37,7 +37,6 @@ import {
 } from "./utils";
 
 import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
-// import { sendApplyCodeDataToTelegram } from "./telegramBot";
 
 
 import {
@@ -1048,10 +1047,7 @@ async function startProCodeLoop(siteName: string) {
         console.error(`❌ Error restarting loop for site ${siteName}:`, err);
       });
     }
-    
-    await stopPolling();   // กันซ้อน
-    await startPolling();  // เริ่มใหม่ด้วย target ล่าสุด
-
+    setTimeout(startClient, 3000);
   }
 
 }
