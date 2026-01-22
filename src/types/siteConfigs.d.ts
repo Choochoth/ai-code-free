@@ -30,3 +30,7 @@ export interface  ChannelSnapshot {
   editDate?: number;
 };
 
+export interface MessageSnapshot {
+  text: string;
+  editDate?: number;
+};

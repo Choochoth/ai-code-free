@@ -5,9 +5,12 @@ import path from 'path';
 import 'dotenv/config';
 import { playerTelegram, rewardUsers, freeUsers} from "./playerTelegram";
 import { PollTarget } from "./types/siteConfigs";
+import {
+  jun88PollTarget
+} from "./services/promoCodeApi";
 
-const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8002";
-const BASE_URL = process.env.BASE_URL || "http://localhost:5300";
+const OCR_API_BASE = process.env.OCR_API_BASE || "";
+const BASE_URL = process.env.BASE_URL || "";
 
 // function escapeMarkdown(text: string): string {
 //   // Escape เฉพาะ Markdown characters ที่ต้องการจริงๆ
@@ -49,6 +52,47 @@ const SITE_CONFIG: Record<string, any> = {
     promo: "Jun88Thailand",
   }
 };
+
+
+function loadPollTargetsFromEnv(): PollTarget[] {
+  const raw = process.env.POLL_TARGETS;
+  if (!raw) return [];
+
+  try {
+    let value = raw.trim();
+
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    value = value.replace(/\\"/g, '"');
+
+    let parsed = JSON.parse(value);
+    if (typeof parsed === "string") parsed = JSON.parse(parsed);
+
+    if (!Array.isArray(parsed)) {
+      throw new Error("POLL_TARGETS is not an array");
+    }
+
+    return parsed.filter(
+      (t): t is PollTarget =>
+        typeof t?.channelId === "string" &&
+        typeof t?.messageId === "number"
+    );
+  } catch (err) {
+    console.error("❌ Invalid POLL_TARGETS in env:", err);
+    console.error("❌ RAW POLL_TARGETS =", raw);
+    return [];
+  }
+}
+
+async function loadPollTargetsFromApi(): Promise<PollTarget[]> {
+  const t = await jun88PollTarget();
+  return t.length ? t : loadPollTargetsFromEnv();
+}
 
 // -------------------------------
 // MAIN FUNCTION
@@ -187,43 +231,15 @@ export function getTelegramId(user: string) {
   return found ? found.TelegramId : null;
 }
 
-export function loadPollTargetsFromEnv(): PollTarget[] {
-  const raw = process.env.POLL_TARGETS;
-  if (!raw) return [];
 
+export async function loadPollTargets(): Promise<PollTarget[]> {
   try {
-    let value = raw.trim();
-
-    // 🧹 ตัด quote ครอบนอก ถ้ามี
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    // 🧹 แก้ escape ซ้อน
-    value = value.replace(/\\"/g, '"');
-
-    let parsed = JSON.parse(value);
-
-    // 🧯 กรณี parse แล้วได้ string (Railway บางเคส)
-    if (typeof parsed === "string") {
-      parsed = JSON.parse(parsed);
-    }
-
-    if (!Array.isArray(parsed)) {
-      throw new Error("POLL_TARGETS is not an array");
-    }
-
-    return parsed.filter(
-      (t): t is PollTarget =>
-        typeof t?.channelId === "string" &&
-        typeof t?.messageId === "number"
-    );
+    return await loadPollTargetsFromApi();
   } catch (err) {
-    console.error("❌ Invalid POLL_TARGETS in env:", err);
-    console.error("❌ RAW POLL_TARGETS =", raw);
-    return [];
+    console.error("⚠️ API failed, fallback to env");
+    return loadPollTargetsFromEnv();
   }
 }
+
+
+
