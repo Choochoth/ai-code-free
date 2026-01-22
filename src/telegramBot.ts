@@ -70,18 +70,10 @@ bot.on("message", async (ctx) => {
 
   const chatId = msg.chat.id;
   const messageId = msg.message_id;
-  const msgAny = ctx.message as any;
+  const msgAny = msg as any;
 
   const fromChat = getForwardFromChat(msgAny);
   const fromMessageId = getForwardMessageId(msgAny);
-
-  if (fromChat && fromMessageId !== null) {
-    await updatePollTarget(
-      fromChat.id.toString(),
-      fromMessageId
-    );
-  }
-
 
   let text = `📩 *Forward Message Detected*\n\n`;
   text += `📌 Chat ID: \`${chatId}\`\n`;
@@ -92,18 +84,16 @@ bot.on("message", async (ctx) => {
     text += `📢 From Chat ID: \`${fromChat.id}\`\n`;
     text += `📄 From Message ID: \`${fromMessageId}\`\n`;
 
-    try {
-      await updatePollTarget(fromChat.id.toString(), fromMessageId);
-      text += `\n✅ Poll target updated`;
-      console.log(
-        "✅ poll-update",
-        fromChat.id,
-        fromMessageId
-      );
-    } catch (err) {
-      console.error("❌ updatePollTarget failed:", err);
-      text += `\n❌ Failed to update poll target`;
-    }
+    // 🔥 Fire-and-forget (ไม่ await)
+    updatePollTarget(fromChat.id.toString(), fromMessageId)
+      .then(() => {
+        console.log("✅ poll-update", fromChat.id, fromMessageId);
+      })
+      .catch((err) => {
+        console.error("⚠️ poll-update failed (ignored):", err?.message || err);
+      });
+
+    text += `\n⏳ Poll target updating...`;
   } else {
     text += `\n⚠️ Forward source unavailable (copy / protected content)`;
   }
@@ -115,6 +105,7 @@ bot.on("message", async (ctx) => {
     },
   });
 });
+
 
 
 
