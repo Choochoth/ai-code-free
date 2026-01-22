@@ -33,7 +33,7 @@ import {
   promptInput,
   delay,
   shuffleArray,
-  loadPollTargetsFromEnv
+  loadPollTargets,
 } from "./utils";
 
 import { markPlayerTried, cleanupExpiredBlocks } from "./playerTracker";
@@ -94,9 +94,9 @@ let isPollingLatest = false;
 
 
 const channel789Ids = [
-  "-1002406062886",
   "-1002040396559",
   "-1002544749433",
+  "-1002406062886",
 ];
 
 
@@ -127,12 +127,16 @@ try {
 
 let client: TelegramClient | null = null;
 let expressServer: any;
-let minPoint: number = 10;
+let minPoint: number = 8;
+let POLL_TARGETS: PollTarget[] = [];
 
-const POLL_TARGETS: PollTarget[] = (() => {
-  const t = loadPollTargetsFromEnv();
-  return t.length ? t : [{"channelId":"-1002142874457","messageId":5105},{"channelId":"-1002668963498","messageId":3075},{"channelId":"-1002519263985","messageId":4014}];
-})();
+// const POLL_TARGETS: PollTarget[] = (() => {
+//   const t = loadPollTargetsFromEnv();
+//   return t.length ? t : [{"channelId":"-1002142874457","messageId":5111},{"channelId":"-1002668963498","messageId":3083},{"channelId":"-1002519263985","messageId":4017}];
+// })();
+
+
+
 
 function stopPolling() {
   if (pollInterval) {
@@ -1179,6 +1183,7 @@ async function getChatsList(client: TelegramClient) {
 }
 
 (async () => {
+  POLL_TARGETS = await loadPollTargets();
   await startClient();
 
   try {
