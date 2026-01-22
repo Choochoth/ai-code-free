@@ -56,3 +56,4 @@ export async function ocr(filePath: string) {
     throw error;
   }
 }
+
