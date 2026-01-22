@@ -16,6 +16,7 @@ const agent = new https.Agent({
 
 const OCR_API_BASE = process.env.OCR_API_BASE || "";
 const baseUrl = process.env.BASE_URL || "";
+let reloading = false;
 
 // ---------------- Axios + Bottleneck ----------------
 const api: AxiosInstance = axios.create({
@@ -52,6 +53,20 @@ function getAxiosConfig(headers: any) {
     validateStatus: () => true,
     httpsAgent: agent,
   };
+}
+
+async function safeReload() {
+  if (reloading) {
+    console.log("⏭️ Reload already running, skip");
+    return;
+  }
+
+  reloading = true;
+  try {
+    await reloadPollingTargets();
+  } finally {
+    reloading = false;
+  }
 }
 
 // ---------------- API Functions ----------------
@@ -275,9 +290,7 @@ export async function updatePollTarget(
 
     // ✅ reload แบบไม่ block
     setImmediate(() => {
-      reloadPollingTargets().catch(err => {
-        console.error("❌ reloadPollingTargets error:", err);
-      });
+      safeReload().catch(console.error);
     });
 
     return response.data;
