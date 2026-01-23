@@ -264,9 +264,8 @@ export async function jun88PollTarget() {
 
   try {
     const response = await limitedGet(url, {
-      timeout: 5000, // 🔥 ไม่ต้อง 15s
+      timeout: 3000, // 🔥 ไม่ต้อง 30s
     });
-
     console.log("✅ poll-targets:", response.data);
     return response.data;
   } catch (error: any) {
