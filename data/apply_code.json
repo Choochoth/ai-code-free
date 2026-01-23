@@ -3,7 +3,15 @@
     "date": "2026-01-24",
     "thai_789bet": {
       "players": [],
-      "playersLock": []
+      "playersLock": [
+        {
+          "player": "manus9331",
+          "timelock": 1769199178874,
+          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
+          "lockTime": 180000,
+          "lockCode": 9004
+        }
+      ]
     },
     "thai_jun88k36": {
       "players": [
