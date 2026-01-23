@@ -1180,51 +1180,85 @@ async function getChatsList(client: TelegramClient) {
   }
 }
 
+// (async () => {
+//   await startClient();
+
+//   try {
+//     const me = (await client!.getEntity("me")) as Api.User;
+//     const displayName = [me.firstName, me.lastName].filter(Boolean).join(" ");
+//     console.log(`🤖 Signed in as: ${displayName}`);
+//     console.log(`🆔 Telegram ID: ${me.id.toString()}`);
+
+//   } catch (err) {
+//     console.error("❌ Failed to fetch Telegram user info:", err);
+//   }
+
+// // Update Code: Keep-alive ping every 5 minutes 
+
+// cron.schedule('*/5 * * * *', async () => {
+//   try {
+//     const response = await axios.get(`${OCR_API_BASE}/health`);
+//     console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
+//   } catch (err: any) {
+//     console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
+//   }
+// });
+
+
+// //thai_789bet: reset เวลา 11:00 (GMT+7)
+// cron.schedule('0 0 11 * * *', () => {
+//   try {
+//     clearApplyCodeTemplateForSite("thai_789bet");
+//   } catch (err) {
+//     console.error("❌ Failed to reset thai_789bet:", err);
+//   }
+// }, {
+//   timezone: "Asia/Bangkok"
+// });
+
+// // thai_jun88k36: reset เวลา 24:00 (GMT+7)
+// cron.schedule('0 0 0 * * *', () => {
+//   try {
+//     clearApplyCodeTemplateForSite("thai_jun88k36");
+//   } catch (err) {
+//     console.error("❌ Failed to reset thai_jun88k36:", err);
+//   }
+// }, {
+//   timezone: "Asia/Bangkok"
+// });
+
+// })();
+
+
 (async () => {
-  await startClient();
+  const appSession = process.env.APP_SESSION;
 
-  try {
-    const me = (await client!.getEntity("me")) as Api.User;
-    const displayName = [me.firstName, me.lastName].filter(Boolean).join(" ");
-    console.log(`🤖 Signed in as: ${displayName}`);
-    console.log(`🆔 Telegram ID: ${me.id.toString()}`);
+  const stringSession = new StringSession(""); // หรือโหลดจากไฟล์มาก่อน
 
-  } catch (err) {
-    console.error("❌ Failed to fetch Telegram user info:", err);
-  }
+  const client = new TelegramClient(stringSession, apiId, apiHash, {
+    connectionRetries: 5,
+  });
+  await client.start({
+    phoneNumber: async () => phoneNumber,
+    password: async () => userPassword,
+    phoneCode: async () => await promptInput("Please enter the code you received: "),
+    onError: (err:any) => console.log(err),
+  });
+  console.log("You are now logged in.");
+  // Save new session string here if needed:
+  // บันทึก session string ลงไฟล์
+  
+const sessionFilePath = path.join(sessionDir,`${appSession}_${phoneNumber.slice(-4)}.txt`);
+fs.mkdirSync(sessionDir, { recursive: true }); // สร้างโฟลเดอร์ถ้ายังไม่มี
 
-// Update Code: Keep-alive ping every 5 minutes 
-
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const response = await axios.get(`${OCR_API_BASE}/health`);
-    console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
-  } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
-  }
-});
+// 2. บันทึก session string อย่างถูกต้อง
+const sessionString = client.session.save();  // sessionString จะเป็น string
+fs.writeFileSync(sessionFilePath, sessionString);
+console.log("✅ Session saved at:", sessionFilePath);
 
 
-//thai_789bet: reset เวลา 11:00 (GMT+7)
-cron.schedule('0 0 11 * * *', () => {
-  try {
-    clearApplyCodeTemplateForSite("thai_789bet");
-  } catch (err) {
-    console.error("❌ Failed to reset thai_789bet:", err);
-  }
-}, {
-  timezone: "Asia/Bangkok"
-});
 
-// thai_jun88k36: reset เวลา 24:00 (GMT+7)
-cron.schedule('0 0 0 * * *', () => {
-  try {
-    clearApplyCodeTemplateForSite("thai_jun88k36");
-  } catch (err) {
-    console.error("❌ Failed to reset thai_jun88k36:", err);
-  }
-}, {
-  timezone: "Asia/Bangkok"
-});
-
+  // ตัวอย่าง: ใช้งาน client
+  const dialogs = await client.getDialogs();
+  console.log("Dialogs:", dialogs.map(d => d.name).join(", "));
 })();
