@@ -1046,7 +1046,6 @@ async function startProCodeLoop(siteName: string) {
         console.error(`❌ Error restarting loop for site ${siteName}:`, err);
       });
     }
-    setTimeout(startClient, 3000);
   }
 
 }
