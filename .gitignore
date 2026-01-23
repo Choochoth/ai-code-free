@@ -7,6 +7,7 @@ node_modules/
 dist/
 !dist/.gitkeep
 dist/**/*.gitignore
+dist/data/session/
 
 # Application data
 data/images/
