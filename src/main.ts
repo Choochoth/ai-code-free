@@ -95,7 +95,6 @@ const channel789Ids = shuffleArray([
   "-1002406062886",
 ]);
 
-
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
 const sessionDir = path.join(dataDir, "session");
