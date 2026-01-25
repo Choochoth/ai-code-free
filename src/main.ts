@@ -157,7 +157,7 @@ async function startPolling() {
     return;
   }
 
-  POLL_TARGETS = await loadPollTargets();
+  // POLL_TARGETS = await loadPollTargets();
   
   // 🔁 POLL BY MESSAGE ID
   if (!pollInterval) {
