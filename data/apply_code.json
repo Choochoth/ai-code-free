@@ -1,38 +1,21 @@
 {
   "apply_code_today": {
-    "date": "2026-01-24",
+    "date": "2026-01-26",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
+      "players": [],
+      "playersLock": [
         {
-          "promo_code": "WZPVQ097",
-          "time": 1769188691288,
-          "time_limit": 1769275091288,
-          "status": "success",
-          "player": "ary11",
-          "point": 20.88
-        },
-        {
-          "promo_code": "1ZXELXVV",
-          "time": 1769202062396,
-          "time_limit": 1769288462396,
-          "status": "success",
-          "player": "nus9331",
-          "point": 20.88
-        },
-        {
-          "promo_code": "XOLIFCFV",
-          "time": 1769203811563,
-          "time_limit": 1769290211563,
-          "status": "success",
-          "player": "nuschai",
-          "point": 18.88
+          "player": "manus9331",
+          "timelock": 1769362439642,
+          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
+          "lockTime": 1800000,
+          "lockCode": 9007
         }
-      ],
-      "playersLock": []
+      ]
     }
   }
 }
