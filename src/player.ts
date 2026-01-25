@@ -38,6 +38,7 @@ const playerPools: Record<string, PlayerPool> = {
     all: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"]
   }
 };
+
 export type Site = keyof typeof playerPools;
 
 const baseDir = __dirname;
