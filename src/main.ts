@@ -93,9 +93,9 @@ const channel789Ids = shuffleArray([
   "-1002040396559",
   "-1002544749433",
   "-1002406062886",
-  "-1002142874457",
-  "-1002668963498",
-  "-1002519263985",
+  // "-1002142874457",
+  // "-1002668963498",
+  // "-1002519263985",
 ]);
 
 
@@ -126,7 +126,7 @@ try {
 
 let client: TelegramClient | null = null;
 let expressServer: any;
-let minPoint: number = 8;
+let minPoint: number = 12;
 let POLL_TARGETS: PollTarget[] = [];
 
 // =======================
@@ -805,9 +805,9 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 18;
+    minPoint = 20;
   } else {
-    minPoint = 15;
+    minPoint = 18;
   }
 
   const siteQueue = siteQueues[siteName];
