@@ -536,7 +536,7 @@ async function pollMessageById(
     // 🟡 ครั้งแรก → บันทึกเฉย ๆ
     if (!prev) {
       messageCache.set(cacheKey, current);
-      console.log("🆕 FIRST SEEN", channelId, msg.id);
+      console.log("🆕 FIRST SEEN Message ById", channelId, msg.id);
       return;
     }
 
@@ -591,7 +591,7 @@ async function pollLatestMessageByChannel(
     // 🟡 ครั้งแรก
     if (!prev) {
       latestMessageCache.set(channelId, current);
-      console.log("🆕 FIRST SEEN", channelId, msg.id);
+      console.log("🆕 FIRST SEEN ByChannel", channelId, msg.id);
       return;
     }
 
