@@ -92,7 +92,7 @@ let isPollingLatest = false;
 const channel789Ids = shuffleArray([
   "-1002040396559",
   "-1002544749433",
-  "-1002406062886"
+  "-1002406062886",
 ]);
 
 const baseDir = __dirname;
