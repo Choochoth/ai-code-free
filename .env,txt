@@ -14,4 +14,4 @@ PORT="5300"
 TELEGRAM_BOT_TOKEN="8214973405:AAEFfj3alfIy2vGUGrVPW506_CodV5_u5h4"
 APP_SESSION="session-codeattack-s1"
 SITES_SERVICE="codeattack-s1"
-POLL_TARGETS=[{"channelId":"-1002142874457","messageId":5132},{"channelId":"-1002668963498","messageId":3108},{"channelId":"-1002519263985","messageId":4031}]
+POLL_TARGETS=[{"channelId":"-1002142874457","messageId":5198},{"channelId":"-1002668963498","messageId":3155},{"channelId":"-1002519263985","messageId":4088}]
