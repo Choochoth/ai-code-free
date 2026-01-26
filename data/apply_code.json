@@ -1,21 +1,12 @@
 {
   "apply_code_today": {
-    "date": "2026-01-26",
+    "date": "2026-01-27",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "WnYJQknW",
-          "time": 1769378030423,
-          "time_limit": 1769464430423,
-          "status": "success",
-          "player": "aroon11",
-          "point": 19.88
-        }
-      ],
+      "players": [],
       "playersLock": []
     }
   }
