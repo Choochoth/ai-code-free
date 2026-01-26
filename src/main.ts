@@ -88,7 +88,6 @@ let latestPollInterval: NodeJS.Timeout | null = null;
 let isPollingById = false;
 let isPollingLatest = false;
 
-
 const channel789Ids = shuffleArray([
   "-1002040396559",
   "-1002544749433",
