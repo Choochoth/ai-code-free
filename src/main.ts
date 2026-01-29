@@ -174,7 +174,7 @@ async function startPolling() {
             target.channelId,
             target.messageId
           );
-          await delay(1500);
+          await delay(1000);
         }
       } finally {
         isPollingById = false;
@@ -193,7 +193,7 @@ async function startPolling() {
       try {
         for (const channelId of channel789Ids) {
           await pollLatestMessageByChannel(client, channelId);
-          await delay(1500);
+          await delay(1000);
         }
       } finally {
         isPollingLatest = false;
