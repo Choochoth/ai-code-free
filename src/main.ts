@@ -92,9 +92,9 @@ const channel789Ids = shuffleArray([
   "-1002040396559",
   "-1002544749433",
   "-1002406062886",
-  "-1002142874457",
-  "-1002668963498",
-  "-1002519263985",
+  // "-1002142874457",
+  // "-1002668963498",
+  // "-1002519263985",
 ]);
 
 const baseDir = __dirname;
@@ -172,7 +172,7 @@ async function startPolling() {
             target.channelId,
             target.messageId
           );
-          await delay(1500);
+          await delay(1000);
         }
       } finally {
         isPollingById = false;
@@ -191,7 +191,7 @@ async function startPolling() {
       try {
         for (const channelId of channel789Ids) {
           await pollLatestMessageByChannel(client, channelId);
-          await delay(1500);
+          await delay(1000);
         }
       } finally {
         isPollingLatest = false;
