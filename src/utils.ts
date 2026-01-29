@@ -19,12 +19,23 @@ const BASE_URL = process.env.BASE_URL || "";
 // -------------------------------
 // ESCAPE HTML สำหรับ Telegram HTML Mode
 // -------------------------------
+// function escapeHTML(text: string): string {
+//   return text
+//     .replace(/&/g, "&amp;")
+//     .replace(/</g, "&lt;")
+//     .replace(/>/g, "&gt;");
+// }
+
 function escapeHTML(text: string): string {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
+
+
+
 
 // -------------------------------
 // MASK USERNAME
@@ -148,15 +159,15 @@ export function formatTelegramMessage(data: any): string {
   // OTHER SITE (ไม่อยู่ใน CONFIG)
   // -------------------------------
   return `
-🖼️ <a href="${logoUrl}">​</a>
+  🖼️ <a href="${logoUrl}">​</a>
 
-🎯 <b>ผลการส่งโค้ด</b>
-👤 <b>ยูสเซอร์:</b> ${maskUsername(playerId)}
-🏷️ <b>เว็บไซต์:</b> ${escapeHTML(site)}
-💬 <b>ข้อความ:</b> ${escapeHTML(messageText)}
-💰 <b>ยอดฟรีเครดิต:</b> ${points} บาท
-⭐ <b>สมัครแพ็กเกจ AI ยิงโค้ด:</b> ${link}
-`.trim();
+  🎯 <b>ผลการส่งโค้ด</b>
+  👤 <b>ยูสเซอร์:</b> ${maskUsername(playerId)}
+  🏷️ <b>เว็บไซต์:</b> ${escapeHTML(site)}
+  💬 <b>ข้อความ:</b> ${escapeHTML(messageText)}
+  💰 <b>ยอดฟรีเครดิต:</b> ${points} บาท
+  ⭐ <b>สมัครแพ็กเกจ AI ยิงโค้ด:</b> ${link}
+  `.trim();
 }
 
 
