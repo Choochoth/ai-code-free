@@ -88,13 +88,14 @@ let latestPollInterval: NodeJS.Timeout | null = null;
 let isPollingById = false;
 let isPollingLatest = false;
 
-
 const channel789Ids = shuffleArray([
   "-1002040396559",
   "-1002544749433",
   "-1002406062886",
+  // "-1002142874457",
+  // "-1002668963498",
+  // "-1002519263985",
 ]);
-
 
 const baseDir = __dirname;
 const dataDir = path.join(baseDir, "data");
@@ -798,13 +799,12 @@ async function initializeService() {
   process.on("SIGINT", gracefulShutdown);
 }
 
-
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 20;
+    minPoint = 18;
   } else {
-    minPoint = 16;
+    minPoint = 15;
   }
 
   const siteQueue = siteQueues[siteName];
@@ -1230,3 +1230,4 @@ cron.schedule('0 0 0 * * *', () => {
 });
 
 })();
+
