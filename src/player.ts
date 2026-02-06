@@ -14,13 +14,13 @@ const playerPools: Record<string, PlayerPool> = {
   },
   thai_jun88k36: {
     very_high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760"],
-    high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "Lucifer101"],
-    mid:  ["manus9331", "aroon11", "Lucifer101"],
+    high: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "Lucifer101", "NAMCHOK20", "NAMCHOK200"],
+    mid:  ["manus9331", "aroon11", "Lucifer101", "NAMCHOK20", "NAMCHOK200"],
     low: [],
-    all: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "Lucifer101"]
+    all: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "Lucifer101", "NAMCHOK20", "NAMCHOK200", "NAMCHOK20", "NAMCHOK200"]
   }
 };
-
+ 
 export type Site = keyof typeof playerPools;
 
 const baseDir = __dirname;
