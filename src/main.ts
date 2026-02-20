@@ -1192,7 +1192,6 @@ async function getChatsList(client: TelegramClient) {
     console.error("❌ Failed to fetch Telegram user info:", err);
   }
 
-// Update Code: Keep-alive ping every 5 minutes 
 
 cron.schedule('*/5 * * * *', async () => {
   try {
