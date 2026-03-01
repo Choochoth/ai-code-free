@@ -246,7 +246,7 @@ function parserCodeMessage(message: string): string[] {
     .map(code => code.replace(/`/g, '')); // ลบ backtick ออก
   
   // Return [] if less than 10 valid codes
-  if (cleanedCodes.length < 10) return [];
+  if (cleanedCodes.length < 5) return [];
 
   return cleanedCodes;
 }
