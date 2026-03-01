@@ -450,7 +450,7 @@ async function handleIncomingMessageJ88 (message: string, chatId?: string){
     console.log("chatId:", chatId);
 
     const parsedCodes = parserCodeMessage(message);
-    if (parsedCodes.length < 10) return;
+    if (parsedCodes.length < 5) return;
 
     const shuffledCodes = shuffleArray(parsedCodes);
     console.log("🎯 Valid Bonus Codes:", parsedCodes);
@@ -675,7 +675,7 @@ async function initializeService() {
         setTimeout(() => processedMessageIds.delete(dedupKey), 60_000);
 
         const parsedCodes = parserCodeMessage(message);
-        if (parsedCodes.length < 10) return;
+        if (parsedCodes.length < 5) return;
 
         const shuffledCodes = shuffleArray(parsedCodes);
         console.log("🎯 Valid Bonus Codes:", parsedCodes);
