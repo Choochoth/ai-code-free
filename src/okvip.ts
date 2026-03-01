@@ -202,74 +202,94 @@ async function getCaptchaMessage(imageUrl: string): Promise<{ captchaCode: strin
   }
 }
 
-// function parserCodeMessage(message: string): string[] {
-//   if (!message) return [];
-
-//   // Remove emojis, keep letters, numbers
-//   const cleanedText = message
-//     .replace(/[\u{1F600}-\u{1F64F}]/gu, '')  // emoticons
-//     .replace(/[\u{1F300}-\u{1F5FF}]/gu, '')  // symbols & pictographs
-//     .replace(/[\u{1F680}-\u{1F6FF}]/gu, '')  // transport & map symbols
-//     .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '')  // flags
-//     .replace(/\s+/g, ' ') // normalize spaces
-//     .trim();
-
-//   const tokens = cleanedText.split(' ');
-
-//   const validCodeRegex = /\b[A-Za-z0-9]{6,}\b/; // (6 ตัวขึ้นไป) ตัวอักษร+ตัวเลข ไม่มีเว้นวรรค
-
-//   const codes = tokens.filter(token => 
-//     validCodeRegex.test(token) &&
-//     !token.startsWith("#") &&
-//     !token.startsWith("*") &&
-//     !token.startsWith("@") &&
-//     !token.endsWith("*") &&
-//     !token.startsWith("https://") &&
-//     !token.startsWith("(https://") &&
-//     !token.startsWith("F*") &&
-//     !token.startsWith("(") &&
-//     !token.endsWith(")") &&
-//     !token.startsWith("m.") &&
-//     !token.startsWith("789BET") &&
-//     !token.startsWith("JUN88") &&
-//     !token.startsWith("Jun88") &&
-//     !token.startsWith("789") &&
-//     !token.startsWith("Twitter") &&
-//     !token.startsWith("ติดตาม") &&
-//     !token.startsWith("เพื่มความรวด") &&
-//     !token.startsWith("SEAGAME2025") &&
-//     !/^("🫠🤫🤭🫡🥺🤥Bigger|Frenzy|88OKPAY|Official|คาสโน|สลอต|แจก|เกม|โปรโมท|ราย|ได|การ|เงน|facebook|promotion|telegarm|instagram|twitter|789betthailand|https|freecode.06789bet.com|m.99789bet.vip|88Talk|789BET|JUN88|LiveChat|Bounty|Google|Chrome|Youtude|TELEGRAM|Scatter|SCATTER|MINITERE|88OKPAY|BIRTHDAY|YouTube|IPHONE|TOP500|BN2026)$/i.test(token)
-//   );
-
-//   const cleanedCodes = codes
-//     .filter(code => code.trim() !== '')
-//     .map(code => code.replace(/`/g, '')); // ลบ backtick ออก
-  
-//   // Return [] if less than 10 valid codes
-//   if (cleanedCodes.length < 4) return [];
-
-//   return cleanedCodes;
-// }
-
 function parserCodeMessage(message: string): string[] {
   if (!message) return [];
 
-  // ✅ replace emoji ด้วย SPACE (สำคัญมาก)
+  /*
+  =============================
+  ✅ VALID CODE
+  =============================
+  */
+  const validCodeRegex = /^[A-Z0-9]{5,12}$/i;
+
+  /*
+  =============================
+  ✅ PREFIX BLACKLIST
+  =============================
+  */
+  const blacklistPrefixes = [
+    "#",
+    "@",
+    "HTTP",
+    "HTTPS",
+    "WWW",
+    "M.",
+    "789BET",
+    "JUN88",
+    "TWITTER"
+  ];
+
+  /*
+  =============================
+  ✅ WORD BLACKLIST
+  =============================
+  */
+  const blacklistRegex =
+    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL)$/i;
+
+  /*
+  =============================
+  ✅ CLEAN MESSAGE
+  IMPORTANT ⭐
+  emoji → SPACE
+  =============================
+  */
   const normalized = message
-    .replace(/\p{Extended_Pictographic}/gu, ' ')
-    .replace(/https?:\/\/\S+/g, ' ')
-    .replace(/[^\w\s]/g, ' ')
-    .replace(/\s+/g, ' ')
+    // remove url
+    .replace(/https?:\/\/\S+/gi, " ")
+
+    // emoji → space (สำคัญสุด)
+    .replace(/\p{Extended_Pictographic}/gu, " ")
+
+    // keep only letters+numbers
+    .replace(/[^a-zA-Z0-9]/g, " ")
+
+    // normalize space
+    .replace(/\s+/g, " ")
     .trim();
 
-  // ✅ extract code directly
-  const matches = normalized.match(/\b[A-Za-z0-9]{5}\b/g) || [];
+  /*
+  =============================
+  ✅ SPLIT TOKEN
+  =============================
+  */
+  const tokens = normalized.split(" ");
 
-  const blacklist = /^(Jun88|JUN88|Twitter|Google|Chrome)$/i;
+  /*
+  =============================
+  ✅ FILTER CODE
+  =============================
+  */
+  const codes = tokens.filter(token => {
+    if (!validCodeRegex.test(token)) return false;
 
-  const codes = matches.filter(code => !blacklist.test(code));
+    const upper = token.toUpperCase();
 
-  return codes.length >= 5 ? codes : [];
+    if (blacklistPrefixes.some(p => upper.startsWith(p)))
+      return false;
+
+    if (blacklistRegex.test(upper))
+      return false;
+
+    return true;
+  });
+
+  /*
+  =============================
+  ✅ UNIQUE + NORMALIZE
+  =============================
+  */
+  return [...new Set(codes.map(c => c.toUpperCase()))];
 }
 
 async function openImage(captchaPath: string, ocrResult: string): Promise<string> {
