@@ -235,7 +235,7 @@ function parserCodeMessage(message: string): string[] {
   =============================
   */
   const blacklistRegex =
-    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL)$/i;
+    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL|CODEJUN88|CODEJUN88|CASINOJUN88|BACARAT|06789BET|TWITTER|SLOTGAME|SlotJun88|Jun88th|Jun88)$/i;
 
   /*
   =============================
@@ -272,8 +272,9 @@ function parserCodeMessage(message: string): string[] {
   */
   const codes = tokens.filter(token => {
     if (!validCodeRegex.test(token)) return false;
+    // const upper = token.toUpperCase();
 
-    const upper = token.toUpperCase();
+    const upper = token;
 
     if (blacklistPrefixes.some(p => upper.startsWith(p)))
       return false;
@@ -289,7 +290,7 @@ function parserCodeMessage(message: string): string[] {
   ✅ UNIQUE + NORMALIZE
   =============================
   */
-  return [...new Set(codes.map(c => c.toUpperCase()))];
+  return [...new Set(codes.map(c => c))];
 }
 
 async function openImage(captchaPath: string, ocrResult: string): Promise<string> {
