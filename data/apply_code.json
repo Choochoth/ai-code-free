@@ -1,17 +1,9 @@
 {
   "apply_code_today": {
-    "date": "2026-03-01",
+    "date": "2026-03-02",
     "thai_789bet": {
       "players": [],
-      "playersLock": [
-        {
-          "player": "manus9331",
-          "timelock": 1772337804328,
-          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
-          "lockTime": 1800000,
-          "lockCode": 9007
-        }
-      ]
+      "playersLock": []
     },
     "thai_jun88k36": {
       "players": [],
