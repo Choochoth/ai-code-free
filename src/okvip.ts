@@ -205,22 +205,91 @@ async function getCaptchaMessage(imageUrl: string): Promise<{ captchaCode: strin
 function parserCodeMessage(message: string): string[] {
   if (!message) return [];
 
-  // ✅ replace emoji ด้วย SPACE (สำคัญมาก)
+  /*
+  =============================
+  ✅ VALID CODE
+  =============================
+  */
+  const validCodeRegex = /^[A-Z0-9]{5,12}$/i;
+
+  /*
+  =============================
+  ✅ PREFIX BLACKLIST
+  =============================
+  */
+  const blacklistPrefixes = [
+    "#",
+    "@",
+    "HTTP",
+    "HTTPS",
+    "WWW",
+    "M.",
+    "789BET",
+    "JUN88",
+    "TWITTER"
+  ];
+
+  /*
+  =============================
+  ✅ WORD BLACKLIST
+  =============================
+  */
+  const blacklistRegex =
+    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL)$/i;
+
+  /*
+  =============================
+  ✅ CLEAN MESSAGE
+  IMPORTANT ⭐
+  emoji → SPACE
+  =============================
+  */
   const normalized = message
-    .replace(/\p{Extended_Pictographic}/gu, ' ')
-    .replace(/https?:\/\/\S+/g, ' ')
-    .replace(/[^\w\s]/g, ' ')
-    .replace(/\s+/g, ' ')
+    // remove url
+    .replace(/https?:\/\/\S+/gi, " ")
+
+    // emoji → space (สำคัญสุด)
+    .replace(/\p{Extended_Pictographic}/gu, " ")
+
+    // keep only letters+numbers
+    .replace(/[^a-zA-Z0-9]/g, " ")
+
+    // normalize space
+    .replace(/\s+/g, " ")
     .trim();
 
-  // ✅ extract code directly
-  const matches = normalized.match(/\b[A-Za-z0-9]{5}\b/g) || [];
+  /*
+  =============================
+  ✅ SPLIT TOKEN
+  =============================
+  */
+  const tokens = normalized.split(" ");
 
-  const blacklist = /^(Jun88|JUN88|Twitter|Google|Chrome)$/i;
+  /*
+  =============================
+  ✅ FILTER CODE
+  =============================
+  */
+  const codes = tokens.filter(token => {
+    if (!validCodeRegex.test(token)) return false;
 
-  const codes = matches.filter(code => !blacklist.test(code));
+    const upper = token.toUpperCase();
 
-  return codes.length >= 5 ? codes : [];
+    if (blacklistPrefixes.some(p => upper.startsWith(p)))
+      return false;
+
+    if (blacklistRegex.test(upper))
+      return false;
+
+    return true;
+  });
+
+  /*
+  =============================
+  ✅ UNIQUE + NORMALIZE
+  =============================
+  */
+  return [...new Set(codes.map(c => c.toUpperCase()))];
 }
 
 async function openImage(captchaPath: string, ocrResult: string): Promise<string> {
