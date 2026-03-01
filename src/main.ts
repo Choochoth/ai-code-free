@@ -453,7 +453,7 @@ async function handleIncomingMessageJ88 (message: string, chatId?: string){
     console.log("chatId:", chatId);
 
     const parsedCodes = parserCodeMessage(message);
-    if (parsedCodes.length < 5) return;
+    if (parsedCodes.length < 4) return;
 
     const shuffledCodes = shuffleArray(parsedCodes);
     console.log("🎯 Valid Bonus Codes:", parsedCodes);
@@ -678,7 +678,7 @@ async function initializeService() {
         setTimeout(() => processedMessageIds.delete(dedupKey), 60_000);
 
         const parsedCodes = parserCodeMessage(message);
-        if (parsedCodes.length < 5) return;
+        if (parsedCodes.length < 4) return;
 
         const shuffledCodes = shuffleArray(parsedCodes);
         console.log("🎯 Valid Bonus Codes:", parsedCodes);
@@ -804,7 +804,7 @@ async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
     minPoint = 20;
   } else {
-    minPoint = 20;
+    minPoint = 18;
   }
 
   const siteQueue = siteQueues[siteName];
