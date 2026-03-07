@@ -1,13 +1,30 @@
 {
   "apply_code_today": {
-    "date": "2026-03-05",
+    "date": "2026-03-04",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
-      "playersLock": []
+      "players": [
+        {
+          "promo_code": "K4RV5",
+          "time": 1772639612323,
+          "time_limit": 1772726012323,
+          "status": "success",
+          "player": "manus9331",
+          "point": 21.88
+        }
+      ],
+      "playersLock": [
+        {
+          "player": "bank0760",
+          "timelock": 1772639670333,
+          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
+          "lockTime": 1800000,
+          "lockCode": 9007
+        }
+      ]
     }
   }
 }
