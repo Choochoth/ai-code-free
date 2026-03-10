@@ -6,41 +6,8 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "NW4JZ",
-          "time": 1772957204006,
-          "time_limit": 1773043604006,
-          "status": "success",
-          "player": "nus9331",
-          "point": 19.88
-        },
-        {
-          "promo_code": "RARBE",
-          "time": 1772957207470,
-          "time_limit": 1773043607470,
-          "status": "success",
-          "player": "nuschai",
-          "point": 25.88
-        },
-        {
-          "promo_code": "KK69M",
-          "time": 1772957229400,
-          "time_limit": 1773043629400,
-          "status": "success",
-          "player": "ary11",
-          "point": 25.88
-        }
-      ],
-      "playersLock": [
-        {
-          "player": "aroon11",
-          "timelock": 1772957226226,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        }
-      ]
+      "players": [],
+      "playersLock": []
     }
   }
 }
