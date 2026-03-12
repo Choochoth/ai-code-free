@@ -1194,38 +1194,38 @@ async function getChatsList(client: TelegramClient) {
     console.error("❌ Failed to fetch Telegram user info:", err);
   }
 
-// Update Code: Keep-alive ping every 5 minutes 
 
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const response = await axios.get(`${OCR_API_BASE}/health`);
-    console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
-  } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
-  }
-});
+  cron.schedule('*/5 * * * *', async () => {
+    try {
+      const response = await axios.get(`${OCR_API_BASE}/health`);
+      console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
+    } catch (err: any) {
+      console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
+    }
+  });
 
 
-//thai_789bet: reset เวลา 11:00 (GMT+7)
-cron.schedule('0 0 11 * * *', () => {
-  try {
-    clearApplyCodeTemplateForSite("thai_789bet");
-  } catch (err) {
-    console.error("❌ Failed to reset thai_789bet:", err);
-  }
-}, {
-  timezone: "Asia/Bangkok"
-});
+  //thai_789bet: reset เวลา 11:00 (GMT+7)
+  cron.schedule('0 0 11 * * *', () => {
+    try {
+      clearApplyCodeTemplateForSite("thai_789bet");
+    } catch (err) {
+      console.error("❌ Failed to reset thai_789bet:", err);
+    }
+  }, {
+    timezone: "Asia/Bangkok"
+  });
 
-// thai_jun88k36: reset เวลา 24:00 (GMT+7)
-cron.schedule('0 0 0 * * *', () => {
-  try {
-    clearApplyCodeTemplateForSite("thai_jun88k36");
-  } catch (err) {
-    console.error("❌ Failed to reset thai_jun88k36:", err);
-  }
-}, {
-  timezone: "Asia/Bangkok"
-});
+  // thai_jun88k36: reset เวลา 24:00 (GMT+7)
+  cron.schedule('0 0 0 * * *', () => {
+    try {
+      clearApplyCodeTemplateForSite("thai_jun88k36");
+    } catch (err) {
+      console.error("❌ Failed to reset thai_jun88k36:", err);
+    }
+  }, {
+    timezone: "Asia/Bangkok"
+  });
 
 })();
+
