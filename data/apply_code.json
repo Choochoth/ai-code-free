@@ -1,45 +1,9 @@
 {
   "apply_code_today": {
-    "date": "2026-03-12",
+    "date": "2026-03-13",
     "thai_789bet": {
       "players": [],
-      "playersLock": [
-        {
-          "player": "aroon11",
-          "timelock": 1773302761616,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        },
-        {
-          "player": "nus9331",
-          "timelock": 1773302767581,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        },
-        {
-          "player": "poypy789",
-          "timelock": 1773302775810,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        },
-        {
-          "player": "manus9331",
-          "timelock": 1773302777309,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        },
-        {
-          "player": "vip0955171905",
-          "timelock": 1773302786199,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        }
-      ]
+      "playersLock": []
     },
     "thai_jun88k36": {
       "players": [],
