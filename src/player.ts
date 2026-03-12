@@ -13,13 +13,13 @@ const playerPools: Record<string, PlayerPool> = {
     all: ["vip0955171905", "poypy789", "manus9331", "nus9331", "aroon11"]
   },
   thai_jun88k36: {
-    very_high: ["nuschai", "ary11", "bank0760", "nus9331", "aroon11", "FRANKK2709", "LUCIFER101"],
-    high: ["nus9331", "ary11", "bank0760", "nuschai", "aroon11", "FRANKK2709", "LUCIFER101"],
+    very_high: ["nuschai", "ary11", "bank0760", "nus9331", "aroon11", "frankk2709", "lucifer101"],
+    high: ["nus9331", "ary11", "bank0760", "nuschai", "aroon11", "frankk2709", "lucifer101"],
     mid:  ["manus9331"],
     low: [],
-    all: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "FRANKK2709", "LUCIFER101"]
+    all: ["manus9331", "nus9331", "aroon11", "nuschai", "ary11", "bank0760", "frankk2709", "lucifer101"]
   }
-};
+}
 
 
 export type Site = keyof typeof playerPools;
