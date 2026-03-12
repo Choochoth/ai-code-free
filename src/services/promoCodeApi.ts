@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
+import axiosRetry from "axios-retry";
 import https from "https";
 import fs from "fs";
 import FormData from "form-data";
@@ -9,9 +10,17 @@ import { sendResultToTelegram } from "../telegramBot";
 import { formatTelegramMessage, getTelegramId } from "../utils";
 import { reloadPollingTargets } from "../main";
 
+
 const agent = new https.Agent({
   keepAlive: true,
   secureProtocol: "TLS_method",
+
+  keepAliveMsecs: 10000,
+  maxSockets: 100,
+  maxFreeSockets: 20,
+
+  timeout: 60000,
+  scheduling: "lifo"
 });
 
 const OCR_API_BASE = process.env.OCR_API_BASE || "";
@@ -22,12 +31,42 @@ let reloadTimer: NodeJS.Timeout | null = null;
 // ---------------- Axios + Bottleneck ----------------
 const api: AxiosInstance = axios.create({
   httpsAgent: agent,
+  timeout: 15000, // สำคัญมาก
   validateStatus: () => true,
 });
 
+axiosRetry(api, {
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay,
+  shouldResetTimeout: true,
+  retryCondition: (error) => {
+    const retryable =
+      axiosRetry.isNetworkError(error) ||
+      axiosRetry.isRetryableError(error);
+
+    const method = error.config?.method ?? "";
+
+    return retryable && ["get", "head", "options"].includes(method);
+  }
+});
+
+
 const limiter = new Bottleneck({
-  minTime: 50,
+  minTime: 80,
   maxConcurrent: 5,
+
+  reservoir: 100,
+  reservoirRefreshAmount: 100,
+  reservoirRefreshInterval: 1000,
+
+  highWater: 1000,
+  strategy: Bottleneck.strategy.OVERFLOW
+});
+
+limiter.on("failed", async (error, jobInfo) => {
+  if (jobInfo.retryCount < 2) {
+    return 1000; // retry หลัง 1s
+  }
 });
 
 // ฟังก์ชัน axios ปกติ
@@ -51,8 +90,9 @@ const limitedPost = limiter.wrap(axiosPost) as typeof axiosPost;
 function getAxiosConfig(headers: any) {
   return {
     headers,
-    validateStatus: () => true,
     httpsAgent: agent,
+    timeout: 15000,
+    validateStatus: () => true,
   };
 }
 
@@ -264,7 +304,7 @@ export async function jun88PollTarget() {
 
   try {
     const response = await limitedGet(url, {
-      timeout: 3000, // 🔥 ไม่ต้อง 30s
+      timeout: 1500, // 🔥 ไม่ต้อง 15s
     });
     console.log("✅ poll-targets:", response.data);
     return response.data;
@@ -286,7 +326,7 @@ export async function updatePollTarget(
 
   try {
     const response = await limitedPost(url, payload, {
-      timeout: 3000, // 👈 พอ
+      timeout: 2000, // 👈 พอ
       headers: {
         "Content-Type": "application/json",
       },
