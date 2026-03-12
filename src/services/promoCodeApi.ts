@@ -40,13 +40,13 @@ axiosRetry(api, {
   retryDelay: axiosRetry.exponentialDelay,
   shouldResetTimeout: true,
   retryCondition: (error) => {
-    const retryable =
-      axiosRetry.isNetworkError(error) ||
-      axiosRetry.isRetryableError(error);
 
-    const method = error.config?.method ?? "";
+    // retry เฉพาะ network error หรือ timeout
+    if (!error.response) {
+      return true;
+    }
 
-    return retryable && ["get", "head", "options"].includes(method);
+    return false;
   }
 });
 
