@@ -236,7 +236,7 @@ function parserCodeMessage(message: string): string[] {
   =============================
   */
   const blacklistRegex =
-    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL|CODEJUN88|CODEJUN88|CASINOJUN88|BACARAT|06789BET|TWITTER|SLOTGAME|SlotJun88|Jun88th|Jun88)$/i;
+    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL|CODEJUN88|CODEJUN88|CASINOJUN88|BACARAT|06789BET|TWITTER|SLOTGAME|SlotJun88|Jun88th|Jun88|Cashback)$/i;
 
   /*
   =============================
