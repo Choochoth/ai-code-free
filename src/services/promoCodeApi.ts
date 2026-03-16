@@ -91,7 +91,6 @@ function getAxiosConfig(headers: any) {
   return {
     headers,
     httpsAgent: agent,
-    timeout: 15000,
     validateStatus: () => true,
   };
 }
