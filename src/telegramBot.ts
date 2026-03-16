@@ -1,32 +1,69 @@
 import fs from "fs";
 import path from "path";
-import { Telegraf, Context, Telegram } from "telegraf";
-import { Message, Update } from "telegraf/typings/core/types/typegram";
+import { Telegraf } from "telegraf";
 import dotenv from "dotenv";
-import {
-updatePollTarget
-} from "./services/promoCodeApi";
+import { updatePollTarget } from "./services/promoCodeApi";
+
 dotenv.config();
 
+/* =======================
+   CONFIG
+======================= */
+
 const botToken = process.env.TELEGRAM_BOT_TOKEN || "";
+
+if (!botToken) {
+  throw new Error("❌ TELEGRAM_BOT_TOKEN missing in .env");
+}
+
 const bot = new Telegraf(botToken);
-const baseUrl = process.env.BASE_URL || "";
+
+let baseUrl = process.env.BASE_URL || "";
+
+/* กัน localhost ใน production */
+if (
+  baseUrl.includes("localhost") ||
+  baseUrl.includes("127.0.0.1") ||
+  baseUrl.trim() === ""
+) {
+  console.warn("⚠️ BASE_URL invalid, fallback to telegram channel");
+  baseUrl = "https://t.me/AiCodeFree";
+}
 
 const ADMIN_IDS = (process.env.ADMIN_IDS || "")
   .split(",")
-  .map(id => id.trim())
+  .map((id) => id.trim())
   .filter(Boolean)
-  .map(id => Number(id));
+  .map((id) => Number(id));
 
-const ADMIN_ID = (process.env.ADMIN_ID || "")
-  .split(",")
-  .map(id => id.trim())
-  .filter(Boolean)
-  .map(id => Number(id));
+/* =======================
+   UTILS
+======================= */
 
+function escapeHTML(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
+function getForwardMessageId(msg: any): number | null {
+  return typeof msg.forward_from_message_id === "number"
+    ? msg.forward_from_message_id
+    : null;
+}
 
-// เก็บ CAPTCHA ที่รอคำตอบ
+function getForwardFromChat(msg: any): { id: number } | null {
+  if (msg.forward_from_chat && typeof msg.forward_from_chat.id === "number") {
+    return msg.forward_from_chat;
+  }
+  return null;
+}
+
+/* =======================
+   CAPTCHA STORE
+======================= */
+
 const pendingCaptchas = new Map<
   number,
   {
@@ -36,27 +73,10 @@ const pendingCaptchas = new Map<
   }
 >();
 
+/* =======================
+   FORWARDED MESSAGE LISTENER
+======================= */
 
-function getForwardMessageId(msg: any): number | null {
-  return typeof msg.forward_from_message_id === "number"
-    ? msg.forward_from_message_id
-    : null;
-}
-
-function getForwardFromChat(msg: any): { id: number } | null {
-  if (
-    msg.forward_from_chat &&
-    typeof msg.forward_from_chat.id === "number"
-  ) {
-    return msg.forward_from_chat;
-  }
-  return null;
-}
-
-
-// =======================
-// 📩 Listener: Forwarded Message
-// =======================
 bot.on("message", async (ctx) => {
   const msg = ctx.message;
   if (!msg) return;
@@ -84,18 +104,17 @@ bot.on("message", async (ctx) => {
     text += `📢 From Chat ID: \`${fromChat.id}\`\n`;
     text += `📄 From Message ID: \`${fromMessageId}\`\n`;
 
-    // 🔥 Fire-and-forget (ไม่ await)
     updatePollTarget(fromChat.id.toString(), fromMessageId)
       .then(() => {
         console.log("✅ poll-update", fromChat.id, fromMessageId);
       })
       .catch((err) => {
-        console.error("⚠️ poll-update failed (ignored):", err?.message || err);
+        console.error("⚠️ poll-update failed:", err?.message || err);
       });
 
     text += `\n⏳ Poll target updating...`;
   } else {
-    text += `\n⚠️ Forward source unavailable (copy / protected content)`;
+    text += `\n⚠️ Forward source unavailable`;
   }
 
   await ctx.telegram.sendMessage(chatId, text, {
@@ -106,12 +125,10 @@ bot.on("message", async (ctx) => {
   });
 });
 
+/* =======================
+   SEND CAPTCHA
+======================= */
 
-
-
-// =======================
-// 📌 ส่ง CAPTCHA ให้แอดมิน
-// =======================
 export async function sendCaptchaToTelegram(
   imagePath: string
 ): Promise<string> {
@@ -134,32 +151,31 @@ export async function sendCaptchaToTelegram(
 
       console.log(`✅ CAPTCHA sent to ${adminId}`);
     } catch (err) {
-      console.error(`❌ Failed to send CAPTCHA to ${adminId}:`, err);
+      console.error(`❌ CAPTCHA send failed ${adminId}`, err);
     }
   }
 
   if (sentMessageId === null) {
-    throw new Error("❌ Failed to send CAPTCHA to all admins.");
+    throw new Error("❌ Failed to send CAPTCHA");
   }
 
   return new Promise<string>((resolve, reject) => {
     const timeout = setTimeout(() => {
       pendingCaptchas.delete(sentMessageId!);
-      reject(new Error("⏰ CAPTCHA reply timeout"));
+      reject(new Error("⏰ CAPTCHA timeout"));
     }, 2 * 60 * 1000);
 
     pendingCaptchas.set(sentMessageId, { resolve, reject, timeout });
   });
 }
 
-// =======================
-// 📌 ส่ง Apply Code Data + JSON file ให้แอดมิน
-// =======================
+/* =======================
+   APPLY CODE REPORT
+======================= */
+
 export async function sendApplyCodeDataToTelegram() {
   try {
-    const baseDir = __dirname;
-    const dataDir = path.join(baseDir, "data");
-    const applyCodeFile = path.join(dataDir, "apply_code.json");
+    const applyCodeFile = path.join(__dirname, "data", "apply_code.json");
 
     if (!fs.existsSync(applyCodeFile)) {
       console.error("❌ apply_code.json not found");
@@ -169,12 +185,9 @@ export async function sendApplyCodeDataToTelegram() {
     const raw = fs.readFileSync(applyCodeFile, "utf8");
     const data = JSON.parse(raw);
 
-    if (!data.apply_code_today) {
-      console.error("❌ apply_code_today missing");
-      return;
-    }
-
     const todayData = data.apply_code_today;
+    if (!todayData) return;
+
     const msgLines: string[] = [];
 
     msgLines.push(`📌 *Apply Code Report*`);
@@ -188,133 +201,124 @@ export async function sendApplyCodeDataToTelegram() {
 
       const players = todayData[site].players || [];
 
-      if (players.length === 0) {
-        msgLines.push(`— ไม่มีรายการ`);
-        msgLines.push("");
+      if (!players.length) {
+        msgLines.push("— ไม่มีรายการ\n");
         continue;
       }
 
       players.forEach((p: any, index: number) => {
         msgLines.push(
           `#${index + 1}\n` +
-          `👤 Player: *${p.player}*\n` +
-          `🎟️ Code: \`${p.promo_code}\`\n` +
-          `⭐ Status: *${p.status}*\n` +
-          `💎 Point: *${p.point}*\n` +
-          `⏱️ เวลา: ${new Date(p.time).toLocaleString("th-TH")}\n` +
-          `⏳ หมดเวลา: ${new Date(p.time_limit).toLocaleString("th-TH")}`
+            `👤 Player: *${p.player}*\n` +
+            `🎟️ Code: \`${p.promo_code}\`\n` +
+            `⭐ Status: *${p.status}*\n` +
+            `💎 Point: *${p.point}*\n` +
+            `⏱️ เวลา: ${new Date(p.time).toLocaleString("th-TH")}\n` +
+            `⏳ หมดเวลา: ${new Date(p.time_limit).toLocaleString("th-TH")}\n`
         );
-        msgLines.push("");
       });
     }
 
     const finalMessage = msgLines.join("\n");
 
-    const id = String(8253154458).trim();  // <-- แก้ error ตรงนี้
+    for (const adminId of ADMIN_IDS) {
+      await bot.telegram.sendMessage(adminId, finalMessage, {
+        parse_mode: "Markdown",
+      });
 
-    await bot.telegram.sendMessage(id, finalMessage, {
-      parse_mode: "Markdown"
-    });
+      await bot.telegram.sendDocument(adminId, {
+        source: applyCodeFile,
+        filename: "apply_code.json",
+      });
+    }
 
-    await bot.telegram.sendDocument(id, {
-      source: applyCodeFile,
-      filename: "apply_code.json"
-    });
-
-
-    console.log("✅ ส่งรายงาน + ไฟล์ JSON ให้แอดมินแล้ว");
-  } catch (error) {
-    console.error("❌ Error sendApplyCodeDataToTelegram:", error);
+    console.log("✅ Apply code report sent");
+  } catch (err) {
+    console.error("❌ sendApplyCodeData error", err);
   }
 }
 
-// =======================
-// 📌 ปุ่มสำหรับผลยิงโค้ด
-// =======================
+/* =======================
+   INLINE BUTTONS
+======================= */
+
 function getInlineButtons(link: string) {
+  if (link.includes("localhost")) {
+    link = "https://t.me/AiCodeFree";
+  }
+
   return {
     inline_keyboard: [
-      [
-        {
-          text: "⭐ สมัครแพ็กเกจ AI ยิงโค้ด",
-          url: link,
-        },
-      ],
-      [
-        {
-          text: "📞 ติดต่อแอดมิน",
-          url: "https://t.me/freeceditcode",
-        },
-      ],
-      [
-        {
-          text: "💬 แจ้งเตือนรับโค้ดฟรี",
-          url: "https://t.me/AiCodeFree",
-        },
-      ]      
+      [{ text: "⭐ สมัครแพ็กเกจ AI ยิงโค้ด", url: link }],
+      [{ text: "📞 ติดต่อแอดมิน", url: "https://t.me/freeceditcode" }],
+      [{ text: "💬 แจ้งเตือนรับโค้ดฟรี", url: "https://t.me/AiCodeFree" }],
     ],
   };
 }
 
-// =======================
-// 📌 ส่งผลยิงโค้ด
-// =======================
+/* =======================
+   SEND RESULT
+======================= */
+
 export async function sendResultToTelegram(
   message: string,
   usertelegram?: number | null
-): Promise<void> {
+) {
+  const safeMessage = escapeHTML(message);
+
   const options = {
     parse_mode: "HTML" as const,
     reply_markup: getInlineButtons(`${baseUrl}/package`),
   };
 
-  // ส่งให้ user ก่อน
-  // if (typeof usertelegram === "number" && usertelegram > 0) {
-  //   try {
-  //     await bot.telegram.sendMessage(usertelegram, message, options);
-  //   } catch (error) {
-  //     console.error(`❌ Failed to send result to user ${usertelegram}:`, error);
-  //   }
-  // }
+  if (usertelegram) {
+    try {
+      await bot.telegram.sendMessage(usertelegram, safeMessage, options);
+    } catch (err) {
+      console.error("❌ send to user failed", err);
+    }
+  }
 
-  // Broadcast to admins
   for (const adminId of ADMIN_IDS) {
     try {
-      await bot.telegram.sendMessage(adminId, message, options);
-    } catch (error) {
-      console.error(`❌ Failed to send result to admin ${adminId}:`, error);
+      await bot.telegram.sendMessage(adminId, safeMessage, options);
+    } catch (err) {
+      console.error("❌ send to admin failed", err);
     }
   }
 }
 
-// =======================
-// 📌 ส่งสลิปซื้อแพ็กเกจ
-// =======================
+/* =======================
+   SEND SLIP
+======================= */
+
 export async function sendSlipToTelegram(
   packageName: string,
   imagePath: string
-): Promise<void> {
-  const caption = `📦 มีการสั่งซื้อแพ็กเกจใหม่!\n\nแพ็กเกจ: <b>${packageName}</b>\nเวลา: ${new Date().toLocaleString(
-    "th-TH"
-  )}`;
+) {
+  const caption = `📦 มีการสั่งซื้อแพ็กเกจใหม่!\n\nแพ็กเกจ: <b>${escapeHTML(
+    packageName
+  )}</b>\nเวลา: ${new Date().toLocaleString("th-TH")}`;
 
   for (const adminId of ADMIN_IDS) {
     try {
-      await bot.telegram.sendPhoto(adminId, { source: imagePath }, {
-        caption,
-        parse_mode: "HTML",
-      });
-    } catch (error) {
-      console.error(`❌ Failed to send slip to ${adminId}:`, error);
+      await bot.telegram.sendPhoto(
+        adminId,
+        { source: imagePath },
+        { caption, parse_mode: "HTML" }
+      );
+    } catch (err) {
+      console.error("❌ send slip failed", err);
     }
   }
 }
 
-// =======================
-// 🚀 START BOT
-// =======================
+/* =======================
+   START BOT
+======================= */
+
 bot.launch()
-  .then(() => console.log("🤖 Bot started"))
+  .then(() => console.log("🤖 Telegram Bot started"))
   .catch(console.error);
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
