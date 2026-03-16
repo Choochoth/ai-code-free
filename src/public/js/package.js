@@ -16,24 +16,58 @@ async function loadPackages() {
 }
 
 // ================== แสดงรายการแพ็กเกจ ==================
+// function renderPackages() {
+//   const grid = document.getElementById("packageGrid");
+//   grid.innerHTML = "";
+
+//   packages.forEach(pkg => {
+//     const card = document.createElement("div");
+//     card.className = "package-card";
+//     card.innerHTML = `
+//       <img src="${pkg.package_logo}" alt="logo" class="package-logo" />
+//       <h3>${pkg.package_name}</h3>
+//       <p>${pkg.package_desc}</p>
+//       <p class="price">${pkg.package_sale > 0 ? pkg.package_sale : pkg.package_price} บาท</p>
+//       <button class="select-package-btn" onclick='openModal(${JSON.stringify(pkg)})'>เลือกแพ็กเกจ</button>
+//     `;
+//     grid.appendChild(card);
+//   });
+// }
 function renderPackages() {
   const grid = document.getElementById("packageGrid");
   grid.innerHTML = "";
 
   packages.forEach(pkg => {
+
+    let badgeHtml = "";
+
+    if (pkg.package_badge && pkg.package_badge.includes("new")) {
+      badgeHtml = `<img src="/images/new-item.png" class="badge badge-new">`;
+    }
+
+    const price = pkg.package_sale > 0 ? pkg.package_sale : pkg.package_price;
+
     const card = document.createElement("div");
     card.className = "package-card";
+
     card.innerHTML = `
-      <img src="${pkg.package_logo}" alt="logo" class="package-logo" />
+      <div class="package-image-wrapper">
+        ${badgeHtml}
+        <img src="${pkg.package_logo}" class="package-logo">
+      </div>
+
       <h3>${pkg.package_name}</h3>
       <p>${pkg.package_desc}</p>
-      <p class="price">${pkg.package_sale > 0 ? pkg.package_sale : pkg.package_price} บาท</p>
-      <button class="select-package-btn" onclick='openModal(${JSON.stringify(pkg)})'>เลือกแพ็กเกจ</button>
+      <p class="price">${price} บาท</p>
+      <button class="select-package-btn">เลือกแพ็กเกจ</button>
     `;
+
+    card.querySelector(".select-package-btn")
+      .addEventListener("click", () => openModal(pkg));
+
     grid.appendChild(card);
   });
 }
-
 // ================== เปิด Modal ==================
 function openModal(pkg) {
   selectedPackage = pkg;
