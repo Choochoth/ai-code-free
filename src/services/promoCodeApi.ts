@@ -31,6 +31,7 @@ let reloadTimer: NodeJS.Timeout | null = null;
 // ---------------- Axios + Bottleneck ----------------
 const api: AxiosInstance = axios.create({
   httpsAgent: agent,
+  // timeout: 15000, // สำคัญมาก
   validateStatus: () => true,
 });
 

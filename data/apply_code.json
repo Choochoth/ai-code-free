@@ -1,8 +1,17 @@
 {
   "apply_code_today": {
-    "date": "2026-03-15",
+    "date": "2026-03-16",
     "thai_789bet": {
-      "players": [],
+      "players": [
+        {
+          "promo_code": "FVHbTcAvieco",
+          "time": 1773637556239,
+          "time_limit": 1773723956239,
+          "status": "success",
+          "player": "aroon11",
+          "point": 22.88
+        }
+      ],
       "playersLock": []
     },
     "thai_jun88k36": {
