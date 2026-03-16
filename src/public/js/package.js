@@ -1,7 +1,7 @@
 let packages = [];
 let selectedPackage = null;
 let selectedSite = "jun88";
-const apiBase = "https://okcode-s01-api-production-744e.up.railway.app";
+const apiBase = "http://localhost:8002";
 
 // ================== โหลดข้อมูลแพ็กเกจจาก API ==================
 async function loadPackages() {
@@ -52,8 +52,8 @@ function renderPackages() {
 
     card.innerHTML = `
       <div class="package-image-wrapper">
-        ${badgeHtml}
         <img src="${pkg.package_logo}" class="package-logo">
+         ${badgeHtml}
       </div>
 
       <h3>${pkg.package_name}</h3>
