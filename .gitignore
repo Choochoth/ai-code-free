@@ -10,7 +10,7 @@ dist/**/*.gitignore
 
 # Application data
 data/images/
-data/session/
+# data/session/
 
 
 # IDE and editor files
