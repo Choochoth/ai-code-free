@@ -127,6 +127,17 @@ let expressServer: any;
 let minPoint: number = 12;
 let POLL_TARGETS: PollTarget[] = [];
 
+
+export async function reloadPollingTargets() {
+  console.log("🔄 Reloading poll targets...");
+
+  await stopPolling();        // 🛑 หยุด interval เดิม
+  await startPolling();       // ▶️ โหลด POLL_TARGETS ใหม่ + start ใหม่
+
+  console.log("✅ Poll targets reloaded");
+}
+
+
 // =======================
 // 🛑 Stop Polling
 // =======================
@@ -201,16 +212,6 @@ async function startPolling() {
     console.log("🟢 Polling latest messages started");
   }
 }
-
-export async function reloadPollingTargets() {
-  console.log("🔄 Reloading poll targets...");
-
-  await stopPolling();        // 🛑 หยุด interval เดิม
-  await startPolling();       // ▶️ โหลด POLL_TARGETS ใหม่ + start ใหม่
-
-  console.log("✅ Poll targets reloaded");
-}
-
 
 async function initializeClient() {
   if (!client) {
@@ -424,7 +425,6 @@ async function sendCaptchaProCode(
     }
   });
 }
-
 
 function abortCurrentSite(siteName: string) {
   const queue = siteQueues[siteName];
@@ -746,7 +746,7 @@ async function initializeService() {
             if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
 
             console.log(
-              msg.editDate ? "✏️ EDIT MESSAGE" : "🔥 NEW MESSAGE",
+              msg.editDate ? "✏️Event Handler EDIT MESSAGE" : "🔥Event Handler NEW MESSAGE",
               chatId,
               msg.text
             );
