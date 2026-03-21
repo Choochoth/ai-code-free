@@ -733,7 +733,6 @@ async function initializeService() {
           "-1002668963498",
           "-1002142874457",
           "-1002040396559",
-          "-1002544749433",
         ]);
 
         client.addEventHandler(
