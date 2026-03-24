@@ -244,7 +244,7 @@ export async function sendApplyCodeDataToTelegram() {
 
 function getInlineButtons(link: string) {
   if (link.includes("localhost")) {
-    link = "https://t.me/AiCodeFree";
+    link = "https://okcode-s02-app-production-af08.up.railway.app";
   }
 
   return {
@@ -260,12 +260,38 @@ function getInlineButtons(link: string) {
    SEND RESULT
 ======================= */
 
+// export async function sendResultToTelegram(
+//   message: string,
+//   usertelegram?: number | null
+// ) {
+//   const safeMessage = escapeHTML(message);
+
+//   const options = {
+//     parse_mode: "HTML" as const,
+//     reply_markup: getInlineButtons(`${baseUrl}/package`),
+//   };
+
+//   if (usertelegram) {
+//     try {
+//       await bot.telegram.sendMessage(usertelegram, safeMessage, options);
+//     } catch (err) {
+//       console.error("❌ send to user failed", err);
+//     }
+//   }
+
+//   for (const adminId of ADMIN_IDS) {
+//     try {
+//       await bot.telegram.sendMessage(adminId, safeMessage, options);
+//     } catch (err) {
+//       console.error("❌ send to admin failed", err);
+//     }
+//   }
+// }
+
 export async function sendResultToTelegram(
   message: string,
   usertelegram?: number | null
 ) {
-  const safeMessage = escapeHTML(message);
-
   const options = {
     parse_mode: "HTML" as const,
     reply_markup: getInlineButtons(`${baseUrl}/package`),
@@ -273,7 +299,7 @@ export async function sendResultToTelegram(
 
   if (usertelegram) {
     try {
-      await bot.telegram.sendMessage(usertelegram, safeMessage, options);
+      await bot.telegram.sendMessage(usertelegram, message, options);
     } catch (err) {
       console.error("❌ send to user failed", err);
     }
@@ -281,7 +307,7 @@ export async function sendResultToTelegram(
 
   for (const adminId of ADMIN_IDS) {
     try {
-      await bot.telegram.sendMessage(adminId, safeMessage, options);
+      await bot.telegram.sendMessage(adminId, message, options);
     } catch (err) {
       console.error("❌ send to admin failed", err);
     }

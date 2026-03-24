@@ -106,70 +106,62 @@ async function loadPollTargetsFromApi(): Promise<PollTarget[]> {
 }
 
 // -------------------------------
-// MAIN FUNCTION
+// Full Code Gen Update FUNCTION
 // -------------------------------
 export function formatTelegramMessage(data: any): string {
-  const playerId =
-  (data.player_id ? String(data.player_id).toLowerCase() : "-");
+  const playerId = data.player_id
+    ? String(data.player_id).toLowerCase()
+    : "-";
+
   const site = data.site || "-";
-  const link = data.link || "-";
-  const points = typeof data.point === "number" ? data.point.toFixed(2) : "-";
+  let link = data.link || "-";
+  const points =
+    typeof data.point === "number" ? data.point.toFixed(2) : "-";
+
   const messageText = data.message || data.status_mess || "-";
-  const logoUrl = `${BASE_URL}/images/procodeAi.png`;
 
   const siteInfo = SITE_CONFIG[site];
 
-  // -------------------------------
-  // กำหนด messageTitle อัตโนมัติ
-  // -------------------------------
+  // กัน localhost
+  if (link.includes("localhost")) {
+    link = "https://okcode-s02-app-production-af08.up.railway.app";
+  }
+
   let messageTitle = "";
 
-  if (rewardUsers.some((id: string) => id.toLowerCase() === playerId.toLowerCase())) {
-    messageTitle = "ยินดีด้วย! คุณได้รับรางวัล โค้ดฟรีสวัสดีปีใหม่ 2026 ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
+  if (rewardUsers.some((id: string) => id.toLowerCase() === playerId)) {
+    messageTitle =
+      "ยินดีด้วย! คุณได้รับรางวัล โค้ดฟรีสวัสดีปีใหม่ 2026 ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
   } else if (freeUsers.includes(playerId)) {
-    messageTitle = "ยินดีด้วย! คุณได้รับรางวัล ทดลองใช้ AI ยิงโค้ดฟรีโปรทดลองใช้ ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
+    messageTitle =
+      "ยินดีด้วย! คุณได้รับรางวัล ทดลองใช้ AI ยิงโค้ดฟรีโปรทดลองใช้ ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
   } else {
-    messageTitle = "ยินดีด้วย! คุณได้รับเครดิตจากแพ็กเกจยิงโค้ด V.2026 ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
+    messageTitle =
+      "ยินดีด้วย! คุณได้รับเครดิตจากแพ็กเกจยิงโค้ด V.2026 ได้จัดส่งเครดิตเข้าบัญชีแล้ว";
   }
-  // -------------------------------
-  // TEMPLATE ใช้ร่วมกันทั้งระบบ
-  // -------------------------------
-  const template = (
-    siteName: string,
-    promoText: string
-  ) => `
-      🖼️ <a href="${logoUrl}">​</a>
 
-      🎯 <b>${messageTitle}</b>
-      👤 <b>ยูสเซอร์:</b> ${maskUsername(playerId)}
-      🏷️ <b>เว็บไซต์:</b> ${siteName}
-      💬 <b>ข้อความจากระบบ:</b> ยินดีด้วย! คุณได้รับโค้ดฟรีเครดิตจาก ${promoText}
-      💰 <b>ยอดฟรีเครดิต:</b> ${points} บาท
-      ⭐ <b>สมัครแพ็กเกจ AI ยิงโค้ด:</b> ${link}
-      `;
+  const template = (siteUrl: string, promoText: string) => `
+🎯 <b>${escapeHTML(messageTitle)}</b>
+👤 <b>ยูสเซอร์:</b> ${maskUsername(playerId)}
+🏷️ <b>เว็บไซต์:</b> <a href="${escapeHTML(siteUrl)}">${escapeHTML(promoText)}</a>
+💬 <b>ข้อความจากระบบ:</b> ยินดีด้วย! คุณได้รับโค้ดเครดิตฟรีจาก ${escapeHTML(promoText)}
+💰 <b>ยอดเครดิตฟรี:</b> ${points} บาท
+⭐ <b>สมัครแพ็กเกจ AI ยิงโค้ด:</b> <a href="${escapeHTML(link)}">กดที่นี่</a>
+`.trim();
 
-  // -------------------------------
-  // SITE CONFIG FOUND → ใช้ TEMPLATE
-  // -------------------------------
   if (siteInfo) {
-    return template(siteInfo.url, siteInfo.promo).trim();
+    return template(siteInfo.url, siteInfo.promo);
   }
 
-  // -------------------------------
-  // OTHER SITE (ไม่อยู่ใน CONFIG)
-  // -------------------------------
   return `
-  🖼️ <a href="${logoUrl}">​</a>
-
-  🎯 <b>ผลการส่งโค้ด</b>
-  👤 <b>ยูสเซอร์:</b> ${maskUsername(playerId)}
-  🏷️ <b>เว็บไซต์:</b> ${escapeHTML(site)}
-  💬 <b>ข้อความ:</b> ${escapeHTML(messageText)}
-  💰 <b>ยอดฟรีเครดิต:</b> ${points} บาท
-  ⭐ <b>สมัครแพ็กเกจ AI ยิงโค้ด:</b> ${link}
-  `.trim();
+🎯 <b>ผลการส่งโค้ด</b>
+👤 <b>ยูสเซอร์:</b> ${maskUsername(playerId)}
+🏷️ <b>เว็บไซต์:</b> ${escapeHTML(site)}
+💬 <b>ข้อความ:</b> ${escapeHTML(messageText)}
+💰 <b>ยอดเครดิตฟรี:</b> ${points} บาท
+⭐ <b>สมัครแพ็กเกจ AI ยิงโค้ด:</b> <a href="${escapeHTML(link)}">กดที่นี่</a>
+`.trim();
 }
-
 
 
 export async function checkNetworkConnectivity(): Promise<boolean> {
@@ -241,7 +233,6 @@ export function getTelegramId(user: string) {
   );
   return found ? found.TelegramId : null;
 }
-
 
 export async function loadPollTargets(): Promise<PollTarget[]> {
   try {
