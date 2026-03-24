@@ -2,7 +2,24 @@
   "apply_code_today": {
     "date": "2026-03-24",
     "thai_789bet": {
-      "players": [],
+      "players": [
+        {
+          "promo_code": "5kjkkQzspudw",
+          "time": 1774368671497,
+          "time_limit": 1774455071497,
+          "status": "success",
+          "player": "aroon11",
+          "point": 27.88
+        },
+        {
+          "promo_code": "aFrJbggsHhXZ",
+          "time": 1774368674855,
+          "time_limit": 1774455074855,
+          "status": "success",
+          "player": "vip0955171905",
+          "point": 24.88
+        }
+      ],
       "playersLock": []
     },
     "thai_jun88k36": {
