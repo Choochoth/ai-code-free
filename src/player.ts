@@ -6,7 +6,7 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["nus9331", "aroon11"],
+    very_high: [ "aroon11", "poypy789", "vip0955171905"],
     high:  ["nus9331", "aroon11", "poypy789", "vip0955171905"],
     mid: ["nus9331", "aroon11", "poypy789", "vip0955171905"],
     low: ["vip0955171905", "poypy789"],
