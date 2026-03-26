@@ -1,7 +1,7 @@
 let packages = [];
 let selectedPackage = null;
 let selectedSite = "jun88";
-const apiBase = "https://okcode-s01-api-production-744e.up.railway.app";
+const apiBase = "https://okcode-ai-api-production-ecd9.up.railway.app";
 
 // ================== โหลดข้อมูลแพ็กเกจจาก API ==================
 async function loadPackages() {
