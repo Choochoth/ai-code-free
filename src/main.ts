@@ -88,12 +88,13 @@ let latestPollInterval: NodeJS.Timeout | null = null;
 let isPollingById = false;
 let isPollingLatest = false;
 
-
-
 const channel789Ids = shuffleArray([
   "-1002040396559",
   "-1002544749433",
   "-1002406062886",
+  // "-1002142874457",
+  // "-1002668963498",
+  // "-1002519263985",
 ]);
 
 const baseDir = __dirname;
@@ -123,8 +124,19 @@ try {
 
 let client: TelegramClient | null = null;
 let expressServer: any;
-let minPoint: number = 10;
+let minPoint: number = 12;
 let POLL_TARGETS: PollTarget[] = [];
+
+
+export async function reloadPollingTargets() {
+  console.log("🔄 Reloading poll targets...");
+
+  await stopPolling();        // 🛑 หยุด interval เดิม
+  await startPolling();       // ▶️ โหลด POLL_TARGETS ใหม่ + start ใหม่
+
+  console.log("✅ Poll targets reloaded");
+}
+
 
 // =======================
 // 🛑 Stop Polling
@@ -200,16 +212,6 @@ async function startPolling() {
     console.log("🟢 Polling latest messages started");
   }
 }
-
-export async function reloadPollingTargets() {
-  console.log("🔄 Reloading poll targets...");
-
-  await stopPolling();        // 🛑 หยุด interval เดิม
-  await startPolling();       // ▶️ โหลด POLL_TARGETS ใหม่ + start ใหม่
-
-  console.log("✅ Poll targets reloaded");
-}
-
 
 async function initializeClient() {
   if (!client) {
@@ -423,7 +425,6 @@ async function sendCaptchaProCode(
     }
   });
 }
-
 
 function abortCurrentSite(siteName: string) {
   const queue = siteQueues[siteName];
@@ -745,7 +746,7 @@ async function initializeService() {
             if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
 
             console.log(
-              msg.editDate ? "✏️ EDIT MESSAGE" : "🔥 NEW MESSAGE",
+              msg.editDate ? "✏️Event Handler EDIT MESSAGE" : "🔥Event Handler NEW MESSAGE",
               chatId,
               msg.text
             );
@@ -801,9 +802,9 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 15;
+    minPoint = 17;
   } else {
-    minPoint = 15;
+    minPoint = 20;
   }
 
   const siteQueue = siteQueues[siteName];
