@@ -100,29 +100,29 @@ async function getInputCaptcha(imageUrl: string, site:string): Promise<{ captcha
     const captchas = await ocr(tempPath, site);
     console.log(`✅Before OCR Result: ${captchas.text}`);
     console.log(`📊 Confidence: ${captchas.confidence}% (ความมั่นใจเฉลี่ยของทั้ง 4 ตัว)`);
-    // let captchaCode: string = captchas.text.trim();
-    let captchaCode: string;
-    if (captchas.confidence >= 93) {
-      captchaCode = captchas.text;
-    } else {
-      console.warn("⚠️ IrfanView check removed, using default viewer...");
-      await execAsync(`start "" "${tempPath.replace(/\\/g, '\\\\')}"`);
+    let captchaCode: string = captchas.text.trim();
+    // let captchaCode: string;
+    // if (captchas.confidence >= 93) {
+    //   captchaCode = captchas.text;
+    // } else {
+    //   console.warn("⚠️ IrfanView check removed, using default viewer...");
+    //   await execAsync(`start "" "${tempPath.replace(/\\/g, '\\\\')}"`);
 
-      try {
-        captchaCode = await Promise.race([
-          promptInput('🔤 Enter CAPTCHA code from image (within 30s): '),
-          new Promise<string>((resolve) =>
-            setTimeout(() => {
-              console.warn("⏰ Timeout - using OCR result instead");
-              resolve(captchas.text);
-            }, 15000)
-          ),
-        ]);
-      } catch (error) {
-        console.warn("⚠️ Error or timeout, using OCR result");
-        captchaCode = captchas.text;
-      }
-    }
+    //   try {
+    //     captchaCode = await Promise.race([
+    //       promptInput('🔤 Enter CAPTCHA code from image (within 30s): '),
+    //       new Promise<string>((resolve) =>
+    //         setTimeout(() => {
+    //           console.warn("⏰ Timeout - using OCR result instead");
+    //           resolve(captchas.text);
+    //         }, 15000)
+    //       ),
+    //     ]);
+    //   } catch (error) {
+    //     console.warn("⚠️ Error or timeout, using OCR result");
+    //     captchaCode = captchas.text;
+    //   }
+    // }
 
     // if (!captchaCode || captchaCode.trim().length < 4) {
     //   console.warn(`❗️Invalid CAPTCHA input. Skipping. Input: ${captchaCode}`);
@@ -235,7 +235,7 @@ function parserCodeMessage(message: string): string[] {
   =============================
   */
   const blacklistRegex =
-    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL|CODEJUN88|CODEJUN88|CASINOJUN88|BACARAT|06789BET|TWITTER|SLOTGAME|SlotJun88|Jun88th|Jun88|Cashback)$/i;
+    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL|CODEJUN88|CODEJUN88|CASINOJUN88|BACARAT|06789BET|TWITTER|SLOTGAME|SlotJun88|Jun88th|Jun88|Cashback|ht99th|codeth99|freecodht99|ht99THAILAND|Slotth99|casinoht99)$/i;
 
   /*
   =============================

@@ -878,10 +878,10 @@ async function startProCodeLoop(siteName: string) {
           const statusCode = result.status_code ?? result?.ststus_code ?? 0;
           const message = result?.text_mess?.th || "";
 
-        const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
-        if (!isCaptchaError) {
-          addTemplate(captchaPath, captchaCode, site);
-        }
+        // const isCaptchaError = statusCode === 400 && message.includes("รหัส Captcha ไม่ถูกต้อง");
+        // if (!isCaptchaError) {
+        //   addTemplate(captchaPath, captchaCode, site);
+        // }
 
         
         if (statusCode === 502 || message.includes("กรุณาลองใหม่อีกครั้ง")) {
