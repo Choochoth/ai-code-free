@@ -728,7 +728,6 @@ async function initializeService() {
         handlersAttached = true;
 
         const ALLOWED_CHAT_IDS = new Set([
-          "-1002292832183",
           "-1002406062886",
           "-1002519263985",
           "-1002668963498",
