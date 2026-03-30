@@ -802,7 +802,7 @@ async function initializeService() {
 // 🚀 startProCodeLoop (รองรับ abort)
 async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
-    minPoint = 15;
+    minPoint = 13;
   } else {
     minPoint = 20;
   }
