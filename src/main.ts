@@ -92,9 +92,9 @@ const channel789Ids = shuffleArray([
   "-1002040396559",
   "-1002544749433",
   "-1002406062886",
-  // "-1002142874457",
-  // "-1002668963498",
-  // "-1002519263985",
+  "-1002142874457",
+  "-1002668963498",
+  "-1002519263985",
 ]);
 
 const baseDir = __dirname;
@@ -804,7 +804,7 @@ async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
     minPoint = 15;
   } else {
-    minPoint = 20;
+    minPoint = 15;
   }
 
   const siteQueue = siteQueues[siteName];
