@@ -4,22 +4,6 @@ import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
-// const playerPools: Record<string, PlayerPool> = {
-//   thai_789bet: {
-//     very_high: ["aroon11", "nus9331", "vip0955171905", "poypy789"],
-//     high:  ["nus9331", "aroon11", "poypy789", "manus9331", "vip0955171905"],
-//     mid: ["manus9331", "aroon11", "poypy789", "vip0955171905"],
-//     low: ["vip0955171905", "poypy789", "manus9331"],
-//     all: ["vip0955171905", "poypy789", "manus9331", "nus9331", "aroon11"]
-//   },
-//   thai_jun88k36: {
-//     very_high: ["nuschai", "ary11", "aroon11", "nus9331", "bank0760"],
-//     high: ["nus9331", "bank0760", "ary11", "nuschai", "aroon11"],
-//     mid:  ["manus9331", "nus9331", "ary11", "bank0760", "aroon11", "nuschai"],
-//     low: ["bank0760", "manus9331", "ary11", "aroon11", "nuschai"],
-//     all: ["manus9331", "nus9331", "aroon11", "nuschai", "bank0760", "ary11"]
-//   }
-// }
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
     very_high: ["aroon11", "nus9331", "vip0955171905", "poypy789"],
@@ -29,13 +13,14 @@ const playerPools: Record<string, PlayerPool> = {
     all: ["vip0955171905", "poypy789", "manus9331", "nus9331", "aroon11"]
   },
   thai_jun88k36: {
-    very_high: ["nuschai", "aroon11", "nus9331", "bank0760"],
-    high: ["nus9331", "bank0760", "nuschai", "aroon11"],
-    mid:  ["nus9331", "bank0760", "aroon11", "nuschai"],
-    low: ["bank0760", "manus9331", "aroon11", "nuschai"],
-    all: ["manus9331", "nus9331", "aroon11", "nuschai", "bank0760"]
+    very_high: ["nuschai", "ary11", "aroon11", "nus9331", "bank0760"],
+    high: ["nus9331", "bank0760", "ary11", "nuschai", "aroon11"],
+    mid:  ["manus9331", "nus9331", "ary11", "bank0760", "aroon11", "nuschai"],
+    low: ["bank0760", "manus9331", "ary11", "aroon11", "nuschai"],
+    all: ["manus9331", "nus9331", "aroon11", "nuschai", "bank0760", "ary11"]
   }
 }
+
 
 export type Site = keyof typeof playerPools;
 
