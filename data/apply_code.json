@@ -1,12 +1,29 @@
 {
   "apply_code_today": {
-    "date": "2026-04-07",
+    "date": "2026-04-08",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [],
+      "players": [
+        {
+          "promo_code": "N719X",
+          "time": 1775604367834,
+          "time_limit": 1775690767834,
+          "status": "success",
+          "player": "bank0760",
+          "point": 15.88
+        },
+        {
+          "promo_code": "V0SG7",
+          "time": 1775604408587,
+          "time_limit": 1775690808587,
+          "status": "success",
+          "player": "manus9331",
+          "point": 16.88
+        }
+      ],
       "playersLock": []
     }
   }
