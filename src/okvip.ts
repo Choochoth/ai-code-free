@@ -234,8 +234,8 @@ function parserCodeMessage(message: string): string[] {
   ✅ WORD BLACKLIST
   =============================
   */
-  const blacklistRegex =
-    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL|CODEJUN88|CODEJUN88|CASINOJUN88|BACARAT|06789BET|TWITTER|SLOTGAME|SlotJun88|Jun88th|Jun88|Cashback|ht99th|codeth99|freecodht99|ht99THAILAND|Slotth99|casinoht99)$/i;
+ const blacklistRegex =
+    /^(FREECODE|GOOGLE|CHROME|TELEGRAM|FACEBOOK|INSTAGRAM|OFFICIAL|CODEJUN88|CODEJUN88|CASINOJUN88|BACARAT|06789BET|TWITTER|SLOTGAME|SlotJun88|Jun88th|Jun88|Cashback|ht99th|codeth99|freecodht99|ht99THAILAND|Slotth99|casinoht99|th789b|789bet|pages)$/i;
 
   /*
   =============================
