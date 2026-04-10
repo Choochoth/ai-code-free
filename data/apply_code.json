@@ -3,7 +3,15 @@
     "date": "2026-04-11",
     "thai_789bet": {
       "players": [],
-      "playersLock": []
+      "playersLock": [
+        {
+          "player": "aroon11",
+          "timelock": 1775846620528,
+          "lockMessage": "ท่านได้ใช้สิทธิ์ไปแล้ว 1 ครั้งในวันนี้ กรุณาลองใหม่อีกครั้งในวันพรุ่งนี้นะครับ",
+          "lockTime": 1800000,
+          "lockCode": 9007
+        }
+      ]
     },
     "thai_jun88k36": {
       "players": [],
