@@ -10,7 +10,20 @@ dist/**/*.gitignore
 
 # Application data
 data/images/
-data/session/
+
+# ========================
+# Session handling
+# ========================
+
+# ignore ทั้งหมดใน session
+data/session/*
+
+# แต่ allow ไฟล์ที่ต้องการ
+!data/session/session-okvip-s1_*.txt
+!data/session/session-okvip-ss1_*.txt
+
+# ========================
+
 
 
 # IDE and editor files
