@@ -722,38 +722,38 @@ async function initializeService() {
       };
 
       // 📩 Telegram Event Handlers
-      const addEventHandlers = async (client: TelegramClient) => {
-        if (handlersAttached) return;
-        handlersAttached = true;
+      // const addEventHandlers = async (client: TelegramClient) => {
+      //   if (handlersAttached) return;
+      //   handlersAttached = true;
 
-        const ALLOWED_CHAT_IDS = new Set([
-          "-1002406062886",
-          "-1002519263985",
-          "-1002668963498",
-          "-1002142874457",
-          "-1002040396559",
-          "-1002544749433",
-        ]);
+      //   const ALLOWED_CHAT_IDS = new Set([
+      //     "-1002406062886",
+      //     "-1002519263985",
+      //     "-1002668963498",
+      //     "-1002142874457",
+      //     "-1002040396559",
+      //     "-1002544749433",
+      //   ]);
 
-        client.addEventHandler(
-          async (event: NewMessageEvent) => {
-            const msg = event.message;
-            if (!msg?.text) return;
+      //   client.addEventHandler(
+      //     async (event: NewMessageEvent) => {
+      //       const msg = event.message;
+      //       if (!msg?.text) return;
 
-            const chatId = msg.chatId?.toString();
-            if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
+      //       const chatId = msg.chatId?.toString();
+      //       if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
 
-            console.log(
-              msg.editDate ? "✏️ EDIT MESSAGE" : "🔥 NEW MESSAGE",
-              chatId,
-              msg.text
-            );
+      //       console.log(
+      //         msg.editDate ? "✏️ EDIT MESSAGE" : "🔥 NEW MESSAGE",
+      //         chatId,
+      //         msg.text
+      //       );
 
-            await handleIncomingMessage(msg.text, chatId);
-          },
-          new NewMessage({ chats: Array.from(ALLOWED_CHAT_IDS) })
-        );
-      };
+      //       await handleIncomingMessage(msg.text, chatId);
+      //     },
+      //     new NewMessage({ chats: Array.from(ALLOWED_CHAT_IDS) })
+      //   );
+      // };
 
       // 🔌 Ensure connected
       try {
@@ -767,7 +767,7 @@ async function initializeService() {
         throw e;
       }
 
-      await addEventHandlers(client);
+      // await addEventHandlers(client);
 
       serviceState = "READY";
       console.log("✅ Telegram client READY");
