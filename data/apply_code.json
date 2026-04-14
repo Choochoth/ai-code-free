@@ -6,48 +6,7 @@
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "1LB9F",
-          "time": 1776140318275,
-          "time_limit": 1776226718275,
-          "status": "success",
-          "player": "ary11",
-          "point": 17.88
-        },
-        {
-          "promo_code": "ECUHO",
-          "time": 1776140325206,
-          "time_limit": 1776226725206,
-          "status": "success",
-          "player": "nuschai",
-          "point": 16.88
-        },
-        {
-          "promo_code": "7Q0Y6",
-          "time": 1776153345142,
-          "time_limit": 1776239745142,
-          "status": "success",
-          "player": "manus9331",
-          "point": 17.88
-        },        
-        {
-          "promo_code": "7Q0Y6",
-          "time": 1776153345142,
-          "time_limit": 1776239745142,
-          "status": "success",
-          "player": "aroon11",
-          "point": 17.88
-        },
-        {
-          "promo_code": "7Q0Y6",
-          "time": 1776153345142,
-          "time_limit": 1776239745142,
-          "status": "success",
-          "player": "bank0760",
-          "point": 17.88
-        }
-      ],
+      "players": [],
       "playersLock": []
     }
   }
