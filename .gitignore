@@ -17,11 +17,9 @@ data/images/
 
 # ignore ทั้งหมดใน session
 data/session/*
-
-# แต่ allow ไฟล์ที่ต้องการ
-!data/session/session-okvip-s2_*.txt
-!data/session/session-okvip-ss2_*.txt
-
+!data/session/
+!data/session/session-okcode-ai-s2_*.txt
+!data/session/session-okcode-ai-ss2_*.txt
 # ========================
 
 
@@ -44,3 +42,6 @@ Thumbs.db
 # Lock files
 yarn.lock
 package-lock.json
+
+
+
