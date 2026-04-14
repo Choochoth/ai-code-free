@@ -1,30 +1,13 @@
 {
   "apply_code_today": {
-    "date": "2026-04-11",
+    "date": "2026-04-14",
     "thai_789bet": {
       "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
-      "players": [
-        {
-          "promo_code": "VL2KX",
-          "time": 1775853151614,
-          "time_limit": 1775939551614,
-          "status": "success",
-          "player": "nuschai",
-          "point": 14.88
-        }
-      ],
-      "playersLock": [
-        {
-          "player": "bank0760",
-          "timelock": 1775853138329,
-          "lockMessage": "รหัสนี้เป็นรหัสที่คุณเคยใช้รับรางวัลแล้ว กรุณาลองรหัสอื่นหรือกลับมาใหม่ในภายหลัง ขอให้โชคดี!",
-          "lockTime": 1800000,
-          "lockCode": 9007
-        }
-      ]
+      "players": [],
+      "playersLock": []
     }
   }
 }
