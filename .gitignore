@@ -18,8 +18,8 @@ data/images/
 # ignore ทั้งหมดใน session
 data/session/*
 !data/session/
-!data/session/session-okvip-s1_*.txt
-!data/session/session-okvip-ss1_*.txt
+!data/session/session-okcode-ai-s1_*.txt
+!data/session/session-okcode-ai-ss1_*.txt
 # ========================
 
 
