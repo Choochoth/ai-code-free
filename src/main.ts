@@ -722,38 +722,38 @@ async function initializeService() {
       };
 
       // 📩 Telegram Event Handlers
-      const addEventHandlers = async (client: TelegramClient) => {
-        if (handlersAttached) return;
-        handlersAttached = true;
+      // const addEventHandlers = async (client: TelegramClient) => {
+      //   if (handlersAttached) return;
+      //   handlersAttached = true;
 
-        const ALLOWED_CHAT_IDS = new Set([
-          "-1002406062886",
-          "-1002519263985",
-          "-1002668963498",
-          "-1002142874457",
-          "-1002040396559",
-          "-1002544749433",
-        ]);
+      //   const ALLOWED_CHAT_IDS = new Set([
+      //     "-1002406062886",
+      //     "-1002519263985",
+      //     "-1002668963498",
+      //     "-1002142874457",
+      //     "-1002040396559",
+      //     "-1002544749433",
+      //   ]);
 
-        client.addEventHandler(
-          async (event: NewMessageEvent) => {
-            const msg = event.message;
-            if (!msg?.text) return;
+      //   client.addEventHandler(
+      //     async (event: NewMessageEvent) => {
+      //       const msg = event.message;
+      //       if (!msg?.text) return;
 
-            const chatId = msg.chatId?.toString();
-            if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
+      //       const chatId = msg.chatId?.toString();
+      //       if (!chatId || !ALLOWED_CHAT_IDS.has(chatId)) return;
 
-            console.log(
-              msg.editDate ? "✏️ EDIT MESSAGE" : "🔥 NEW MESSAGE",
-              chatId,
-              msg.text
-            );
+      //       console.log(
+      //         msg.editDate ? "✏️ EDIT MESSAGE" : "🔥 NEW MESSAGE",
+      //         chatId,
+      //         msg.text
+      //       );
 
-            await handleIncomingMessage(msg.text, chatId);
-          },
-          new NewMessage({ chats: Array.from(ALLOWED_CHAT_IDS) })
-        );
-      };
+      //       await handleIncomingMessage(msg.text, chatId);
+      //     },
+      //     new NewMessage({ chats: Array.from(ALLOWED_CHAT_IDS) })
+      //   );
+      // };
 
       // 🔌 Ensure connected
       try {
@@ -767,7 +767,7 @@ async function initializeService() {
         throw e;
       }
 
-      await addEventHandlers(client);
+      // await addEventHandlers(client);
 
       serviceState = "READY";
       console.log("✅ Telegram client READY");
@@ -1180,83 +1180,50 @@ async function getChatsList(client: TelegramClient) {
   }
 }
 
-// 
-//   await startClient();
-
-//   try {
-//     const me = (await client!.getEntity("me")) as Api.User;
-//     const displayName = [me.firstName, me.lastName].filter(Boolean).join(" ");
-//     console.log(`🤖 Signed in as: ${displayName}`);
-//     console.log(`🆔 Telegram ID: ${me.id.toString()}`);
-
-//   } catch (err) {
-//     console.error("❌ Failed to fetch Telegram user info:", err);
-//   }
-
-
-//   cron.schedule('*/5 * * * *', async () => {
-//     try {
-//       const response = await axios.get(`${OCR_API_BASE}/health`);
-//       console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
-//     } catch (err: any) {
-//       console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
-//     }
-//   });
-
-
-//   //thai_789bet: reset เวลา 11:00 (GMT+7)
-//   cron.schedule('0 0 11 * * *', () => {
-//     try {
-//       clearApplyCodeTemplateForSite("thai_789bet");
-//     } catch (err) {
-//       console.error("❌ Failed to reset thai_789bet:", err);
-//     }
-//   }, {
-//     timezone: "Asia/Bangkok"
-//   });
-
-//   // thai_jun88k36: reset เวลา 24:00 (GMT+7)
-//   cron.schedule('0 0 0 * * *', () => {
-//     try {
-//       clearApplyCodeTemplateForSite("thai_jun88k36");
-//     } catch (err) {
-//       console.error("❌ Failed to reset thai_jun88k36:", err);
-//     }
-//   }, {
-//     timezone: "Asia/Bangkok"
-//   });
-
-// })();
-
 (async () => {
-  const appSession = process.env.APP_SESSION;
+  await startClient();
 
-  const stringSession = new StringSession(""); // หรือโหลดจากไฟล์มาก่อน
+  try {
+    const me = (await client!.getEntity("me")) as Api.User;
+    const displayName = [me.firstName, me.lastName].filter(Boolean).join(" ");
+    console.log(`🤖 Signed in as: ${displayName}`);
+    console.log(`🆔 Telegram ID: ${me.id.toString()}`);
 
-  const client = new TelegramClient(stringSession, apiId, apiHash, {
-    connectionRetries: 5,
+  } catch (err) {
+    console.error("❌ Failed to fetch Telegram user info:", err);
+  }
+
+
+  cron.schedule('*/5 * * * *', async () => {
+    try {
+      const response = await axios.get(`${OCR_API_BASE}/health`);
+      console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
+    } catch (err: any) {
+      console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
+    }
   });
-  await client.start({
-    phoneNumber: async () => phoneNumber,
-    password: async () => userPassword,
-    phoneCode: async () => await promptInput("Please enter the code you received: "),
-    onError: (err:any) => console.log(err),
+
+
+  //thai_789bet: reset เวลา 11:00 (GMT+7)
+  cron.schedule('0 0 11 * * *', () => {
+    try {
+      clearApplyCodeTemplateForSite("thai_789bet");
+    } catch (err) {
+      console.error("❌ Failed to reset thai_789bet:", err);
+    }
+  }, {
+    timezone: "Asia/Bangkok"
   });
-  console.log("You are now logged in.");
-  // Save new session string here if needed:
-  // บันทึก session string ลงไฟล์
-  
-const sessionFilePath = path.join(sessionDir,`${appSession}_${phoneNumber.slice(-4)}.txt`);
-fs.mkdirSync(sessionDir, { recursive: true }); // สร้างโฟลเดอร์ถ้ายังไม่มี
 
-// 2. บันทึก session string อย่างถูกต้อง
-const sessionString = client.session.save();  // sessionString จะเป็น string
-fs.writeFileSync(sessionFilePath, sessionString);
-console.log("✅ Session saved at:", sessionFilePath);
+  // thai_jun88k36: reset เวลา 24:00 (GMT+7)
+  cron.schedule('0 0 0 * * *', () => {
+    try {
+      clearApplyCodeTemplateForSite("thai_jun88k36");
+    } catch (err) {
+      console.error("❌ Failed to reset thai_jun88k36:", err);
+    }
+  }, {
+    timezone: "Asia/Bangkok"
+  });
 
-
-
-  // ตัวอย่าง: ใช้งาน client
-  const dialogs = await client.getDialogs();
-  console.log("Dialogs:", dialogs.map(d => d.name).join(", "));
 })();
