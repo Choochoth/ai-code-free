@@ -768,7 +768,7 @@ async function initializeService() {
         throw e;
       }
 
-      await addEventHandlers(client);
+      // await addEventHandlers(client);
 
       serviceState = "READY";
       console.log("✅ Telegram client READY");

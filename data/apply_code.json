@@ -1,33 +1,8 @@
 {
   "apply_code_today": {
-    "date": "2026-04-14",
+    "date": "2026-04-16",
     "thai_789bet": {
-      "players": [
-        {
-          "promo_code": "ckEoptGIOpcS",
-          "time": 1776136241003,
-          "time_limit": 1776222641003,
-          "status": "success",
-          "player": "aroon11",
-          "point": 15.88
-        },
-        {
-          "promo_code": "ckEoptGIOpcS",
-          "time": 1776136241003,
-          "time_limit": 1776222641003,
-          "status": "success",
-          "player": "poypy789",
-          "point": 15.88
-        },        
-        {
-          "promo_code": "IoPzrhVujeln",
-          "time": 1776136241003,
-          "time_limit": 1776222641003,
-          "status": "success",
-          "player": "vip0955171905",
-          "point": 15.88
-        }
-      ],
+      "players": [],
       "playersLock": []
     },
     "thai_jun88k36": {
