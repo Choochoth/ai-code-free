@@ -10,7 +10,17 @@ dist/**/*.gitignore
 
 # Application data
 data/images/
-data/session/
+
+# ========================
+# Session handling
+# ========================
+
+# ignore ทั้งหมดใน session
+data/session/*
+!data/session/session-okcode-ai-s3_*.txt
+!data/session/session-okcode-ai-ss3_*.txt
+# ========================
+
 
 
 # IDE and editor files
@@ -31,3 +41,6 @@ Thumbs.db
 # Lock files
 yarn.lock
 package-lock.json
+
+
+
