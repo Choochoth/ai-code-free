@@ -17,12 +17,9 @@ data/images/
 
 # ignore ทั้งหมดใน session
 data/session/*
-
-# แต่ allow ไฟล์ที่ต้องการ
+!data/session/
 !data/session/session-okvip-s1_*.txt
 !data/session/session-okvip-ss1_*.txt
-!data/session/session-okvip-s1_1284.txt
-!data/session/session-okvip-ss1_1284.txt
 # ========================
 
 
