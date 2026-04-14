@@ -1227,3 +1227,4 @@ async function getChatsList(client: TelegramClient) {
   });
 
 })();
+
