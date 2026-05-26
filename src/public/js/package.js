@@ -1,7 +1,7 @@
 let packages = [];
 let selectedPackage = null;
 let selectedSite = "jun88";
-const apiBase = "https://code-api-production-f1be.up.railway.app";
+const apiBase = "https://ai-code-api-production-0e75.up.railway.app";
 
 // ================== โหลดข้อมูลแพ็กเกจจาก API ==================
 async function loadPackages() {
