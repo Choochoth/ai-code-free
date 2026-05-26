@@ -1,17 +1,9 @@
 {
   "apply_code_today": {
-    "date": "2026-04-24",
+    "date": "2026-05-27",
     "thai_789bet": {
       "players": [],
-      "playersLock": [
-        {
-          "player": "aroon11",
-          "timelock": 1776992567081,
-          "lockMessage": "กรุณาอย่าทำซ้ำบ่อยเกินไป กรุณาลองใหม่ในอีก 2 นาที",
-          "lockTime": 180000,
-          "lockCode": 9004
-        }
-      ]
+      "playersLock": []
     },
     "thai_jun88k36": {
       "players": [],
