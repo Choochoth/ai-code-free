@@ -18,7 +18,7 @@ data/images/
 # ignore ทั้งหมดใน session
 data/session/*
 !data/session/
-!data/session/session-codeattack-local_*.txt
+!data/session/session-run-local_*.txt
 # ========================
 
 
