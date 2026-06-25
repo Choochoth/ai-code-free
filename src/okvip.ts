@@ -226,7 +226,8 @@ function parserCodeMessage(message: string): string[] {
     "M.",
     "789BET",
     "JUN88",
-    "TWITTER"
+    "TWITTER",
+    "iPhone"
   ];
 
   /*
