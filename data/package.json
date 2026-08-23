@@ -1,0 +1,140 @@
+{
+  "package": {
+    "package_title": "แพ็กเกจยิงโค้ด",
+    "package_desc": "แพ็กเกจยิงโค้ด ประกันราคายิงโค้ดแม่นยำ รับครั้งเดียว รอยอดเข้าบัญชีเลย ประกันราคาขั้นต่ำทุกๆแพ็กเกจ (เงื่่อนไขการรับโค้ด 1 โค้ด/ 1ยูส / 1 วัน)",
+    "package_data": [
+      {
+        "package_name": "ใช้คูปองแพ็กเกจยิงโค้ดฟรี",
+        "package_badge":["hot", "recommend", "new"],
+        "package_icons": ["🆕"],
+        "package_desc": "ได้แน่นอน แนบคูปองแทนสลิปรับสิทธิ์ ไม่มีจำกัดเวลา",
+        "package_price": 0,
+        "package_sale": 0,
+        "package_pool_group": "very_low, low, mid",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },
+      {
+        "package_name": "แพ็กเกจสุ่มราคามินิ 1 โค้ด",
+        "package_badge": ["hot"],
+        "package_icons": ["🔥"],
+        "package_desc": "ได้แน่นอน 1 โค้ด ยอดโค้ดราคาสุ่ม 10-50 ต่อโค้ด  ไม่มีจำกัดเวลา ได้แน่นอน 1 โค้ด",
+        "package_price": 10,
+        "package_sale": 0,
+        "package_pool_group": "very_low, low, mid",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },
+      {
+        "package_name": "แพ็กเกจมินิวัดใจ(พิเศษ) 1 โค้ด (ประกันยอดโค้ดราคา 18 ไม่มีขาดทุน)",
+        "package_badge": ["hot", "sale","new"],
+        "package_icons": ["🔥", "⭐"],
+        "package_desc": "ประกันยอดโค้ดราคา 18 บาทขึ้นไป สุ่มจำนวนโค้ดราคา 18-50 บาท ไม่มีจำกัดเวลา ได้แน่นอน 1 โค้ด ลดราคาเปิดโปร 30-31 กรกฎาคม นี้เท่านั้น",
+        "package_price": 20,
+        "package_sale": 15,
+        "package_pool_group": "very_high, high",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },      
+      {
+        "package_name": "แพ็กเกจมินิวัดใจ 1 โค้ด (ประกันยอดโค้ดราคา 20 ไม่มีขาดทุน)",
+        "package_badge": ["hot", "recommend"],
+        "package_icons": ["🔥", "⭐"],
+        "package_desc": "ประกันยอดโค้ดราคา 20 บาทขึ้นไป ไม่มีจำกัดเวลา ได้แน่นอน 1 โค้ด",
+        "package_price": 20,
+        "package_sale": 0,
+        "package_pool_group": "very_high, high",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },
+      {
+        "package_name": "แพ็กเกจสุ่มราคา 3 โค้ด (ไม่มีขาดทุน)",
+        "package_badge": ["recommend"],
+        "package_icons": ["⭐"],
+        "package_desc": "ได้แน่นอน 3 โค้ด ยอดโค้ดราคาสุ่ม 10-50 ต่อโค้ด ไม่มีจำกัดเวลายิงให้จนครบ 3 โค้ดตามจำนวน",
+        "package_price": 35,
+        "package_sale": 0,
+        "package_pool_group": "high, mid, low",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },
+      {
+        "package_name": "แพ็กเกจประกันราคา 3 โค้ด (ประกันยอดโค้ดราคา 15 ไม่มีขาดทุน)",
+        "package_badge": ["recommend"],
+        "package_icons": ["⭐"],
+        "package_desc": "ได้แน่นอน 3 โค้ด ประกันยอดยอดโค้ดราคา 15 บาทขึ้นไป ยอดรับประกันราคารวม 3 โค้ด 45 บาทขึ้นไป ไม่มีจำกัดเวลายิงให้จนครบ 3 โค้ดตามจำนวน",
+        "package_price": 40,
+        "package_sale": 0,
+        "package_pool_group": "high, mid",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },
+      {
+        "package_name": "แพ็กเกจประกันราคา 5 โค้ด (ประกันยอดโค้ดราคา 15 ไม่มีขาดทุน)",
+        "package_badge": ["recommend", "hot", "sale"],
+        "package_icons": ["⭐", "🔥"],
+        "package_desc": "ได้แน่นอน 5 โค้ด ประกันยอดยอดโค้ดราคา 15 บาทขึ้นไป ยอดรับประกันราคารวม 5 โค้ด 75 บาทขึ้นไป ไม่มีจำกัดเวลายิงให้จนครบ 5 โค้ดตามจำนวน",
+        "package_price": 80,
+        "package_sale": 70,
+        "package_pool_group": "high, mid",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },
+      {
+        "package_name": "แพ็กเกจประกันราคา 5 โค้ด (ประกันยอดโค้ดราคา 20 ไม่มีขาดทุน)",
+        "package_badge": ["recommend", "hot", "sale"],
+        "package_icons": ["⭐", "🔥"],
+        "package_desc": "ได้แน่นอน 5 โค้ด ประกันยอดโค้ดราคา 20 บาทขึ้นไป ยอดรับประกันราคารวม 5 โค้ด 100 บาทขึ้นไป ไม่มีจำกัดเวลายิงให้จนครบ 5 โค้ดตามจำนวน",
+        "package_price": 100,
+        "package_sale": 90,
+        "package_pool_group": "very_high, high",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },
+      {
+        "package_name": "แพ็กเกจสุ่มราคา 7 โค้ด (ไม่มีขาดทุน)",
+        "package_badge": ["recommend", "hot"],
+        "package_icons": ["⭐", "🔥"],
+        "package_desc": "ได้แน่นอน 7 โค้ด ยอดโค้ดราคาสุ่ม 10-50 ต่อโค้ด ไม่มีจำกัดเวลายิงให้จนครบ 7 โค้ดตามจำนวน",
+        "package_price": 100,
+        "package_sale": 0,
+        "package_pool_group": "high, mid",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },
+      {
+        "package_name": "แพ็กเกจประกันราคา 10 โค้ด (ประกันยอดโค้ดราคา 10 ไม่มีขาดทุน) โปร 8.8",
+        "package_badge":  ["hot", "sale","new"],
+        "package_icons": ["⭐", "🔥", "🆕", "💥"],
+        "package_desc": "ได้แน่นอน 10 โค้ด ประกันยอดยอดโค้ดราคา 10 บาทขึ้นไป ยอดรับประกันราคารวม 10 โค้ด 100 บาทขึ้นไป ไม่มีจำกัดเวลายิงให้จนครบ 10 โค้ดตามจำนวน",
+        "package_price": 100,
+        "package_sale": 88,
+        "package_pool_group": "high, mid",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      },
+      {
+        "package_name": "แพ็กเกจประกันราคา 10 โค้ด (ประกันยอดโค้ดราคา 15 ไม่มีขาดทุน)",
+        "package_badge":  ["hot", "sale","new"],
+        "package_icons": ["⭐", "🔥", "🆕", "💥"],
+        "package_desc": "ได้แน่นอน 10 โค้ด ประกันยอดยอดโค้ดราคา 15 บาทขึ้นไป ยอดรับประกันราคารวม 10 โค้ด 150 บาทขึ้นไป ไม่มีจำกัดเวลายิงให้จนครบ 10 โค้ดตามจำนวน",
+        "package_price": 159,
+        "package_sale": 139,
+        "package_pool_group": "high, mid",
+        "package_day_limit": 0,
+        "package_site_name": "thai_jun88k36",
+        "package_logo": "/images/procodeAi.png"
+      }
+    ]
+  }
+}

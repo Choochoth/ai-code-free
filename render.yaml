@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: my-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    numInstances: 1
+    envVars:
+      NODE_ENV: production
+    healthCheckPath: /health
+    healthCheckTimeoutSeconds: 300
+    plan: free
+    autoDeploy: true
+    region: oregon
+    startCommand: "npm run start"
+    deploy:
+      strategy: rolling
+      restartPolicy:
+        type: ON_FAILURE
+        maxRetries: 10
+
+  - type: worker
+    name: keep-alive
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    startCommand: |
+      bash -c '
+      while true; do
+        curl -s https://my-app.onrender.com/health > /dev/null
+        echo "[`date`] 🔁 keep-alive ping sent"
+        sleep 300
+      done
+      '
