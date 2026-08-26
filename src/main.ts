@@ -802,7 +802,7 @@ async function startProCodeLoop(siteName: string) {
   if (siteName == "thai_jun88k36") {
     minPoint = 15;
   } else {
-    minPoint = 18;
+    minPoint = 14;
   }
 
   const siteQueue = siteQueues[siteName];
@@ -1194,14 +1194,14 @@ async function getChatsList(client: TelegramClient) {
   }
 
 
-  cron.schedule('*/5 * * * *', async () => {
-    try {
-      const response = await axios.get(`${OCR_API_BASE}/health`);
-      console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
-    } catch (err: any) {
-      console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
-    }
-  });
+  // cron.schedule('*/5 * * * *', async () => {
+  //   try {
+  //     const response = await axios.get(`${OCR_API_BASE}/health`);
+  //     console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
+  //   } catch (err: any) {
+  //     console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
+  //   }
+  // });
 
 
   //thai_789bet: reset เวลา 11:00 (GMT+7)
