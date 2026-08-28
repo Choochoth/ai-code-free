@@ -4,23 +4,22 @@ import path from "path";
 import { AppliedPlayer, ApplyCodeToday, PlayerPool, PlayerLock } from "./types/player";
 import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
-
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["nus9331", "aroon11", "areeroon"],
-    high:  ["nus9331", "aroon11", "areeroon"],
-    mid: ["nus9331", "aroon11", "areeroon"],
+    very_high: ["areeroon", "manus9331", "aroon11", "nus9331", "nus3206", "sjd9331"],
+    high:  ["nus9331", "sjd9331", "areeroon", "aroon11", "manus9331", "nus3206"],
+    mid: ["manus9331", "aroon11", "nus3206", "areeroon", "nus9331", "sjd9331"],
     low: ["nus3206", "manus9331", "aroon11", "nus9331", "areeroon", "sjd9331"],
     all: ["poypy789", "nus3206", "manus9331", "nus9331", "aroon11", "areeroon", "sjd9331"]
   },
   thai_jun88k36: {
-    very_high: ["nuschai", "aroon11", "nus9331", "bank0760", "manus9331"],
+    very_high: ["nuschai", "aroon11", "nus9331", "ary11", "bank0760", "manus9331"],
     high: ["nus9331", "bank0760", "ary11", "nuschai", "aroon11", "manus9331"],
     mid:  ["nus9331", "ary11", "bank0760", "aroon11", "nuschai", "twich234", "manus9331"],
     low: ["manus9331", "nus9331", "aroon11", "nuschai", "bank0760", "ary11", "twich234"],
     all: ["manus9331", "nus9331", "aroon11", "nuschai", "bank0760", "ary11", "twich234"]
   }
-}
+} 
 
 export type Site = keyof typeof playerPools;
 
