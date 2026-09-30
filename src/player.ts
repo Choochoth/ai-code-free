@@ -6,20 +6,21 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-    very_high: ["aroon11", "sjd9331", "areeroon", "manuchai", "nus9331", "manus9331"],
-    high:  ["manuchai", "sjd9331", "aroon11", "areeroon", "nus9331", "manus9331"],
-    mid: ["areeroon", "sjd9331", "manus9331", "aroon11", "nus9331", "manuchai"],
-    low: ["nus3206", "poypy789", "manus9331", "aroon11", "twich4321", "manuchai", "nus9331", "areeroon", "sjd9331"],
-    all: ["poypy789", "manuchai", "nus3206", "manus9331", "sjd9331", "nus9331", "aroon11", "twich4321", "areeroon"]
+    very_high: ["manuchai", "nus9331", "areeroon", "sjd9331", "aroon11", "manus9331"],
+    high: ["sjd9331", "aroon11", "manus9331", "nus9331", "manuchai", "areeroon"],
+    mid: ["areeroon", "manus9331", "manuchai", "aroon11", "nus9331", "sjd9331"],
+    low: ["nus9331", "poypy789", "twich4321", "manuchai", "nus3206", "sjd9331", "aroon11", "areeroon", "manus9331"],
+    all: ["manus9331", "twich4321", "areeroon", "nus3206", "aroon11", "nus9331", "poypy789", "manuchai", "sjd9331"]
   },
+
   thai_jun88k36: {
-    very_high: ["nuschai", "aroon11", "nus9331", "bank0760", "manus9331"],
-    high: ["nus9331", "bank0760", "nuschai", "aroon11", "manus9331"],
-    mid:  ["nus9331", "bank0760", "aroon11", "nuschai", "manus9331"],
-    low: ["manus9331", "nus3206", "nus9331", "aroon11", "nuschai", "bank0760", "ary11", "twich234"],
-    all: ["manus9331", "nus9331", "aroon11", "nuschai", "bank0760",  "nus3206", "ary11", "twich234"]
+    very_high: ["manus9331", "nuschai", "bank0760", "nus9331", "aroon11"],
+    high: ["nus9331", "aroon11", "bank0760", "manus9331", "nuschai"],
+    mid: ["bank0760", "nus9331", "nuschai", "manus9331", "aroon11"],
+    low: ["nuschai", "twich234", "nus9331", "ary11", "aroon11", "manus9331", "bank0760"],
+    all: ["aroon11", "bank0760", "twich234", "nus9331", "nuschai", "ary11", "manus9331"]
   }
-} 
+}
 
 
 export type Site = keyof typeof playerPools;
