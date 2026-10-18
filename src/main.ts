@@ -1230,3 +1230,130 @@ async function getChatsList(client: TelegramClient) {
 
 })();
 
+
+// (async () => {
+//   await startClient();
+
+//   // Telegram user information
+//   try {
+//     const me = (await client!.getEntity("me")) as Api.User;
+//     const displayName = [me.firstName, me.lastName]
+//       .filter(Boolean)
+//       .join(" ");
+
+//     console.log(`🤖 Signed in as: ${displayName}`);
+//     console.log(`🆔 Telegram ID: ${me.id.toString()}`);
+//   } catch (err) {
+//     console.error("❌ Failed to fetch Telegram user info:", err);
+//   }
+
+//   // OCR API health check: every 5 minutes
+//   cron.schedule("*/5 * * * *", async () => {
+//     const timestamp = new Date().toISOString();
+
+//     try {
+//       const response = await axios.get(
+//         `${OCR_API_BASE}/health`,
+//         { timeout: 10000 }
+//       );
+
+//       console.log(
+//         `[${timestamp}] ✅ OCR API OK. Status: ${response.status}`
+//       );
+//     } catch (err: unknown) {
+//       console.error(
+//         `[${timestamp}] 🛑 OCR API ping failed:`,
+//         axios.isAxiosError(err) ? err.message : err
+//       );
+//     }
+//   });
+
+//   // Daily Red Rain claim: every 5 minutes
+//   // Requires BET_TOKEN in environment variables.
+//   const RED_RAIN_API =
+//     "https://m.7189bet.com/api/1.0/dailyRedRain/claim";
+
+//   //cron.schedule("*/5 * * * *", async () => {
+//     const timestamp = new Date().toISOString();
+//     const token = process.env.BET_TOKEN;
+
+//     if (!token) {
+//       console.error(
+//         `[${timestamp}] 🛑 Daily Red Rain skipped: BET_TOKEN is missing`
+//       );
+//       return;
+//     }
+
+//     try {
+//       const response = await axios.post(
+//         RED_RAIN_API,
+//         null,
+//         {
+//           headers: {
+//             Accept: "application/json, text/plain, */*",
+//             Authorization: `Bearer ${token}`,
+//             "Accept-Language": "en,th;q=0.9",
+//             "Content-Language": "th",
+//             Origin: "https://m.7189bet.com",
+//             Referer: "https://m.7189bet.com/ActivityArea",
+//             "X-Requested-With": "XMLHttpRequest",
+//           },
+//           timeout: 15000,
+//         }
+//       );
+
+//       console.log(
+//         `[${timestamp}] 🌧️ Daily Red Rain response. Status: ${response.status}`,
+//         response.data
+//       );
+//     } catch (err: unknown) {
+//       if (axios.isAxiosError(err)) {
+//         console.error(
+//           `[${timestamp}] 🛑 Daily Red Rain failed. Status: ${
+//             err.response?.status ?? "No response"
+//           }`,
+//           err.response?.data ?? err.message
+//         );
+//       } else {
+//         console.error(
+//           `[${timestamp}] 🛑 Daily Red Rain error:`,
+//           err
+//         );
+//       }
+//     }
+//   //});
+
+//   // thai_789bet: reset at 11:00 (GMT+7)
+//   cron.schedule(
+//     "0 0 11 * * *",
+//     () => {
+//       try {
+//         clearApplyCodeTemplateForSite("thai_789bet");
+//         console.log("✅ Reset thai_789bet completed");
+//       } catch (err) {
+//         console.error("❌ Failed to reset thai_789bet:", err);
+//       }
+//     },
+//     {
+//       timezone: "Asia/Bangkok",
+//     }
+//   );
+
+//   // thai_jun88k36: reset at 00:00 (GMT+7)
+//   cron.schedule(
+//     "0 0 0 * * *",
+//     () => {
+//       try {
+//         clearApplyCodeTemplateForSite("thai_jun88k36");
+//         console.log("✅ Reset thai_jun88k36 completed");
+//       } catch (err) {
+//         console.error("❌ Failed to reset thai_jun88k36:", err);
+//       }
+//     },
+//     {
+//       timezone: "Asia/Bangkok",
+//     }
+//   );
+
+//   console.log("✅ Cron jobs registered");
+// })();
