@@ -7,15 +7,9 @@ import { isPlayerBlocked , cleanupExpiredBlocks} from "./playerTracker";
 
 const playerPools: Record<string, PlayerPool> = {
   thai_789bet: {
-<<<<<<< HEAD
-    very_high: ["areeroon", "nus9331", "manus9331", "aroon11", "manus9331", "manuchai", "sjd9331", "nus9331", "sjd9331"],
-    high: ["nus9331", "manuchai", "manus9331", "sjd9331", "areeroon", "aroon11", "sjd9331", "manus9331", "nus9331"],
-    mid: ["sjd9331", "manuchai", "aroon11", "manus9331", "nus9331", "twich4321", "nus9331", "areeroon", "manus9331", "sjd9331"],
-=======
     very_high: ["areeroon", "nus9331", "manus9331", "aroon11", "manus9331", "manuchai", "sjd9331", "areeroon", "nus9331", "sjd9331"],
     high: ["nus9331", "manuchai", "manus9331", "sjd9331", "areeroon", "aroon11", "sjd9331", "manus9331", "areeroon", "nus9331"],
     mid: ["sjd9331", "manuchai", "aroon11", "manus9331", "nus9331", "twich4321", "nus9331", "areeroon", "manus9331", "sjd9331", "areeroon"],
->>>>>>> origin/okcode-ai-s03
     low: ["aroon11", "nus3206", "manus9331", "areeroon", "twich4321", "nus9331", "sjd9331", "manuchai"],
     all: ["sjd9331", "manuchai", "aroon11", "nus3206", "nus9331", "manus9331", "areeroon", "twich4321", "nus9331"]
   },
