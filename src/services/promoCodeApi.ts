@@ -129,10 +129,7 @@ export async function sendCodeToPlayer(
   token: string,
   hostUrl: string
 ) {
-  // ---------- F168 ไม่ต้อง call เลย ----------
-  if (site === "thai_f168") {
-    return { skip: true, reason: "F168 does not use send-to-player API." };
-  }
+
 
   const url = `${apiEndPoint}/client?player_id=${playerId}&promo_code=${promoCode}&site=${site}`;
   const payload = { key };
@@ -169,23 +166,6 @@ export async function sendCodeToPlayer(
 export async function getVerificationCode(apiEndPoint: string, site: string, hostUrl: string) {
   const cleanApiEndpoint = apiEndPoint.replace(/\/+$/, "");
 
-  // ---------- F168 ----------
-  if (site === "thai_f168") {
-    const url = `${cleanApiEndpoint}/captcha/get-verification-code`;
-    const fullUrl = `${url}?site=${"68d63c5e056c355a7243a39f"}&date=${Date.now()}`;
-
-    try {
-      const res = await limitedGet(fullUrl);
-      if (res.data?.captchaUrl && res.data?.token) {
-        return { captchaUrl: res.data.captchaUrl, token: res.data.token };
-      } else {
-        throw new Error("API response is missing necessary fields (F168).");
-      }
-    } catch (error: any) {
-      console.error("❌ Failed to get verification code (F168):", error.message || error);
-      throw error;
-    }
-  }
 
   // ---------- DEFAULT (jun88, 789bet) ----------
   const url = `${cleanApiEndpoint}/api/get-verification-code`;
@@ -218,25 +198,7 @@ export async function postCaptchaCode(
 ) {
   const cleanApiEndpoint = apiEndPoint.replace(/\/+$/, "");
 
-  // ---------- F168 ----------
-  if (site === "thai_f168") {
-    const url = `${cleanApiEndpoint}/f168/api/client/get-code?promo_code=${promoCode}&site=${"68d63c5e056c355a7243a39f"}`;
-    const payload = { captchaCode, token }; // ❗ no key for F168
 
-    try {
-      const res = await limitedPost(url, payload);
-      console.log(res.data);
-
-      if (res.data?.status_code && res.data?.status_code !== 200) {
-        throw new Error(`Error from server: ${res.data?.text_mess?.th || "Unknown error"}`);
-      }
-
-      return res.data;
-    } catch (err: any) {
-      console.error("❌ Error during postCaptchaCode (F168):", err.message || err);
-      throw new Error(`Failed to post captcha code (F168): ${err.message || "Unknown error"}`);
-    }
-  }
 
   // ---------- DEFAULT (jun88, 789bet) ----------
   const url = `${cleanApiEndpoint}/client/get-code?promo_code=${promoCode}&site=${site}`;
