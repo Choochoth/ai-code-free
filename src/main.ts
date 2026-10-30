@@ -58,6 +58,7 @@ const MAX_RETRIES = 3;
 let retryInterval = 6000;
 let isRestarting: boolean = false;
 const OCR_API_BASE = process.env.OCR_API_BASE || "http://localhost:8000";
+const BASE_URL = process.env.BASE_URL || "http://localhost:53000";
 const appSession = process.env.APP_SESSION;
 
 const processedMessageIds = new Set<string>();
@@ -1196,7 +1197,7 @@ async function getChatsList(client: TelegramClient) {
 
   cron.schedule('*/5 * * * *', async () => {
     try {
-      const response = await axios.get(`${OCR_API_BASE}/health`);
+      const response = await axios.get(`${BASE_URL}/health`);
       console.log(`[${new Date().toISOString()}] ✅ OCR API OK. Status: ${response.status}`);
     } catch (err: any) {
       console.error(`[${new Date().toISOString()}] 🛑 OCR API ping failed:`, err.message);
