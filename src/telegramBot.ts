@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { Telegraf, Context, Telegram } from "telegraf";
-import { Message, Update } from "telegraf/typings/core/types/typegram";
+//import { Message, Update } from "telegraf/typings/core/types/typegram";
 import dotenv from "dotenv";
 import {
 updatePollTarget
