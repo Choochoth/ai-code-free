@@ -211,7 +211,7 @@ function parserCodeMessage(message: string): string[] {
   =============================
   */
   //const validCodeRegex = /^[A-Z0-9]{5,12}$/i;
-  const validCodeRegex = /^[A-Z0-9]{5,12,13}$/i;
+  const validCodeRegex = /^[A-Z0-9]{5,16}$/i;
   /*
   =============================
   ✅ PREFIX BLACKLIST
