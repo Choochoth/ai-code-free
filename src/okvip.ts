@@ -210,7 +210,7 @@ function parserCodeMessage(message: string): string[] {
   ✅ VALID CODE
   =============================
   */
-  const validCodeRegex = /^[A-Z0-9]{5,12}$/i;
+  const validCodeRegex = /^[A-Z0-9]{5,16}$/i;
 
   /*
   =============================
